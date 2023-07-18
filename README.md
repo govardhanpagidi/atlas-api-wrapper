@@ -16,5 +16,15 @@
 ## How to test
 
 #### API runs on port 8080
-#### example: 
-##### GET : localhost:8080/api/project?Id=987asdf987asd
+#### example:  
+            curl --location --request GET 'localhost:8080/api/project?Id=64b6d746ec88e93a0087d10a' \
+            --header 'Content-Type: application/json' \
+            --header 'Authorization: Basic Z2hld3ZuasdfZ3k6ZTA3MDJkNmItYjA2Mi00sdfasdYTcwLWJiZDAtNzA0NGM0ZjUwZjc1' \
+            --data '{
+                "Name": "$ProjectName",
+                "OrgId": "$OrgID",
+                "ProjectSettings": {
+                    "IsCollectDatabaseSpecificsStatisticsEnabled": false,
+                    "IsDataExplorerEnabled": false
+                }
+            }'

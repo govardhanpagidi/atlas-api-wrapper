@@ -22,9 +22,9 @@ func main() {
 	apiRouter.Use(BasicAuth)
 
 	// REST API endpoints and their corresponding handlers
-	apiRouter.HandleFunc(uri(constants.ProjectHandler), handlers.CreateProjectHandler).Methods(http.MethodPost)
-	apiRouter.HandleFunc(uri(constants.ProjectHandler), handlers.GetProjectHandler).Methods(http.MethodGet)
-	apiRouter.HandleFunc(uri(constants.ProjectHandler), handlers.DeleteProjectHandler).Methods(http.MethodDelete)
+	apiRouter.HandleFunc(uri(constants.ProjectHandler), handlers.CreateProject).Methods(http.MethodPost)
+	apiRouter.HandleFunc(uri(constants.ProjectHandler), handlers.GetProject).Methods(http.MethodGet)
+	apiRouter.HandleFunc(uri(constants.ProjectHandler), handlers.DeleteProject).Methods(http.MethodDelete)
 
 	// Start the server on a given port
 	log.Printf("Server listening on port %s", port)

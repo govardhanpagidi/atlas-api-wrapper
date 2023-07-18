@@ -2,9 +2,9 @@ package util
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"github.com/atlas-api-helper/util/constants"
+	"github.com/atlas-api-helper/util/logger"
 	"log"
 	"os"
 	"runtime"
@@ -57,22 +57,22 @@ func NewMongoDBClient(ctx context.Context) (*mongodbatlas.Client, error) {
 }
 
 // SetupLogger is called by each resource handler to centrally
+func SetupLogger(loggerPrefix string) {
+	logr := logger.NewLogger(loggerPrefix)
+	logger.SetOutput(logr.Writer())
+	logger.SetLevel(getLogLevel())
+}
 
-//func SetupLogger(loggerPrefix string) {
-//	logr := logger.New(loggerPrefix)
-//	logger.SetOutput(logr.Writer())
-//	logger.SetLevel(getLogLevel())
-//}
-
-func ToStringMapE(ep any) (map[string]any, error) {
-	var eMap map[string]any
-	inrec, err := json.Marshal(ep)
-	if err != nil {
-		return eMap, err
+func getLogLevel() logger.Level {
+	levelString, exists := os.LookupEnv(envLogLevel)
+	if !exists {
+		_, _ = logger.Warnf("getLogLevel() Environment variable %s not found. Set it in template.yaml (defaultLogLevel=%s)", envLogLevel, defaultLogLevel)
+		levelString = defaultLogLevel
 	}
-	err = json.Unmarshal(inrec, &eMap)
-	if err != nil {
-		return eMap, err
+	switch levelString {
+	case debug:
+		return logger.DebugLevel
+	default:
+		return logger.WarningLevel
 	}
-	return eMap, nil
 }

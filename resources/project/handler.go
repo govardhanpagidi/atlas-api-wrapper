@@ -18,10 +18,6 @@ type UpdateAPIKey struct {
 	APIKeys *mongodbatlas.AssignAPIKey
 }
 
-func setupLog() {
-	//util.SetupLogger("mongodb-atlas-project")
-}
-
 // validateModel inputs based on the method
 func validateModel(fields []string, model *Model) error {
 	return validator.ValidateModel(fields, model)
@@ -29,7 +25,6 @@ func validateModel(fields []string, model *Model) error {
 
 // Create handles the Create event from the Cloudformation service.
 func Create(ctx context.Context, currentModel *Model) (interface{}, error) {
-	setupLog()
 	_, _ = logger.Debugf("Create currentModel: %+v", currentModel)
 
 	if err := validateModel(CreateRequiredFields, currentModel); err != nil {
@@ -95,8 +90,6 @@ func Create(ctx context.Context, currentModel *Model) (interface{}, error) {
 
 // Read handles the Read event from the Cloudformation service.
 func Read(ctx context.Context, currentModel *Model) (interface{}, error) {
-	setupLog()
-
 	client, err := util.NewMongoDBClient(ctx)
 	if err != nil {
 		_, _ = logger.Warnf("CreateMongoDBClient error: %v", err.Error())
@@ -109,7 +102,6 @@ func Read(ctx context.Context, currentModel *Model) (interface{}, error) {
 
 // Delete handles the Delete event from the Cloudformation service.
 func Delete(ctx context.Context, currentModel *Model) (err error) {
-	setupLog()
 	ctx = context.WithValue(ctx, "", "")
 	client, err := util.NewMongoDBClient(ctx)
 	if err != nil {

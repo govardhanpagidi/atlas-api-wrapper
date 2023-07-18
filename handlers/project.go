@@ -3,14 +3,20 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/atlas-api-helper/util"
 	"net/http"
 
 	"github.com/atlas-api-helper/resources/project"
 	"github.com/atlas-api-helper/util/constants"
 )
 
-// GetProjectHandler handles GET requests to retrieve all projects
-func GetProjectHandler(w http.ResponseWriter, r *http.Request) {
+func setupLog() {
+	util.SetupLogger("atlas-api-helper.handlers.project")
+}
+
+// GetProject handles GET requests to retrieve all projects
+func GetProject(w http.ResponseWriter, r *http.Request) {
+	setupLog()
 	queryParams := r.URL.Query()
 
 	// Read a specific parameter
@@ -31,8 +37,9 @@ func GetProjectHandler(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-// DeleteProjectHandler handles GET requests to retrieve all projects
-func DeleteProjectHandler(w http.ResponseWriter, r *http.Request) {
+// DeleteProject handles GET requests to retrieve all projects
+func DeleteProject(w http.ResponseWriter, r *http.Request) {
+	setupLog()
 	queryParams := r.URL.Query()
 
 	// Read a specific parameter
@@ -49,9 +56,9 @@ func DeleteProjectHandler(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-// CreateProjectHandler handles POST requests to create a new project
-func CreateProjectHandler(w http.ResponseWriter, r *http.Request) {
-
+// CreateProject handles POST requests to create a new project
+func CreateProject(w http.ResponseWriter, r *http.Request) {
+	setupLog()
 	var model project.Model
 	err := json.NewDecoder(r.Body).Decode(&model)
 	if err != nil {

@@ -3,6 +3,7 @@ package logger
 import (
 	"fmt"
 	"io"
+	"log"
 	"os"
 )
 
@@ -24,6 +25,12 @@ func New(w io.Writer, l Level) *Logger {
 		level: l,
 		w:     w,
 	}
+}
+
+// NewLogger sets up a logger that writes to the stderr
+func NewLogger(prefix string) *log.Logger {
+	// we create our own stderr since we're going to nuke the existing one
+	return log.New(os.Stderr, prefix, log.LstdFlags)
 }
 
 func (l *Logger) SetOutput(w io.Writer) {

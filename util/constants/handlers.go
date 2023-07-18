@@ -1,5 +1,5 @@
 package constants
 
 const (
-	ProjectHandler = "/project"
+	ProjectHandler = "project"
 )

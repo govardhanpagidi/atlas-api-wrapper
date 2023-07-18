@@ -2,8 +2,8 @@ package middleware
 
 import (
 	"context"
-	"fmt"
 	"github.com/atlas-api-helper/util/constants"
+	"github.com/atlas-api-helper/util/logger"
 	"net/http"
 )
 
@@ -13,9 +13,8 @@ func BasicAuth(next http.Handler) http.Handler {
 		publicKey, privateKey, ok := r.BasicAuth()
 
 		// Parse the Basic authentication credentials
-		fmt.Printf("Request with pub token: %s", publicKey)
+		_, _ = logger.Debugf("Request with pub token: %s", publicKey)
 		if !ok {
-			w.Header().Set("WWW-Authenticate", `Digest realm="Restricted"`)
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}

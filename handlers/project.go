@@ -2,8 +2,8 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/atlas-api-helper/util"
+	"github.com/atlas-api-helper/util/logger"
 	"net/http"
 
 	"github.com/atlas-api-helper/resources/project"
@@ -26,7 +26,8 @@ func GetProject(w http.ResponseWriter, r *http.Request) {
 	//TODO: return the http status code from resource
 	response, err := project.Read(r.Context(), &project.Model{Id: &projectID})
 	if err != nil {
-		fmt.Println("CreateProjectHandler error:", err)
+		_, _ = logger.Debugf("CreateProjectHandler error:", err)
+		return
 	}
 	res, err := json.Marshal(response)
 	if res == nil {
@@ -50,7 +51,7 @@ func DeleteProject(w http.ResponseWriter, r *http.Request) {
 	err := project.Delete(r.Context(), &project.Model{Id: &projectID})
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
-		fmt.Println("CreateProjectHandler error:", err)
+		_, _ = logger.Debugf("CreateProjectHandler error:", err)
 		return
 	}
 	return
@@ -68,7 +69,8 @@ func CreateProject(w http.ResponseWriter, r *http.Request) {
 	//TODO: return the http status code from resource
 	response, err := project.Create(r.Context(), &model)
 	if err != nil {
-		fmt.Println("CreateProjectHandler error:", err)
+		_, _ = logger.Debugf("CreateProjectHandler error:", err)
+		return
 	}
 	res, err := json.Marshal(response)
 	_, err = w.Write(res)

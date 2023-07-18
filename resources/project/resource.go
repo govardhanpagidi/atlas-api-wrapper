@@ -95,8 +95,9 @@ func Read(ctx context.Context, currentModel *Model) (interface{}, error) {
 		_, _ = logger.Warnf("CreateMongoDBClient error: %v", err.Error())
 		return nil, err
 	}
-
 	model, err := getProjectWithSettings(client, currentModel)
+	_, _ = logger.Debugf("+v%", model)
+
 	return model, err
 }
 

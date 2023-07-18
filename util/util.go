@@ -18,6 +18,7 @@ const (
 	wrapperApi  = "mongodb-atlas-wrapper-api"
 	envLogLevel = "LOG_LEVEL"
 	debug       = "debug"
+	warning     = "warningß"
 )
 
 var (
@@ -72,7 +73,10 @@ func getLogLevel() logger.Level {
 	switch levelString {
 	case debug:
 		return logger.DebugLevel
-	default:
+	case warning:
 		return logger.WarningLevel
+
+	default:
+		return logger.DebugLevel
 	}
 }

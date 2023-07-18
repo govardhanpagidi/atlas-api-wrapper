@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"github.com/atlas-api-helper/auth"
 	"github.com/atlas-api-helper/handlers"
+	"github.com/atlas-api-helper/middleware"
 	"github.com/atlas-api-helper/util/constants"
 	"github.com/gorilla/mux"
 	"log"
@@ -20,7 +20,7 @@ func main() {
 	// A router using gorilla/mux
 	r := mux.NewRouter()
 	apiRouter := r.PathPrefix(api).Subrouter()
-	apiRouter.Use(auth.BasicAuth)
+	apiRouter.Use(middleware.BasicAuth)
 
 	// REST API endpoints and their corresponding handlers
 	apiRouter.HandleFunc(uri(constants.ProjectHandler), handlers.CreateProject).Methods(http.MethodPost)

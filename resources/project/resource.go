@@ -96,8 +96,6 @@ func Read(ctx context.Context, currentModel *Model) (interface{}, error) {
 		return nil, err
 	}
 	model, err := getProjectWithSettings(client, currentModel)
-	_, _ = logger.Debugf("+v%", model)
-
 	return model, err
 }
 

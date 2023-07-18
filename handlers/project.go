@@ -26,7 +26,7 @@ func GetProject(w http.ResponseWriter, r *http.Request) {
 	//TODO: return the http status code from resource
 	response, err := project.Read(r.Context(), &project.Model{Id: &projectID})
 	if err != nil {
-		_, _ = logger.Debugf("CreateProjectHandler error:", err)
+		_, _ = logger.Debugf("CreateProjectHandler error:%s", err.Error())
 		return
 	}
 	res, err := json.Marshal(response)
@@ -51,7 +51,7 @@ func DeleteProject(w http.ResponseWriter, r *http.Request) {
 	err := project.Delete(r.Context(), &project.Model{Id: &projectID})
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
-		_, _ = logger.Debugf("CreateProjectHandler error:", err)
+		_, _ = logger.Debugf("CreateProjectHandler error: %s", err.Error())
 		return
 	}
 	return
@@ -69,7 +69,7 @@ func CreateProject(w http.ResponseWriter, r *http.Request) {
 	//TODO: return the http status code from resource
 	response, err := project.Create(r.Context(), &model)
 	if err != nil {
-		_, _ = logger.Debugf("CreateProjectHandler error:", err)
+		_, _ = logger.Debugf("CreateProjectHandler error:%s", err.Error())
 		return
 	}
 	res, err := json.Marshal(response)

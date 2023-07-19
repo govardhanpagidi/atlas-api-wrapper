@@ -26,6 +26,7 @@ func main() {
 	apiRouter.HandleFunc(uri(constants.ProjectHandler), handlers.CreateProject).Methods(http.MethodPost)
 	apiRouter.HandleFunc(uri(constants.ProjectHandler), handlers.GetProject).Methods(http.MethodGet)
 	apiRouter.HandleFunc(uri(constants.ProjectHandler), handlers.DeleteProject).Methods(http.MethodDelete)
+	apiRouter.HandleFunc(uri(constants.ProjectHandler), handlers.UpdateProject).Methods(http.MethodPatch)
 
 	// Start the server on a given port
 	log.Printf("Server listening on port %s", port)

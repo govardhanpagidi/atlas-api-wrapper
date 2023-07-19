@@ -325,3 +325,124 @@ func readTeams(teams []ProjectTeam) []*mongodbatlas.ProjectTeam {
 	}
 	return newTeams
 }
+
+func Update(ctx context.Context, currentModel *Model) (model *Model, err error) {
+
+	if errEvent := validateModel(UpdateRequiredFields, currentModel); errEvent != nil {
+		_, _ = logger.Warnf("Validation Error")
+		return nil, errEvent
+	}
+
+	client, pe := util.NewMongoDBClient(ctx)
+	if pe != nil {
+		_, _ = logger.Warnf("CreateMongoDBClient error: %v", pe)
+		return nil, pe
+	}
+
+	var projectID string
+	if currentModel.Id != nil {
+		projectID = *currentModel.Id
+	}
+
+	currentModel, err = getProject(client, currentModel)
+	if err != nil {
+		return currentModel, err
+	}
+
+	if currentModel.ProjectTeams != nil {
+		// Get teams from project
+		teamsAssigned, _, errr := client.Projects.GetProjectTeamsAssigned(context.Background(), projectID)
+		if errr != nil {
+			_, _ = logger.Warnf("ProjectId : %s, Error: %s", projectID, errr)
+			return nil, errr
+		}
+		newTeams, changedTeams, removeTeams := getChangeInTeams(currentModel.ProjectTeams, teamsAssigned.Results)
+
+		// Remove Teams
+		for _, team := range removeTeams {
+			_, err = client.Teams.RemoveTeamFromProject(context.Background(), projectID, team.TeamID)
+			if err != nil {
+				_, _ = logger.Warnf("ProjectId : %s, Error: %s", projectID, err)
+				return nil, err
+			}
+		}
+		// Add Teams
+		if len(newTeams) > 0 {
+			_, _, err = client.Projects.AddTeamsToProject(context.Background(), projectID, newTeams)
+			if err != nil {
+				_, _ = logger.Warnf("Error: %s", err)
+				return nil, err
+			}
+		}
+		// Update Teams
+		for _, team := range changedTeams {
+			_, _, err = client.Teams.UpdateTeamRoles(context.Background(), projectID, team.TeamID, &mongodbatlas.TeamUpdateRoles{RoleNames: team.RoleNames})
+			if err != nil {
+				_, _ = logger.Warnf("Error: %s", err)
+				return nil, err
+			}
+		}
+	}
+
+	if currentModel.ProjectApiKeys != nil {
+		// Get APIKeys from project
+		projectAPIKeys, _, errr := client.ProjectAPIKeys.List(context.Background(), projectID, &mongodbatlas.ListOptions{ItemsPerPage: 1000, IncludeCount: true})
+		if err != nil {
+			_, _ = logger.Warnf("ProjectId : %s, Error: %s", projectID, errr)
+			return nil, errr
+		}
+
+		// Get Change in ApiKeys
+		newAPIKeys, changedKeys, removeKeys := getChangeInAPIKeys(*currentModel.Id, currentModel.ProjectApiKeys, projectAPIKeys)
+
+		// Remove old keys
+		for _, key := range removeKeys {
+			_, err = client.ProjectAPIKeys.Unassign(context.Background(), projectID, key.Key)
+			if err != nil {
+				_, _ = logger.Warnf("Error: %s", err)
+				return nil, err
+			}
+		}
+
+		// Add Keys
+		for _, key := range newAPIKeys {
+			_, err = client.ProjectAPIKeys.Assign(context.Background(), projectID, key.Key, key.APIKeys)
+			if err != nil {
+				_, _ = logger.Warnf("Error: %s", err)
+				return nil, err
+			}
+		}
+
+		// Update Key Roles
+		for _, key := range changedKeys {
+			_, err = client.ProjectAPIKeys.Assign(context.Background(), projectID, key.Key, key.APIKeys)
+			if err != nil {
+				_, _ = logger.Warnf("Error: %s", err)
+				return nil, err
+			}
+		}
+	}
+
+	if currentModel.ProjectSettings != nil {
+		// Update project settings
+		projectSettings := mongodbatlas.ProjectSettings{
+			IsCollectDatabaseSpecificsStatisticsEnabled: currentModel.ProjectSettings.IsCollectDatabaseSpecificsStatisticsEnabled,
+			IsRealtimePerformancePanelEnabled:           currentModel.ProjectSettings.IsRealtimePerformancePanelEnabled,
+			IsDataExplorerEnabled:                       currentModel.ProjectSettings.IsDataExplorerEnabled,
+			IsPerformanceAdvisorEnabled:                 currentModel.ProjectSettings.IsPerformanceAdvisorEnabled,
+			IsSchemaAdvisorEnabled:                      currentModel.ProjectSettings.IsSchemaAdvisorEnabled,
+		}
+		_, _, err = client.Projects.UpdateProjectSettings(context.Background(), projectID, &projectSettings)
+		if err != nil {
+			_, _ = logger.Warnf("Update - error: %+v", err)
+			return nil, err
+		}
+	}
+
+	toRet, err := getProjectWithSettings(client, currentModel)
+	if err != nil {
+		return nil, err
+	}
+
+	return toRet, nil
+}

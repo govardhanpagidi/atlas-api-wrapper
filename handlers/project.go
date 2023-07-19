@@ -76,3 +76,21 @@ func CreateProject(w http.ResponseWriter, r *http.Request) {
 	_, err = w.Write(res)
 	return
 }
+
+func UpdateProject(w http.ResponseWriter, r *http.Request) {
+	setupLog()
+	var model project.Model
+	err := json.NewDecoder(r.Body).Decode(&model)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	response, err := project.Update(r.Context(), &model)
+	if err != nil {
+		_, _ = logger.Debugf("CreateProjectHandler error:%s", err.Error())
+		return
+	}
+	res, err := json.Marshal(response)
+	_, err = w.Write(res)
+	return
+}

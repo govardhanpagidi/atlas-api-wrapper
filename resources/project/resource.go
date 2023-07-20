@@ -7,8 +7,8 @@ import (
 	"github.com/atlas-api-helper/util/constants"
 	"github.com/atlas-api-helper/util/logger"
 	"github.com/atlas-api-helper/util/validator"
-
 	"go.mongodb.org/atlas/mongodbatlas"
+	"net/http"
 )
 
 var CreateRequiredFields = []string{constants.OrgID, constants.Name}
@@ -32,8 +32,8 @@ func Create(ctx context.Context, currentModel *Model) atlasResponse.AtlasRespone
 		_, _ = logger.Warnf("Validation Error")
 		return atlasResponse.AtlasRespone{
 			Response:       nil,
-			HttpStatusCode: 400,
-			HttpError:      "Validation Error",
+			HttpStatusCode: http.StatusBadRequest,
+			HttpError:      "validation Error",
 		}
 	}
 	client, err := util.NewMongoDBClient(ctx)
@@ -41,8 +41,8 @@ func Create(ctx context.Context, currentModel *Model) atlasResponse.AtlasRespone
 		_, _ = logger.Warnf("Mongo Atlas Connection Error")
 		return atlasResponse.AtlasRespone{
 			Response:       nil,
-			HttpStatusCode: 400,
-			HttpError:      "Mongo Atlas Connection Error",
+			HttpStatusCode: http.StatusBadRequest,
+			HttpError:      "mongo Atlas Connection Error",
 		}
 	}
 
@@ -73,7 +73,7 @@ func Create(ctx context.Context, currentModel *Model) atlasResponse.AtlasRespone
 				_, _ = logger.Warnf("Assign Key Error: %s", err)
 				return atlasResponse.AtlasRespone{
 					Response:       nil,
-					HttpStatusCode: 400,
+					HttpStatusCode: http.StatusBadRequest,
 					HttpError:      err.Error(),
 				}
 			}
@@ -87,7 +87,7 @@ func Create(ctx context.Context, currentModel *Model) atlasResponse.AtlasRespone
 			_, _ = logger.Warnf("AddTeamsToProject Error: %s", err.Error())
 			return atlasResponse.AtlasRespone{
 				Response:       nil,
-				HttpStatusCode: 400,
+				HttpStatusCode: http.StatusBadRequest,
 				HttpError:      err.Error(),
 			}
 		}
@@ -100,7 +100,7 @@ func Create(ctx context.Context, currentModel *Model) atlasResponse.AtlasRespone
 	if err != nil {
 		return atlasResponse.AtlasRespone{
 			Response:       progressEvent,
-			HttpStatusCode: 400,
+			HttpStatusCode: http.StatusBadRequest,
 			HttpError:      err.Error(),
 		}
 	}
@@ -109,21 +109,25 @@ func Create(ctx context.Context, currentModel *Model) atlasResponse.AtlasRespone
 		_, _ = logger.Warnf("getProject Error: %s", err.Error())
 		return atlasResponse.AtlasRespone{
 			Response:       nil,
-			HttpStatusCode: 400,
+			HttpStatusCode: http.StatusBadRequest,
 			HttpError:      err.Error(),
 		}
 	}
+	errMsg := getErrorMessage(err)
 
+	return atlasResponse.AtlasRespone{
+		Response:       model,
+		HttpStatusCode: http.StatusOK,
+		HttpError:      errMsg,
+	}
+}
+
+func getErrorMessage(err error) string {
 	errorMsg := ""
 	if err != nil {
 		errorMsg = err.Error()
 	}
-
-	return atlasResponse.AtlasRespone{
-		Response:       model,
-		HttpStatusCode: 200,
-		HttpError:      errorMsg,
-	}
+	return errorMsg
 }
 
 // Read handles the Read event from the Cloudformation service.
@@ -132,22 +136,18 @@ func Read(ctx context.Context, currentModel *Model) atlasResponse.AtlasRespone {
 
 	if err != nil {
 		_, _ = logger.Warnf("CreateMongoDBClient error: %v", err.Error())
-		return atlasResponse.AtlasRespone{Response: nil, HttpStatusCode: 500, HttpError: err.Error()}
+		return atlasResponse.AtlasRespone{Response: nil, HttpStatusCode: http.StatusInternalServerError, HttpError: err.Error()}
 	}
 	var res *mongodbatlas.Response
 	model, res, err := getProjectWithSettings(client, currentModel)
-	errorMsg := ""
-	if err != nil {
-		errorMsg = err.Error()
-	}
-	return atlasResponse.AtlasRespone{Response: model, HttpStatusCode: res.Response.StatusCode, HttpError: errorMsg}
+	return atlasResponse.AtlasRespone{Response: model, HttpStatusCode: res.Response.StatusCode, HttpError: getErrorMessage(err)}
 }
 
 func ReadAll(ctx context.Context) atlasResponse.AtlasRespone {
 	client, err := util.NewMongoDBClient(ctx)
 	if err != nil {
 		_, _ = logger.Warnf("CreateMongoDBClient error: %v", err.Error())
-		return atlasResponse.AtlasRespone{Response: nil, HttpStatusCode: 500, HttpError: err.Error()}
+		return atlasResponse.AtlasRespone{Response: nil, HttpStatusCode: http.StatusInternalServerError, HttpError: err.Error()}
 	}
 	projects, res, err := ReadAllProjects(ctx, client)
 	if err != nil {
@@ -157,14 +157,10 @@ func ReadAll(ctx context.Context) atlasResponse.AtlasRespone {
 			HttpError:      err.Error(),
 		}
 	}
-	errorMsg := ""
-	if err != nil {
-		errorMsg = err.Error()
-	}
 	return atlasResponse.AtlasRespone{
 		Response:       projects,
 		HttpStatusCode: res.Response.StatusCode,
-		HttpError:      errorMsg,
+		HttpError:      getErrorMessage(err),
 	}
 }
 
@@ -187,7 +183,7 @@ func Delete(ctx context.Context, currentModel *Model) atlasResponse.AtlasRespone
 		_, _ = logger.Warnf("CreateMongoDBClient error: %v", err.Error())
 		return atlasResponse.AtlasRespone{
 			Response:       nil,
-			HttpStatusCode: 400,
+			HttpStatusCode: http.StatusBadRequest,
 			HttpError:      err.Error(),
 		}
 	}
@@ -209,15 +205,11 @@ func Delete(ctx context.Context, currentModel *Model) atlasResponse.AtlasRespone
 	_, _ = logger.Debugf("Deleting project with id(%s)", id)
 
 	res, err = client.Projects.Delete(context.Background(), id)
-	errorMsg := ""
-	if err != nil {
-		errorMsg = err.Error()
-	}
 
 	return atlasResponse.AtlasRespone{
 		Response:       nil,
 		HttpStatusCode: res.Response.StatusCode,
-		HttpError:      errorMsg,
+		HttpError:      getErrorMessage(err),
 	}
 }
 
@@ -246,14 +238,11 @@ func getProject(client *mongodbatlas.Client, currentModel *Model) (model *Model,
 	var project *mongodbatlas.Project
 	if currentModel.Name != nil && len(*currentModel.Name) > 0 {
 		project, res, err = getProjectByName(currentModel.Name, client)
-		if err != nil {
-			return nil, res, err
-		}
 	} else {
 		project, res, err = getProjectByID(currentModel.Id, client)
-		if err != nil {
-			return nil, res, err
-		}
+	}
+	if err != nil {
+		return nil, res, err
 	}
 	currentModel.Name = &project.Name
 	currentModel.OrgId = &project.OrgID
@@ -272,32 +261,16 @@ func getProjectWithSettings(client *mongodbatlas.Client, currentModel *Model) (m
 	}
 	model, res, err = readProjectSettings(client, *currentModel.Id, currentModel)
 
-	if err != nil {
-		return model, res, err
-	}
-
-	return model, res, nil
+	return model, res, err
 }
 
 func getProjectByName(name *string, client *mongodbatlas.Client) (model *mongodbatlas.Project, res *mongodbatlas.Response, err error) {
 	project, res, err := client.Projects.GetOneProjectByName(context.Background(), *name)
-	if err != nil {
-		if res.Response.StatusCode == 401 { // cfn test
-			return nil, res, err
-		}
-		return project, res, err
-	}
 	return project, res, err
 }
 
 func getProjectByID(id *string, client *mongodbatlas.Client) (model *mongodbatlas.Project, res *mongodbatlas.Response, err error) {
 	project, res, err := client.Projects.GetOneProject(context.Background(), *id)
-	if err != nil && res != nil {
-		if res.Response.StatusCode == 401 { // cfn test
-			return nil, res, err
-		}
-		return project, res, err
-	}
 	return project, res, err
 }
 
@@ -431,8 +404,8 @@ func Update(ctx context.Context, currentModel *Model) atlasResponse.AtlasRespone
 		_, _ = logger.Warnf("Validation Error")
 		return atlasResponse.AtlasRespone{
 			Response:       nil,
-			HttpStatusCode: 400,
-			HttpError:      "Validation Error",
+			HttpStatusCode: http.StatusBadRequest,
+			HttpError:      "validation Error",
 		}
 	}
 
@@ -441,7 +414,7 @@ func Update(ctx context.Context, currentModel *Model) atlasResponse.AtlasRespone
 		_, _ = logger.Warnf("CreateMongoDBClient error: %v", pe)
 		return atlasResponse.AtlasRespone{
 			Response:       nil,
-			HttpStatusCode: 400,
+			HttpStatusCode: http.StatusBadRequest,
 			HttpError:      pe.Error(),
 		}
 	}
@@ -594,14 +567,9 @@ func Update(ctx context.Context, currentModel *Model) atlasResponse.AtlasRespone
 		}
 	}
 
-	errorMsg := ""
-	if err != nil {
-		errorMsg = err.Error()
-	}
-
 	return atlasResponse.AtlasRespone{
 		Response:       toRet,
 		HttpStatusCode: res.Response.StatusCode,
-		HttpError:      errorMsg,
+		HttpError:      getErrorMessage(err),
 	}
 }

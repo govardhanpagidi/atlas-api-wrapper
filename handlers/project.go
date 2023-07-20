@@ -2,13 +2,12 @@ package handlers
 
 import (
 	"encoding/json"
+	"github.com/atlas-api-helper/resources/project"
 	"github.com/atlas-api-helper/util"
-	"github.com/atlas-api-helper/util/logger"
+	"github.com/atlas-api-helper/util/ResponseHandler"
+	"github.com/atlas-api-helper/util/constants"
 	"github.com/gorilla/mux"
 	"net/http"
-
-	"github.com/atlas-api-helper/resources/project"
-	"github.com/atlas-api-helper/util/constants"
 )
 
 func setupLog() {
@@ -21,26 +20,10 @@ func GetProject(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
 	// Read a specific parameter
-	projectID := vars["Id"]
+	projectID := vars[constants.ID]
 
-	// Use the parameters as needed
-	//TODO: return the http status code from resource
 	response := project.Read(r.Context(), &project.Model{Id: &projectID})
-	w.Header().Set("Content-Type", "application/json")
-	res, _ := json.Marshal(response)
-	if response.HttpError != "" {
-		_, _ = logger.Debugf("CreateProjectHandler error:%s", response.HttpError)
-		//http.Error(w, response.HttpError, http.StatusNotFound)
-		_, _ = w.Write(res)
-		return
-	}
-
-	if res == nil {
-		w.WriteHeader(http.StatusNotFound)
-		return
-	}
-
-	_, _ = w.Write(res)
+	responseHandler.CommonResponseHandler(response, w, "ProjectHandler")
 	return
 }
 
@@ -50,21 +33,7 @@ func GetAllProjects(w http.ResponseWriter, r *http.Request) {
 
 	// Use the parameters as needed
 	response := project.ReadAll(r.Context())
-	w.Header().Set("Content-Type", "application/json")
-	res, _ := json.Marshal(response)
-	if response.HttpError != "" {
-		_, _ = logger.Debugf("GetAllProjects error:%s", response.HttpError)
-		//http.Error(w, response.HttpError, http.StatusNotFound)
-		_, _ = w.Write(res)
-		return
-	}
-
-	if res == nil {
-		w.WriteHeader(http.StatusNotFound)
-		return
-	}
-
-	_, _ = w.Write(res)
+	responseHandler.CommonResponseHandler(response, w, "ProjectHandler")
 	return
 }
 
@@ -75,17 +44,8 @@ func DeleteProject(w http.ResponseWriter, r *http.Request) {
 
 	// Read a specific parameter
 	projectID := queryParams.Get(constants.ID)
-
-	w.Header().Set("Content-Type", "application/json")
-	// Use the parameters as needed
-	//TODO: return the http status code from resource
-	err := project.Delete(r.Context(), &project.Model{Id: &projectID})
-	if err.HttpError != "" {
-		w.WriteHeader(http.StatusNotFound)
-		_, _ = logger.Debugf("CreateProjectHandler error: %s", err.HttpError)
-	}
-	res, _ := json.Marshal(err)
-	_, _ = w.Write(res)
+	response := project.Delete(r.Context(), &project.Model{Id: &projectID})
+	responseHandler.CommonResponseHandler(response, w, "ProjectHandler")
 	return
 }
 
@@ -98,22 +58,8 @@ func CreateProject(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
-
-	//TODO: return the http status code from resource
 	response := project.Create(r.Context(), &model)
-	errorMsg := ""
-	if err != nil {
-		errorMsg = err.Error()
-	}
-	res, _ := json.Marshal(response)
-	if response.HttpError != "" {
-		_, _ = logger.Debugf("CreateProjectHandler error:%s", errorMsg)
-		_, err = w.Write(res)
-		return
-	}
-
-	_, err = w.Write(res)
+	responseHandler.CommonResponseHandler(response, w, "ProjectHandler")
 	return
 }
 
@@ -122,13 +68,11 @@ func UpdateProject(w http.ResponseWriter, r *http.Request) {
 	var model project.Model
 	err := json.NewDecoder(r.Body).Decode(&model)
 
-	w.Header().Set("Content-Type", "application/json")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 	response := project.Update(r.Context(), &model)
-	res, err := json.Marshal(response)
-	_, err = w.Write(res)
+	responseHandler.CommonResponseHandler(response, w, "ProjectHandler")
 	return
 }

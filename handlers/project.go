@@ -23,7 +23,7 @@ func GetProject(w http.ResponseWriter, r *http.Request) {
 	projectID := vars[constants.ID]
 
 	response := project.Read(r.Context(), &project.Model{Id: &projectID})
-	responseHandler.CommonResponseHandler(response, w, "ProjectHandler")
+	responseHandler.Write(response, w, "ProjectHandler")
 	return
 }
 
@@ -33,7 +33,7 @@ func GetAllProjects(w http.ResponseWriter, r *http.Request) {
 
 	// Use the parameters as needed
 	response := project.ReadAll(r.Context())
-	responseHandler.CommonResponseHandler(response, w, "ProjectHandler")
+	responseHandler.Write(response, w, "ProjectHandler")
 	return
 }
 
@@ -45,7 +45,7 @@ func DeleteProject(w http.ResponseWriter, r *http.Request) {
 	// Read a specific parameter
 	projectID := queryParams.Get(constants.ID)
 	response := project.Delete(r.Context(), &project.Model{Id: &projectID})
-	responseHandler.CommonResponseHandler(response, w, "ProjectHandler")
+	responseHandler.Write(response, w, "ProjectHandler")
 	return
 }
 
@@ -59,7 +59,7 @@ func CreateProject(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	response := project.Create(r.Context(), &model)
-	responseHandler.CommonResponseHandler(response, w, "ProjectHandler")
+	responseHandler.Write(response, w, "ProjectHandler")
 	return
 }
 
@@ -73,6 +73,6 @@ func UpdateProject(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	response := project.Update(r.Context(), &model)
-	responseHandler.CommonResponseHandler(response, w, "ProjectHandler")
+	responseHandler.Write(response, w, "ProjectHandler")
 	return
 }

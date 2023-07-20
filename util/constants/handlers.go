@@ -1,5 +1,6 @@
 package constants
 
 const (
-	ProjectHandler = "project"
+	ProjectHandler       = "project"
+	ProjectHandlerWithId = "project/{Id}"
 )

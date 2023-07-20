@@ -2,12 +2,12 @@ package handlers
 
 import (
 	"encoding/json"
-	"github.com/atlas-api-helper/util"
-	"github.com/atlas-api-helper/util/logger"
-	"net/http"
-
 	"github.com/atlas-api-helper/resources/project"
+	"github.com/atlas-api-helper/util"
+	"github.com/atlas-api-helper/util/ResponseHandler"
 	"github.com/atlas-api-helper/util/constants"
+	"github.com/gorilla/mux"
+	"net/http"
 )
 
 func setupLog() {
@@ -17,24 +17,23 @@ func setupLog() {
 // GetProject handles GET requests to retrieve all projects
 func GetProject(w http.ResponseWriter, r *http.Request) {
 	setupLog()
-	queryParams := r.URL.Query()
+	vars := mux.Vars(r)
 
 	// Read a specific parameter
-	projectID := queryParams.Get(constants.ID)
+	projectID := vars[constants.ID]
+
+	response := project.Read(r.Context(), &project.Model{Id: &projectID})
+	responseHandler.Write(response, w, "ProjectHandler")
+	return
+}
+
+// GetAllProjects handles GET requests to retrieve all projects
+func GetAllProjects(w http.ResponseWriter, r *http.Request) {
+	setupLog()
 
 	// Use the parameters as needed
-	//TODO: return the http status code from resource
-	response, err := project.Read(r.Context(), &project.Model{Id: &projectID})
-	if err != nil {
-		_, _ = logger.Debugf("CreateProjectHandler error:%s", err.Error())
-		return
-	}
-	res, err := json.Marshal(response)
-	if res == nil {
-		w.WriteHeader(http.StatusNotFound)
-		return
-	}
-	_, err = w.Write(res)
+	response := project.ReadAll(r.Context())
+	responseHandler.Write(response, w, "ProjectHandler")
 	return
 }
 
@@ -45,15 +44,8 @@ func DeleteProject(w http.ResponseWriter, r *http.Request) {
 
 	// Read a specific parameter
 	projectID := queryParams.Get(constants.ID)
-
-	// Use the parameters as needed
-	//TODO: return the http status code from resource
-	err := project.Delete(r.Context(), &project.Model{Id: &projectID})
-	if err != nil {
-		w.WriteHeader(http.StatusNotFound)
-		_, _ = logger.Debugf("CreateProjectHandler error: %s", err.Error())
-		return
-	}
+	response := project.Delete(r.Context(), &project.Model{Id: &projectID})
+	responseHandler.Write(response, w, "ProjectHandler")
 	return
 }
 
@@ -66,13 +58,21 @@ func CreateProject(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	//TODO: return the http status code from resource
-	response, err := project.Create(r.Context(), &model)
+	response := project.Create(r.Context(), &model)
+	responseHandler.Write(response, w, "ProjectHandler")
+	return
+}
+
+func UpdateProject(w http.ResponseWriter, r *http.Request) {
+	setupLog()
+	var model project.Model
+	err := json.NewDecoder(r.Body).Decode(&model)
+
 	if err != nil {
-		_, _ = logger.Debugf("CreateProjectHandler error:%s", err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	res, err := json.Marshal(response)
-	_, err = w.Write(res)
+	response := project.Update(r.Context(), &model)
+	responseHandler.Write(response, w, "ProjectHandler")
 	return
 }

@@ -143,6 +143,42 @@ func Read(ctx context.Context, currentModel *Model) atlasResponse.AtlasRespone {
 	return atlasResponse.AtlasRespone{Response: model, HttpStatusCode: res.Response.StatusCode, HttpError: errorMsg}
 }
 
+func ReadAll(ctx context.Context) atlasResponse.AtlasRespone {
+	client, err := util.NewMongoDBClient(ctx)
+	if err != nil {
+		_, _ = logger.Warnf("CreateMongoDBClient error: %v", err.Error())
+		return atlasResponse.AtlasRespone{Response: nil, HttpStatusCode: 500, HttpError: err.Error()}
+	}
+	projects, res, err := ReadAllProjects(ctx, client)
+	if err != nil {
+		return atlasResponse.AtlasRespone{
+			Response:       nil,
+			HttpStatusCode: res.Response.StatusCode,
+			HttpError:      err.Error(),
+		}
+	}
+	errorMsg := ""
+	if err != nil {
+		errorMsg = err.Error()
+	}
+	return atlasResponse.AtlasRespone{
+		Response:       projects,
+		HttpStatusCode: res.Response.StatusCode,
+		HttpError:      errorMsg,
+	}
+}
+
+func ReadAllProjects(ctx context.Context, client *mongodbatlas.Client) (projectsToReturn []*mongodbatlas.Project, res *mongodbatlas.Response, err error) {
+	projects, apiRes, err := client.Projects.GetAllProjects(ctx, nil)
+	if err != nil {
+		return nil, apiRes, err
+	}
+	for _, project := range projects.Results {
+		projectsToReturn = append(projectsToReturn, project)
+	}
+	return projectsToReturn, apiRes, err
+}
+
 // Delete handles the Delete event from the Cloudformation service.
 func Delete(ctx context.Context, currentModel *Model) atlasResponse.AtlasRespone {
 	ctx = context.WithValue(ctx, "", "")

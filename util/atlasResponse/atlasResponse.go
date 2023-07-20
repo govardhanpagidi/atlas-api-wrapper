@@ -1,7 +1,7 @@
 package atlasResponse
 
 type AtlasRespone struct {
-	Response       interface{} `json:",omitempty"`
+	Response       interface{}
 	HttpStatusCode int
-	HttpError      string `json:",omitempty"`
+	HttpError      string
 }

@@ -24,17 +24,22 @@ func GetProject(w http.ResponseWriter, r *http.Request) {
 
 	// Use the parameters as needed
 	//TODO: return the http status code from resource
-	response, err := project.Read(r.Context(), &project.Model{Id: &projectID})
-	if err != nil {
-		_, _ = logger.Debugf("CreateProjectHandler error:%s", err.Error())
+	response := project.Read(r.Context(), &project.Model{Id: &projectID})
+	w.Header().Set("Content-Type", "application/json")
+	res, _ := json.Marshal(response)
+	if response.HttpError != "" {
+		_, _ = logger.Debugf("CreateProjectHandler error:%s", response.HttpError)
+		//http.Error(w, response.HttpError, http.StatusNotFound)
+		_, _ = w.Write(res)
 		return
 	}
-	res, err := json.Marshal(response)
+
 	if res == nil {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
-	_, err = w.Write(res)
+
+	_, _ = w.Write(res)
 	return
 }
 
@@ -46,14 +51,16 @@ func DeleteProject(w http.ResponseWriter, r *http.Request) {
 	// Read a specific parameter
 	projectID := queryParams.Get(constants.ID)
 
+	w.Header().Set("Content-Type", "application/json")
 	// Use the parameters as needed
 	//TODO: return the http status code from resource
 	err := project.Delete(r.Context(), &project.Model{Id: &projectID})
-	if err != nil {
+	if err.HttpError != "" {
 		w.WriteHeader(http.StatusNotFound)
-		_, _ = logger.Debugf("CreateProjectHandler error: %s", err.Error())
-		return
+		_, _ = logger.Debugf("CreateProjectHandler error: %s", err.HttpError)
 	}
+	res, _ := json.Marshal(err)
+	_, _ = w.Write(res)
 	return
 }
 
@@ -66,13 +73,21 @@ func CreateProject(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+	w.Header().Set("Content-Type", "application/json")
+
 	//TODO: return the http status code from resource
-	response, err := project.Create(r.Context(), &model)
+	response := project.Create(r.Context(), &model)
+	errorMsg := ""
 	if err != nil {
-		_, _ = logger.Debugf("CreateProjectHandler error:%s", err.Error())
+		errorMsg = err.Error()
+	}
+	res, _ := json.Marshal(response)
+	if response.HttpError != "" {
+		_, _ = logger.Debugf("CreateProjectHandler error:%s", errorMsg)
+		_, err = w.Write(res)
 		return
 	}
-	res, err := json.Marshal(response)
+
 	_, err = w.Write(res)
 	return
 }
@@ -81,15 +96,13 @@ func UpdateProject(w http.ResponseWriter, r *http.Request) {
 	setupLog()
 	var model project.Model
 	err := json.NewDecoder(r.Body).Decode(&model)
+
+	w.Header().Set("Content-Type", "application/json")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	response, err := project.Update(r.Context(), &model)
-	if err != nil {
-		_, _ = logger.Debugf("CreateProjectHandler error:%s", err.Error())
-		return
-	}
+	response := project.Update(r.Context(), &model)
 	res, err := json.Marshal(response)
 	_, err = w.Write(res)
 	return

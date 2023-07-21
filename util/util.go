@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/atlas-api-helper/util/constants"
 	"github.com/atlas-api-helper/util/logger"
+	"go.mongodb.org/atlas-sdk/v20230201002/admin"
 	"log"
 	"os"
 	"runtime"
@@ -55,6 +56,24 @@ func NewMongoDBClient(ctx context.Context) (*mongodbatlas.Client, error) {
 	}
 
 	return mongodbatlas.New(client, opts...)
+}
+
+func NewMongoDBSDKClient(ctx context.Context) (*admin.APIClient, error) {
+	publicKey := ctx.Value(constants.PubKey).(string)
+	privateKey := ctx.Value(constants.PvtKey).(string)
+
+	baseURL := admin.UseBaseURL("https://cloud.mongodb.com/")
+	if baseURLString := os.Getenv("MONGODB_ATLAS_BASE_URL"); baseURLString != "" {
+		baseURL = admin.UseBaseURL(baseURLString)
+	}
+
+	log.Printf("CreateMongoDBClient--- publicKey:%s", publicKey)
+	client, err := admin.NewClient(admin.UseDigestAuth(publicKey, privateKey), baseURL)
+	if err != nil {
+		return nil, err
+	}
+
+	return client, err
 }
 
 // SetupLogger is called by each resource handler to centrally

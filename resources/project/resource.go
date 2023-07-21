@@ -3,7 +3,7 @@ package project
 import (
 	"context"
 	"github.com/atlas-api-helper/util"
-	"github.com/atlas-api-helper/util/atlasResponse"
+	"github.com/atlas-api-helper/util/atlasresponse"
 	"github.com/atlas-api-helper/util/constants"
 	"github.com/atlas-api-helper/util/logger"
 	"github.com/atlas-api-helper/util/validator"
@@ -25,12 +25,12 @@ func validateModel(fields []string, model *Model) error {
 }
 
 // Create handles the Create event from the Cloudformation service.
-func Create(ctx context.Context, currentModel *Model) atlasResponse.AtlasRespone {
+func Create(ctx context.Context, currentModel *Model) atlasresponse.AtlasRespone {
 	_, _ = logger.Debugf("Create currentModel: %+v", currentModel)
 
 	if err := validateModel(CreateRequiredFields, currentModel); err != nil {
 		_, _ = logger.Warnf("Validation Error")
-		return atlasResponse.AtlasRespone{
+		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: http.StatusBadRequest,
 			HttpError:      "validation Error",
@@ -39,7 +39,7 @@ func Create(ctx context.Context, currentModel *Model) atlasResponse.AtlasRespone
 	client, err := util.NewMongoDBClient(ctx)
 	if err != nil {
 		_, _ = logger.Warnf("Mongo Atlas Connection Error")
-		return atlasResponse.AtlasRespone{
+		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: http.StatusBadRequest,
 			HttpError:      "mongo Atlas Connection Error",
@@ -58,7 +58,7 @@ func Create(ctx context.Context, currentModel *Model) atlasResponse.AtlasRespone
 
 	if err != nil {
 		_, _ = logger.Debugf("Create - error: %+v", err)
-		return atlasResponse.AtlasRespone{
+		return atlasresponse.AtlasRespone{
 			Response:       project,
 			HttpStatusCode: res.Response.StatusCode,
 			HttpError:      err.Error(),
@@ -71,7 +71,7 @@ func Create(ctx context.Context, currentModel *Model) atlasResponse.AtlasRespone
 			_, err = client.ProjectAPIKeys.Assign(context.Background(), project.ID, *key.Key, &mongodbatlas.AssignAPIKey{Roles: key.RoleNames})
 			if err != nil {
 				_, _ = logger.Warnf("Assign Key Error: %s", err)
-				return atlasResponse.AtlasRespone{
+				return atlasresponse.AtlasRespone{
 					Response:       nil,
 					HttpStatusCode: http.StatusBadRequest,
 					HttpError:      err.Error(),
@@ -85,7 +85,7 @@ func Create(ctx context.Context, currentModel *Model) atlasResponse.AtlasRespone
 		_, _, err = client.Projects.AddTeamsToProject(context.Background(), project.ID, readTeams(currentModel.ProjectTeams))
 		if err != nil {
 			_, _ = logger.Warnf("AddTeamsToProject Error: %s", err.Error())
-			return atlasResponse.AtlasRespone{
+			return atlasresponse.AtlasRespone{
 				Response:       nil,
 				HttpStatusCode: http.StatusBadRequest,
 				HttpError:      err.Error(),
@@ -98,7 +98,7 @@ func Create(ctx context.Context, currentModel *Model) atlasResponse.AtlasRespone
 	currentModel.ClusterCount = &project.ClusterCount
 	progressEvent, res, err := updateProjectSettings(currentModel, client)
 	if err != nil {
-		return atlasResponse.AtlasRespone{
+		return atlasresponse.AtlasRespone{
 			Response:       progressEvent,
 			HttpStatusCode: http.StatusBadRequest,
 			HttpError:      err.Error(),
@@ -107,7 +107,7 @@ func Create(ctx context.Context, currentModel *Model) atlasResponse.AtlasRespone
 	model, res, err := getProjectWithSettings(client, currentModel)
 	if err != nil {
 		_, _ = logger.Warnf("getProject Error: %s", err.Error())
-		return atlasResponse.AtlasRespone{
+		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: http.StatusBadRequest,
 			HttpError:      err.Error(),
@@ -115,7 +115,7 @@ func Create(ctx context.Context, currentModel *Model) atlasResponse.AtlasRespone
 	}
 	errMsg := getErrorMessage(err)
 
-	return atlasResponse.AtlasRespone{
+	return atlasresponse.AtlasRespone{
 		Response:       model,
 		HttpStatusCode: http.StatusOK,
 		HttpError:      errMsg,
@@ -131,33 +131,33 @@ func getErrorMessage(err error) string {
 }
 
 // Read handles the Read event from the Cloudformation service.
-func Read(ctx context.Context, currentModel *Model) atlasResponse.AtlasRespone {
+func Read(ctx context.Context, currentModel *Model) atlasresponse.AtlasRespone {
 	client, err := util.NewMongoDBClient(ctx)
 
 	if err != nil {
 		_, _ = logger.Warnf("CreateMongoDBClient error: %v", err.Error())
-		return atlasResponse.AtlasRespone{Response: nil, HttpStatusCode: http.StatusInternalServerError, HttpError: err.Error()}
+		return atlasresponse.AtlasRespone{Response: nil, HttpStatusCode: http.StatusInternalServerError, HttpError: err.Error()}
 	}
 	var res *mongodbatlas.Response
 	model, res, err := getProjectWithSettings(client, currentModel)
-	return atlasResponse.AtlasRespone{Response: model, HttpStatusCode: res.Response.StatusCode, HttpError: getErrorMessage(err)}
+	return atlasresponse.AtlasRespone{Response: model, HttpStatusCode: res.Response.StatusCode, HttpError: getErrorMessage(err)}
 }
 
-func ReadAll(ctx context.Context) atlasResponse.AtlasRespone {
+func ReadAll(ctx context.Context) atlasresponse.AtlasRespone {
 	client, err := util.NewMongoDBClient(ctx)
 	if err != nil {
 		_, _ = logger.Warnf("CreateMongoDBClient error: %v", err.Error())
-		return atlasResponse.AtlasRespone{Response: nil, HttpStatusCode: http.StatusInternalServerError, HttpError: err.Error()}
+		return atlasresponse.AtlasRespone{Response: nil, HttpStatusCode: http.StatusInternalServerError, HttpError: err.Error()}
 	}
 	projects, res, err := ReadAllProjects(ctx, client)
 	if err != nil {
-		return atlasResponse.AtlasRespone{
+		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: res.Response.StatusCode,
 			HttpError:      err.Error(),
 		}
 	}
-	return atlasResponse.AtlasRespone{
+	return atlasresponse.AtlasRespone{
 		Response:       projects,
 		HttpStatusCode: res.Response.StatusCode,
 		HttpError:      getErrorMessage(err),
@@ -176,12 +176,12 @@ func ReadAllProjects(ctx context.Context, client *mongodbatlas.Client) (projects
 }
 
 // Delete handles the Delete event from the Cloudformation service.
-func Delete(ctx context.Context, currentModel *Model) atlasResponse.AtlasRespone {
+func Delete(ctx context.Context, currentModel *Model) atlasresponse.AtlasRespone {
 	ctx = context.WithValue(ctx, "", "")
 	client, err := util.NewMongoDBClient(ctx)
 	if err != nil {
 		_, _ = logger.Warnf("CreateMongoDBClient error: %v", err.Error())
-		return atlasResponse.AtlasRespone{
+		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: http.StatusBadRequest,
 			HttpError:      err.Error(),
@@ -196,7 +196,7 @@ func Delete(ctx context.Context, currentModel *Model) atlasResponse.AtlasRespone
 	_, res, err = getProject(client, currentModel)
 	if err != nil {
 		_, _ = logger.Warnf("GetProjectError error: %v", err.Error())
-		return atlasResponse.AtlasRespone{
+		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: res.Response.StatusCode,
 			HttpError:      err.Error(),
@@ -206,7 +206,7 @@ func Delete(ctx context.Context, currentModel *Model) atlasResponse.AtlasRespone
 
 	res, err = client.Projects.Delete(context.Background(), id)
 
-	return atlasResponse.AtlasRespone{
+	return atlasresponse.AtlasRespone{
 		Response:       nil,
 		HttpStatusCode: res.Response.StatusCode,
 		HttpError:      getErrorMessage(err),
@@ -398,11 +398,11 @@ func readTeams(teams []ProjectTeam) []*mongodbatlas.ProjectTeam {
 	return newTeams
 }
 
-func Update(ctx context.Context, currentModel *Model) atlasResponse.AtlasRespone {
+func Update(ctx context.Context, currentModel *Model) atlasresponse.AtlasRespone {
 
 	if errEvent := validateModel(UpdateRequiredFields, currentModel); errEvent != nil {
 		_, _ = logger.Warnf("Validation Error")
-		return atlasResponse.AtlasRespone{
+		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: http.StatusBadRequest,
 			HttpError:      "validation Error",
@@ -412,7 +412,7 @@ func Update(ctx context.Context, currentModel *Model) atlasResponse.AtlasRespone
 	client, pe := util.NewMongoDBClient(ctx)
 	if pe != nil {
 		_, _ = logger.Warnf("CreateMongoDBClient error: %v", pe)
-		return atlasResponse.AtlasRespone{
+		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: http.StatusBadRequest,
 			HttpError:      pe.Error(),
@@ -425,7 +425,7 @@ func Update(ctx context.Context, currentModel *Model) atlasResponse.AtlasRespone
 	}
 	currentModel, res, err := getProject(client, currentModel)
 	if err != nil {
-		return atlasResponse.AtlasRespone{
+		return atlasresponse.AtlasRespone{
 			Response:       currentModel,
 			HttpStatusCode: res.Response.StatusCode,
 			HttpError:      err.Error(),
@@ -437,7 +437,7 @@ func Update(ctx context.Context, currentModel *Model) atlasResponse.AtlasRespone
 		teamsAssigned, res, errr := client.Projects.GetProjectTeamsAssigned(context.Background(), projectID)
 		if errr != nil {
 			_, _ = logger.Warnf("ProjectId : %s, Error: %s", projectID, errr)
-			return atlasResponse.AtlasRespone{
+			return atlasresponse.AtlasRespone{
 				Response:       teamsAssigned,
 				HttpStatusCode: res.Response.StatusCode,
 				HttpError:      errr.Error(),
@@ -450,7 +450,7 @@ func Update(ctx context.Context, currentModel *Model) atlasResponse.AtlasRespone
 			res, err = client.Teams.RemoveTeamFromProject(context.Background(), projectID, team.TeamID)
 			if err != nil {
 				_, _ = logger.Warnf("ProjectId : %s, Error: %s", projectID, err)
-				return atlasResponse.AtlasRespone{
+				return atlasresponse.AtlasRespone{
 					Response:       nil,
 					HttpStatusCode: res.Response.StatusCode,
 					HttpError:      err.Error(),
@@ -462,7 +462,7 @@ func Update(ctx context.Context, currentModel *Model) atlasResponse.AtlasRespone
 			teamsAssigned, res, err = client.Projects.AddTeamsToProject(context.Background(), projectID, newTeams)
 			if err != nil {
 				_, _ = logger.Warnf("Error: %s", err)
-				return atlasResponse.AtlasRespone{
+				return atlasresponse.AtlasRespone{
 					Response:       teamsAssigned,
 					HttpStatusCode: res.Response.StatusCode,
 					HttpError:      err.Error(),
@@ -474,7 +474,7 @@ func Update(ctx context.Context, currentModel *Model) atlasResponse.AtlasRespone
 			_, res, err = client.Teams.UpdateTeamRoles(context.Background(), projectID, team.TeamID, &mongodbatlas.TeamUpdateRoles{RoleNames: team.RoleNames})
 			if err != nil {
 				_, _ = logger.Warnf("Error: %s", err)
-				return atlasResponse.AtlasRespone{
+				return atlasresponse.AtlasRespone{
 					Response:       nil,
 					HttpStatusCode: res.Response.StatusCode,
 					HttpError:      err.Error(),
@@ -488,7 +488,7 @@ func Update(ctx context.Context, currentModel *Model) atlasResponse.AtlasRespone
 		projectAPIKeys, res, errr := client.ProjectAPIKeys.List(context.Background(), projectID, &mongodbatlas.ListOptions{ItemsPerPage: 1000, IncludeCount: true})
 		if err != nil {
 			_, _ = logger.Warnf("ProjectId : %s, Error: %s", projectID, errr)
-			return atlasResponse.AtlasRespone{
+			return atlasresponse.AtlasRespone{
 				Response:       nil,
 				HttpStatusCode: res.Response.StatusCode,
 				HttpError:      errr.Error(),
@@ -503,7 +503,7 @@ func Update(ctx context.Context, currentModel *Model) atlasResponse.AtlasRespone
 			res, err = client.ProjectAPIKeys.Unassign(context.Background(), projectID, key.Key)
 			if err != nil {
 				_, _ = logger.Warnf("Error: %s", err)
-				return atlasResponse.AtlasRespone{
+				return atlasresponse.AtlasRespone{
 					Response:       nil,
 					HttpStatusCode: res.Response.StatusCode,
 					HttpError:      err.Error(),
@@ -516,7 +516,7 @@ func Update(ctx context.Context, currentModel *Model) atlasResponse.AtlasRespone
 			res, err = client.ProjectAPIKeys.Assign(context.Background(), projectID, key.Key, key.APIKeys)
 			if err != nil {
 				_, _ = logger.Warnf("Error: %s", err)
-				return atlasResponse.AtlasRespone{
+				return atlasresponse.AtlasRespone{
 					Response:       nil,
 					HttpStatusCode: res.Response.StatusCode,
 					HttpError:      err.Error(),
@@ -529,7 +529,7 @@ func Update(ctx context.Context, currentModel *Model) atlasResponse.AtlasRespone
 			res, err = client.ProjectAPIKeys.Assign(context.Background(), projectID, key.Key, key.APIKeys)
 			if err != nil {
 				_, _ = logger.Warnf("Error: %s", err)
-				return atlasResponse.AtlasRespone{
+				return atlasresponse.AtlasRespone{
 					Response:       nil,
 					HttpStatusCode: res.Response.StatusCode,
 					HttpError:      err.Error(),
@@ -550,7 +550,7 @@ func Update(ctx context.Context, currentModel *Model) atlasResponse.AtlasRespone
 		_, res, err = client.Projects.UpdateProjectSettings(context.Background(), projectID, &projectSettings)
 		if err != nil {
 			_, _ = logger.Warnf("Update - error: %+v", err)
-			return atlasResponse.AtlasRespone{
+			return atlasresponse.AtlasRespone{
 				Response:       nil,
 				HttpStatusCode: res.Response.StatusCode,
 				HttpError:      err.Error(),
@@ -560,14 +560,14 @@ func Update(ctx context.Context, currentModel *Model) atlasResponse.AtlasRespone
 
 	toRet, res, err := getProjectWithSettings(client, currentModel)
 	if err != nil {
-		return atlasResponse.AtlasRespone{
+		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: res.Response.StatusCode,
 			HttpError:      err.Error(),
 		}
 	}
 
-	return atlasResponse.AtlasRespone{
+	return atlasresponse.AtlasRespone{
 		Response:       toRet,
 		HttpStatusCode: res.Response.StatusCode,
 		HttpError:      getErrorMessage(err),

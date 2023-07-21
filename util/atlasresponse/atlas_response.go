@@ -1,4 +1,4 @@
-package atlasResponse
+package atlasresponse
 
 type AtlasRespone struct {
 	Response       interface{}

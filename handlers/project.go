@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"github.com/atlas-api-helper/resources/project"
 	"github.com/atlas-api-helper/util"
-	"github.com/atlas-api-helper/util/ResponseHandler"
+	"github.com/atlas-api-helper/util/Responsehandler"
 	"github.com/atlas-api-helper/util/constants"
 	"github.com/gorilla/mux"
 	"net/http"

@@ -32,7 +32,7 @@ func validateModel(fields []string, model *Model) error {
 // Create handles the Create event from the Cloudformation service.
 func Create(ctx context.Context, currentModel *Model) atlasresponse.AtlasRespone {
 	setup()
-	_, _ = logger.Debugf(" currentModel: %#+v, prevModel: %#+v", currentModel)
+	_, _ = logger.Debugf(" currentModel: %#+v", currentModel)
 
 	if errEvent := validateModel(CreateRequiredFields, currentModel); errEvent != nil {
 		return atlasresponse.AtlasRespone{
@@ -81,7 +81,7 @@ func Create(ctx context.Context, currentModel *Model) atlasresponse.AtlasRespone
 			HttpError:      err.Error(),
 		}
 	}
-	_, _ = logger.Debugf("newUser: %s", databaseUser)
+	_, _ = logger.Debugf("newUser: %+v", databaseUser)
 	cfnid := fmt.Sprintf("%s-%s", *currentModel.Username, groupID)
 	currentModel.UserCFNIdentifier = &cfnid
 

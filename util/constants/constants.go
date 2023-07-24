@@ -108,4 +108,6 @@ const (
 
 	ExternalGroupName = "ExternalGroupName"
 	RoleAssignments   = "RoleAssignments"
+
+	DatabaseUserHandlerName = "databaseUserhandler"
 )

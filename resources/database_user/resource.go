@@ -12,7 +12,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"go.mongodb.org/atlas-sdk/v20230201002/admin"
 	"net/http"
-	"time"
 )
 
 var CreateRequiredFields = []string{constants.DatabaseName, constants.ProjectID, constants.Roles, constants.Username}
@@ -61,7 +60,7 @@ func Create(ctx context.Context, currentModel *Model) atlasresponse.AtlasRespone
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: 0,
-			HttpError:      "",
+			HttpError:      err.Error(),
 		}
 	}
 	_, _ = logger.Debugf("Arguments: Project ID: %s, Request %#+v", groupID, dbUser)
@@ -123,10 +122,14 @@ func Read(ctx context.Context, currentModel *Model) atlasresponse.AtlasRespone {
 	dbName := *currentModel.DatabaseName
 
 	databaseUser, res, err := client.DatabaseUsersApi.GetDatabaseUser(ctx, groupID, dbName, username).Execute()
+	statuscode := http.StatusBadRequest
+	if res != nil {
+		statuscode = res.StatusCode
+	}
 	if err != nil {
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
-			HttpStatusCode: res.StatusCode,
+			HttpStatusCode: statuscode,
 			HttpError:      err.Error(),
 		}
 	}
@@ -367,15 +370,12 @@ func List(ctx context.Context, currentModel *Model) atlasresponse.AtlasRespone {
 }
 
 func getDBUser(roles []admin.DatabaseUserRole, groupID string, currentModel *Model, labels []admin.ComponentLabel, scopes []admin.UserScope) *admin.CloudDatabaseUser {
-	parsedTime, err := time.Parse("2006-01-02 15:04:05", *currentModel.DeleteAfterDate)
-	if err != nil {
-		_, _ = logger.Debugf(" currentModel: %#+v", currentModel)
-		return nil
-	}
+	//parsedTime, _ := time.Parse("2006-01-02 15:04:05", *currentModel.DeleteAfterDate)
+
 	return &admin.CloudDatabaseUser{
 		AwsIAMType:      currentModel.AWSIAMType,
 		DatabaseName:    *currentModel.DatabaseName,
-		DeleteAfterDate: &parsedTime,
+		DeleteAfterDate: nil,
 		GroupId:         groupID,
 		Labels:          labels,
 		LdapAuthType:    currentModel.LdapAuthType,

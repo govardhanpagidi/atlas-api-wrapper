@@ -35,6 +35,12 @@ func main() {
 	apiRouter.HandleFunc(uri(constants.DatabaseuserHandler), handlers.CreateDatabaseUser).Methods(http.MethodPost)
 	apiRouter.HandleFunc(uri(constants.DatabaseuserHandler), handlers.UpdateDatabaseUser).Methods(http.MethodPut)
 
+	apiRouter.HandleFunc(uri(constants.CustomDbRoleGetHandler), handlers.GetCustomDbRole).Methods(http.MethodGet)
+	apiRouter.HandleFunc(uri(constants.CustomDbRoleWithGroupId), handlers.GetAllCustomDbRoles).Methods(http.MethodGet)
+	apiRouter.HandleFunc(uri(constants.CustomDbRoleGetHandler), handlers.DeleteCustomDbRoles).Methods(http.MethodDelete)
+	apiRouter.HandleFunc(uri(constants.CustomDbRole), handlers.CreateCustomDbRole).Methods(http.MethodPost)
+	apiRouter.HandleFunc(uri(constants.CustomDbRole), handlers.UpdateCustomDbRole).Methods(http.MethodPut)
+
 	// Start the server on a given port
 	log.Printf("Server listening on port %s", port)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", port), r))

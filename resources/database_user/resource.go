@@ -2,6 +2,7 @@ package database_user
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/atlas-api-helper/resources/profile"
 	"github.com/atlas-api-helper/util"
@@ -12,6 +13,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"go.mongodb.org/atlas-sdk/v20230201002/admin"
 	"net/http"
+	"time"
 )
 
 var CreateRequiredFields = []string{constants.DatabaseName, constants.ProjectID, constants.Roles, constants.Username}
@@ -59,7 +61,7 @@ func Create(ctx context.Context, currentModel *Model) atlasresponse.AtlasRespone
 	if err != nil {
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
-			HttpStatusCode: 0,
+			HttpStatusCode: 200,
 			HttpError:      err.Error(),
 		}
 	}
@@ -369,10 +371,8 @@ func List(ctx context.Context, currentModel *Model) atlasresponse.AtlasRespone {
 	}
 }
 
-func getDBUser(roles []admin.DatabaseUserRole, groupID string, currentModel *Model, labels []admin.ComponentLabel, scopes []admin.UserScope) *admin.CloudDatabaseUser {
-	//parsedTime, _ := time.Parse("2006-01-02 15:04:05", *currentModel.DeleteAfterDate)
-
-	return &admin.CloudDatabaseUser{
+func getDBUser(roles []admin.DatabaseUserRole, groupID string, currentModel *Model, labels []admin.ComponentLabel, scopes []admin.UserScope) (*admin.CloudDatabaseUser, error) {
+	cloudUser := &admin.CloudDatabaseUser{
 		AwsIAMType:      currentModel.AWSIAMType,
 		DatabaseName:    *currentModel.DatabaseName,
 		DeleteAfterDate: nil,
@@ -385,6 +385,16 @@ func getDBUser(roles []admin.DatabaseUserRole, groupID string, currentModel *Mod
 		Username:        *currentModel.Username,
 		X509Type:        currentModel.X509Type,
 	}
+	if *currentModel.DeleteAfterDate != "" {
+		parsedTime, err := time.Parse("2006-01-02 15:04:05", *currentModel.DeleteAfterDate)
+		if err == nil {
+			cloudUser.DeleteAfterDate = &parsedTime
+		} else {
+			err = errors.New(" Invalid Date format for Delete After Date: " + *currentModel.DeleteAfterDate)
+			return nil, err
+		}
+	}
+	return cloudUser, nil
 }
 
 func setModel(currentModel *Model) (string, *admin.CloudDatabaseUser, error) {
@@ -454,6 +464,6 @@ func setModel(currentModel *Model) (string, *admin.CloudDatabaseUser, error) {
 		currentModel.DeleteAfterDate = &s
 	}
 	_, _ = logger.Debugf("Check Delete after date here::???????")
-	user := getDBUser(roles, groupID, currentModel, labels, scopes)
-	return groupID, user, nil
+	user, err := getDBUser(roles, groupID, currentModel, labels, scopes)
+	return groupID, user, err
 }

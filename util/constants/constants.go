@@ -8,6 +8,7 @@ const (
 	Name                = "Name"
 	ID                  = "Id"
 	ProjectID           = "ProjectId"
+	InvitationID        = "InvitationId"
 	AccepterRegionName  = "AccepterRegionName"
 	AwsAccountID        = "AwsAccountId"
 	RouteTableCIDRBlock = "RouteTableCIDRBlock"
@@ -109,5 +110,7 @@ const (
 	ExternalGroupName = "ExternalGroupName"
 	RoleAssignments   = "RoleAssignments"
 
-	DatabaseUserHandlerName = "databaseUserhandler"
+	DatabaseUserHandlerName = "DatabaseUserhandler"
+
+	ProjectInviteHandlerName = "ProjectInvitehandler"
 )

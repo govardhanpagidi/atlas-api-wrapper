@@ -9,4 +9,8 @@ const (
 	CustomDbRole            = "customdbrole"
 	CustomDbRoleGetHandler  = "customdbrole/{GroupId}/{RoleName}"
 	CustomDbRoleWithGroupId = "customdbrole/{GroupId}"
+
+	ProjectInvite                       = "project/invite"
+	ProjectInviteWithGroupIDAndInviteId = "project/invite/{GroupId}/{InvitationId}"
+	ProjectInviteWithGroupId            = "project/invite/{GroupId}"
 )

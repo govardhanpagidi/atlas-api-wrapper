@@ -69,13 +69,6 @@ func Create(ctx context.Context, currentModel *Model) atlasresponse.AtlasRespone
 	request := client.DatabaseUsersApi.CreateDatabaseUser(context.Background(), groupID, dbUser)
 	databaseUser, res, err := request.Execute()
 	if err != nil {
-		return atlasresponse.AtlasRespone{
-			Response:       nil,
-			HttpStatusCode: res.StatusCode,
-			HttpError:      err.Error(),
-		}
-	}
-	if err != nil {
 		fmt.Println("Error creating database user:", err)
 		return atlasresponse.AtlasRespone{
 			Response:       nil,

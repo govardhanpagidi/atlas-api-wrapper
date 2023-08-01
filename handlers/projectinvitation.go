@@ -16,7 +16,7 @@ func setupProjectInvitation() {
 
 // GetProjectInvitation handles GET requests to retrieve all GetProjectInvitation
 func GetProjectInvitation(w http.ResponseWriter, r *http.Request) {
-	setupLog()
+	setupProjectInvitation()
 	vars := mux.Vars(r)
 	// Read a specific parameter
 	groupId := vars[constants.GroupID]
@@ -27,7 +27,7 @@ func GetProjectInvitation(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetAllprojectInvites(w http.ResponseWriter, r *http.Request) {
-	setupLog()
+	setupProjectInvitation()
 	vars := mux.Vars(r)
 
 	// Read a specific parameter
@@ -38,7 +38,7 @@ func GetAllprojectInvites(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeleteProjectInvites(w http.ResponseWriter, r *http.Request) {
-	setupLog()
+	setupProjectInvitation()
 
 	vars := mux.Vars(r)
 	// Read a specific parameter
@@ -50,7 +50,7 @@ func DeleteProjectInvites(w http.ResponseWriter, r *http.Request) {
 }
 
 func CreateProjectInvite(w http.ResponseWriter, r *http.Request) {
-	setupLog()
+	setupProjectInvitation()
 	var model project_invitation.Model
 	err := json.NewDecoder(r.Body).Decode(&model)
 	if err != nil {
@@ -63,7 +63,7 @@ func CreateProjectInvite(w http.ResponseWriter, r *http.Request) {
 }
 
 func UpdateProjectInvite(w http.ResponseWriter, r *http.Request) {
-	setupLog()
+	setupProjectInvitation()
 	var model project_invitation.Model
 	err := json.NewDecoder(r.Body).Decode(&model)
 

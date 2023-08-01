@@ -16,7 +16,7 @@ func setupDatabaseUserLog() {
 
 // GetDatabaseUser handles GET requests to retrieve all database users
 func GetDatabaseUser(w http.ResponseWriter, r *http.Request) {
-	setupLog()
+	setupDatabaseUserLog()
 	vars := mux.Vars(r)
 
 	// Read a specific parameter
@@ -29,7 +29,7 @@ func GetDatabaseUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetAllDatabaseUser(w http.ResponseWriter, r *http.Request) {
-	setupLog()
+	setupDatabaseUserLog()
 	vars := mux.Vars(r)
 
 	// Read a specific parameter
@@ -40,7 +40,7 @@ func GetAllDatabaseUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeleteDatabaseUser(w http.ResponseWriter, r *http.Request) {
-	setupLog()
+	setupDatabaseUserLog()
 
 	vars := mux.Vars(r)
 	// Read a specific parameter
@@ -53,7 +53,7 @@ func DeleteDatabaseUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func CreateDatabaseUser(w http.ResponseWriter, r *http.Request) {
-	setupLog()
+	setupDatabaseUserLog()
 	var model database_user.Model
 	err := json.NewDecoder(r.Body).Decode(&model)
 	if err != nil {
@@ -66,7 +66,7 @@ func CreateDatabaseUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func UpdateDatabaseUser(w http.ResponseWriter, r *http.Request) {
-	setupLog()
+	setupDatabaseUserLog()
 	var model database_user.Model
 	err := json.NewDecoder(r.Body).Decode(&model)
 

@@ -16,7 +16,7 @@ func setupCustomDBRole() {
 
 // GetCustomDbRole handles GET requests to retrieve all custom db roles
 func GetCustomDbRole(w http.ResponseWriter, r *http.Request) {
-	setupLog()
+	setupCustomDBRole()
 	vars := mux.Vars(r)
 
 	// Read a specific parameter
@@ -28,7 +28,7 @@ func GetCustomDbRole(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetAllCustomDbRoles(w http.ResponseWriter, r *http.Request) {
-	setupLog()
+	setupCustomDBRole()
 	vars := mux.Vars(r)
 
 	// Read a specific parameter
@@ -39,7 +39,7 @@ func GetAllCustomDbRoles(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeleteCustomDbRoles(w http.ResponseWriter, r *http.Request) {
-	setupLog()
+	setupCustomDBRole()
 
 	vars := mux.Vars(r)
 	// Read a specific parameter
@@ -51,7 +51,7 @@ func DeleteCustomDbRoles(w http.ResponseWriter, r *http.Request) {
 }
 
 func CreateCustomDbRole(w http.ResponseWriter, r *http.Request) {
-	setupLog()
+	setupCustomDBRole()
 	var model custom_db_role.Model
 	err := json.NewDecoder(r.Body).Decode(&model)
 	if err != nil {
@@ -64,7 +64,7 @@ func CreateCustomDbRole(w http.ResponseWriter, r *http.Request) {
 }
 
 func UpdateCustomDbRole(w http.ResponseWriter, r *http.Request) {
-	setupLog()
+	setupCustomDBRole()
 	var model custom_db_role.Model
 	err := json.NewDecoder(r.Body).Decode(&model)
 

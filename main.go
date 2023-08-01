@@ -47,6 +47,12 @@ func main() {
 	apiRouter.HandleFunc(uri(constants.ProjectInvite), handlers.CreateProjectInvite).Methods(http.MethodPost)
 	apiRouter.HandleFunc(uri(constants.ProjectInvite), handlers.UpdateProjectInvite).Methods(http.MethodPut)
 
+	apiRouter.HandleFunc(uri(constants.ClusterWithGroupIdAndName), handlers.GetCluster).Methods(http.MethodGet)
+	apiRouter.HandleFunc(uri(constants.ClusterWithGroupId), handlers.GetAllCluster).Methods(http.MethodGet)
+	apiRouter.HandleFunc(uri(constants.ClusterWithGroupIdAndName), handlers.DeleteCluster).Methods(http.MethodDelete)
+	apiRouter.HandleFunc(uri(constants.Cluster), handlers.CreateCluster).Methods(http.MethodPost)
+	apiRouter.HandleFunc(uri(constants.Cluster), handlers.UpdateCluster).Methods(http.MethodPut)
+
 	// Start the server on a given port
 	log.Printf("Server listening on port %s", port)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", port), r))

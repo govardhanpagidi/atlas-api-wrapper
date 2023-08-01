@@ -13,4 +13,8 @@ const (
 	ProjectInvite                       = "project/invite"
 	ProjectInviteWithGroupIDAndInviteId = "project/invite/{GroupId}/{InvitationId}"
 	ProjectInviteWithGroupId            = "project/invite/{GroupId}"
+
+	Cluster                   = "cluster"
+	ClusterWithGroupIdAndName = "cluster/{GroupId}/{Name}"
+	ClusterWithGroupId        = "cluster/{GroupId}"
 )

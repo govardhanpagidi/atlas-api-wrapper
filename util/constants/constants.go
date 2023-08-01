@@ -113,4 +113,6 @@ const (
 	DatabaseUserHandlerName = "DatabaseUserhandler"
 
 	ProjectInviteHandlerName = "ProjectInvitehandler"
+
+	ClusterHandler = "ClusterHandler"
 )

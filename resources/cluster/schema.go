@@ -129,10 +129,11 @@ type Specs struct {
 }
 
 type InputModel struct {
-	ProjectId   *string `json:",omitempty"`
-	ClusterName *string `json:",omitempty"`
-	PrivateKey  *string `json:",omitempty"`
-	PublicKey   *string `json:",omitempty"`
-	ClusterSize *string `json:",omitempty"`
-	DBUserName  *string `json:",omitempty"`
+	ProjectId     *string `json:",omitempty"`
+	ClusterName   *string `json:",omitempty"`
+	PrivateKey    *string `json:",omitempty"`
+	PublicKey     *string `json:",omitempty"`
+	ClusterSize   *string `json:",omitempty"`
+	DBUserName    *string `json:",omitempty"`
+	CloudProvider *string `json:",omitempty"`
 }

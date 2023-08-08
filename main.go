@@ -19,11 +19,10 @@ func main() {
 	// A router using gorilla/mux
 	r := mux.NewRouter()
 	apiRouter := r.PathPrefix(api).Subrouter()
-	//apiRouter.Use(middleware.BasicAuth)
 
 	apiRouter.HandleFunc(uri(constants.ClusterWithGroupIdAndName), handlers.GetCluster).Methods(http.MethodGet)
 	//apiRouter.HandleFunc(uri(constants.ClusterWithGroupId), handlers.GetAllCluster).Methods(http.MethodGet)
-	//apiRouter.HandleFunc(uri(constants.ClusterWithGroupIdAndName), handlers.DeleteCluster).Methods(http.MethodDelete)
+	apiRouter.HandleFunc(uri(constants.ClusterWithGroupIdAndName), handlers.DeleteCluster).Methods(http.MethodDelete)
 	apiRouter.HandleFunc(uri(constants.Cluster), handlers.CreateCluster).Methods(http.MethodPost)
 	//apiRouter.HandleFunc(uri(constants.Cluster), handlers.UpdateCluster).Methods(http.MethodPut)
 

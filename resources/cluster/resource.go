@@ -15,11 +15,11 @@
 package cluster
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/atlas-api-helper/resources/profile"
 	"github.com/atlas-api-helper/util"
 	"github.com/atlas-api-helper/util/atlasresponse"
 	"github.com/atlas-api-helper/util/constants"
@@ -39,10 +39,10 @@ import (
 
 var defaultLabel = Labels{Key: aws.String("Infrastructure Tool"), Value: aws.String("MongoDB Atlas CloudFormation Provider")}
 
-var CreateRequiredFields = []string{"ProjectId", constants.ClusterName, "PrivateKey", "PublicKey", "ClusterSize", "DBUserName"}
-var ReadRequiredFields = []string{constants.ProjectID, constants.Name}
+var CreateRequiredFields = []string{constants.ProjectID, constants.ClusterName, constants.PrivateKey, constants.PublicKey, constants.ClusterSize, constants.DatabaseName}
+var ReadRequiredFields = []string{constants.ProjectID, constants.ClusterName, constants.PublicKey, constants.PrivateKey}
 var UpdateRequiredFields = []string{constants.ProjectID, constants.Name}
-var DeleteRequiredFields = []string{constants.ProjectID, constants.Name}
+var DeleteRequiredFields = []string{constants.ProjectID, constants.ClusterName, constants.PublicKey, constants.PrivateKey}
 var ListRequiredFields = []string{constants.ProjectID}
 
 func setup() {
@@ -176,11 +176,16 @@ func loadCurrentModel(model InputModel) (Model, error) {
 		log.Fatal("Error during Unmarshal(): ", err)
 		return currentModel, err
 	}
-	clusterConfig, ok := ClusterConfig[cast.ToString(model.ClusterSize)]
+	var configKey bytes.Buffer
+	configKey.WriteString(strings.ToLower(*model.ClusterSize))
+	configKey.WriteString("-")
+	configKey.WriteString(strings.ToLower(*model.CloudProvider))
+	key := configKey.String()
+	clusterConfig, ok := ClusterConfig[key]
 	if ok {
 		currentModel = clusterConfig
 	} else {
-		return currentModel, errors.New("provided Cluster Size is Invalid")
+		return currentModel, errors.New("provided Cluster Size is Invalid: " + *model.ClusterSize)
 	}
 	currentModel.Name = model.ClusterName
 	return currentModel, nil
@@ -192,14 +197,14 @@ func Read(inputModel *InputModel) atlasresponse.AtlasRespone {
 	setup()
 	_, _ = logger.Debugf("Read() currentModel:%+v", inputModel)
 
-	/*modelValidation := validateModel(ReadRequiredFields, currentModel)
+	modelValidation := validateModel(ReadRequiredFields, inputModel)
 	if modelValidation != nil {
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: http.StatusBadRequest,
 			HttpError:      modelValidation.Error(),
 		}
-	}*/
+	}
 
 	client, peErr := util.NewMongoDBSDKClient(cast.ToString(inputModel.PublicKey), cast.ToString(inputModel.PrivateKey))
 	if peErr != nil {
@@ -228,65 +233,9 @@ func Read(inputModel *InputModel) atlasresponse.AtlasRespone {
 	}
 }
 
-// Update handles the Update event from the Cloudformation service.
-/*
-	func Update(ctx context.Context, currentModel *Model) atlasresponse.AtlasRespone {
-		setup()
-		_, _ = logger.Debugf("Update() currentModel:%+v", currentModel)
-
-		modelValidation := validateModel(UpdateRequiredFields, currentModel)
-		if modelValidation != nil {
-			return atlasresponse.AtlasRespone{
-				Response:       nil,
-				HttpStatusCode: http.StatusBadRequest,
-				HttpError:      modelValidation.Error(),
-			}
-		}
-
-		// Create atlas client
-		if currentModel.Profile == nil || *currentModel.Profile == "" {
-			currentModel.Profile = aws.String(profile.DefaultProfile)
-		}
-
-		client, peErr := util.NewMongoDBSDKClient(ctx)
-		if peErr != nil {
-			_, _ = logger.Warnf("CreateMongoDBClient error: %v", peErr.Error())
-			return atlasresponse.AtlasRespone{
-				Response:       nil,
-				HttpStatusCode: http.StatusBadRequest,
-				HttpError:      peErr.Error(),
-			}
-		}
-
-		currentModel.validateDefaultLabel()
-
-		// Update Cluster
-		model, resp, err := updateCluster(ctx, client, currentModel)
-		if err != nil {
-			return atlasresponse.AtlasRespone{
-				Response:       nil,
-				HttpStatusCode: resp.StatusCode,
-				HttpError:      err.Error(),
-			}
-		}
-
-		var state string
-		if model.StateName != nil {
-			state = *model.StateName
-		}
-		_, _ = logger.Debugf("state: %+v", state)
-		return atlasresponse.AtlasRespone{
-			Response:       model,
-			HttpStatusCode: resp.StatusCode,
-			HttpError:      "",
-		}
-	}
-*/
-// Delete handles the Delete event from the Cloudformation service.
-
-func Delete(inputModel *InputModel, currentModel *Model) atlasresponse.AtlasRespone {
+func Delete(inputModel *InputModel) atlasresponse.AtlasRespone {
 	setup()
-	_, _ = logger.Debugf("Delete() currentModel:%+v", currentModel)
+	_, _ = logger.Debugf("Delete() currentModel:%+v", inputModel)
 
 	modelValidation := validateModel(DeleteRequiredFields, inputModel)
 	if modelValidation != nil {
@@ -295,11 +244,6 @@ func Delete(inputModel *InputModel, currentModel *Model) atlasresponse.AtlasResp
 			HttpStatusCode: http.StatusBadRequest,
 			HttpError:      "Validation error",
 		}
-	}
-
-	// Create atlas client
-	if currentModel.Profile == nil || *currentModel.Profile == "" {
-		currentModel.Profile = aws.String(profile.DefaultProfile)
 	}
 
 	client, peErr := util.NewMongoDBSDKClient(cast.ToString(inputModel.PublicKey), cast.ToString(inputModel.PrivateKey))
@@ -312,11 +256,10 @@ func Delete(inputModel *InputModel, currentModel *Model) atlasresponse.AtlasResp
 		}
 	}
 
-	//options := &mongodbatlas.DeleteAdvanceClusterOptions{RetainBackups: util.Pointer(false)}
 	retainBackup := false
 	args := admin.DeleteClusterApiParams{
-		GroupId:       *currentModel.ProjectId,
-		ClusterName:   *currentModel.Name,
+		GroupId:       *inputModel.ProjectId,
+		ClusterName:   *inputModel.ClusterName,
 		RetainBackups: &retainBackup,
 	}
 

@@ -115,4 +115,9 @@ const (
 	ProjectInviteHandlerName = "ProjectInvitehandler"
 
 	ClusterHandler = "ClusterHandler"
+	PrivateKey     = "PrivateKey"
+	PublicKey      = "PublicKey"
+	ClusterSize    = "ClusterSize"
+	DBUserName     = "DBUserName"
+	CloudProvider  = "CloudProvider"
 )

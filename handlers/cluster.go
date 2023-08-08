@@ -14,20 +14,19 @@ func setupClusterLog() {
 	util.SetupLogger("atlas-api-helper.handlers.cluster")
 }
 
-// GetCluster handles GET requests to retrieve a Single Cluster
 func GetCluster(w http.ResponseWriter, r *http.Request) {
 	setupClusterLog()
 	vars := mux.Vars(r)
-
-	// Read a specific parameter
-
 	groupId := vars[constants.GroupID]
 	Name := vars[constants.Name]
-	response := cluster.Read(r.Context(), &cluster.Model{Name: &Name, ProjectId: &groupId})
+	publicKey := r.URL.Query().Get("publicKey")
+	privateKey := r.URL.Query().Get("privateKey")
+	response := cluster.Read(&cluster.InputModel{ProjectId: &groupId, ClusterName: &Name, PrivateKey: &privateKey, PublicKey: &publicKey})
 	responseHandler.Write(response, w, constants.ClusterHandler)
 	return
 }
 
+/*
 func GetAllCluster(w http.ResponseWriter, r *http.Request) {
 	setupClusterLog()
 	vars := mux.Vars(r)
@@ -39,6 +38,7 @@ func GetAllCluster(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
+
 func DeleteCluster(w http.ResponseWriter, r *http.Request) {
 	setupClusterLog()
 
@@ -49,11 +49,12 @@ func DeleteCluster(w http.ResponseWriter, r *http.Request) {
 	response := cluster.Delete(r.Context(), &cluster.Model{ProjectId: &groupId, Name: &Name})
 	responseHandler.Write(response, w, constants.ClusterHandler)
 	return
-}
+}*/
 
 func CreateCluster(w http.ResponseWriter, r *http.Request) {
 	setupClusterLog()
-	var model cluster.Model
+	var model cluster.InputModel
+
 	err := json.NewDecoder(r.Body).Decode(&model)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -64,7 +65,7 @@ func CreateCluster(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-func UpdateCluster(w http.ResponseWriter, r *http.Request) {
+/*func UpdateCluster(w http.ResponseWriter, r *http.Request) {
 	setupClusterLog()
 	var model cluster.Model
 	err := json.NewDecoder(r.Body).Decode(&model)
@@ -76,4 +77,4 @@ func UpdateCluster(w http.ResponseWriter, r *http.Request) {
 	response := cluster.Update(r.Context(), &model)
 	responseHandler.Write(response, w, constants.ClusterHandler)
 	return
-}
+}*/

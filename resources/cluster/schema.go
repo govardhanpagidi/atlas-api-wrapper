@@ -127,3 +127,12 @@ type Specs struct {
 	InstanceSize  *string `json:",omitempty"`
 	NodeCount     *int    `json:",omitempty"`
 }
+
+type InputModel struct {
+	ProjectId   *string `json:",omitempty"`
+	ClusterName *string `json:",omitempty"`
+	PrivateKey  *string `json:",omitempty"`
+	PublicKey   *string `json:",omitempty"`
+	ClusterSize *string `json:",omitempty"`
+	DBUserName  *string `json:",omitempty"`
+}

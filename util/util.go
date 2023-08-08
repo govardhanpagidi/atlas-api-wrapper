@@ -58,9 +58,7 @@ func NewMongoDBClient(ctx context.Context) (*mongodbatlas.Client, error) {
 	return mongodbatlas.New(client, opts...)
 }
 
-func NewMongoDBSDKClient(ctx context.Context) (*admin.APIClient, error) {
-	publicKey := ctx.Value(constants.PubKey).(string)
-	privateKey := ctx.Value(constants.PvtKey).(string)
+func NewMongoDBSDKClient(publicKey string, privateKey string) (*admin.APIClient, error) {
 
 	baseURL := admin.UseBaseURL("https://cloud.mongodb.com/")
 	if baseURLString := os.Getenv("MONGODB_ATLAS_BASE_URL"); baseURLString != "" {

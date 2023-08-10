@@ -21,10 +21,14 @@ func main() {
 	apiRouter := r.PathPrefix(api).Subrouter()
 
 	apiRouter.HandleFunc(uri(constants.ClusterWithGroupIdAndName), handlers.GetCluster).Methods(http.MethodGet)
-	//apiRouter.HandleFunc(uri(constants.ClusterWithGroupId), handlers.GetAllCluster).Methods(http.MethodGet)
+	apiRouter.HandleFunc(uri(constants.ClusterWithGroupId), handlers.GetAllCluster).Methods(http.MethodGet)
 	apiRouter.HandleFunc(uri(constants.ClusterWithGroupIdAndName), handlers.DeleteCluster).Methods(http.MethodDelete)
 	apiRouter.HandleFunc(uri(constants.Cluster), handlers.CreateCluster).Methods(http.MethodPost)
-	//apiRouter.HandleFunc(uri(constants.Cluster), handlers.UpdateCluster).Methods(http.MethodPut)
+
+	apiRouter.HandleFunc(uri(constants.DatabaseuserGetHandler), handlers.GetDatabaseUser).Methods(http.MethodGet)
+	apiRouter.HandleFunc(uri(constants.DatabaseuserWithGroupId), handlers.GetAllDatabaseUser).Methods(http.MethodGet)
+	apiRouter.HandleFunc(uri(constants.DatabaseuserGetHandler), handlers.DeleteDatabaseUser).Methods(http.MethodDelete)
+	apiRouter.HandleFunc(uri(constants.DatabaseuserHandler), handlers.CreateDatabaseUser).Methods(http.MethodPost)
 
 	// Start the server on a given port
 	log.Printf("Server listening on port %s", port)

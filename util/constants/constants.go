@@ -27,6 +27,7 @@ const (
 
 	DatabaseName = "DatabaseName"
 	Username     = "Username"
+	Password     = "Password"
 	Roles        = "Roles"
 	AccessList   = "AccessList"
 

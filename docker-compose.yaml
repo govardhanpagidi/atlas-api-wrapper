@@ -1,0 +1,14 @@
+version: "3.9"
+networks:
+  go-app:
+    driver: bridge
+
+services:
+  app:
+    container_name: api
+    build: .
+    ports:
+      - "8080:8080"
+    restart: on-failure
+    volumes:
+      - ./api:/usr/src/app/

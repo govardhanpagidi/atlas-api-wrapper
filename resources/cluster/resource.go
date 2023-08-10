@@ -26,9 +26,9 @@ import (
 	"github.com/atlas-api-helper/util/logger"
 	"github.com/atlas-api-helper/util/validator"
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/google/uuid"
 	"github.com/spf13/cast"
 	"go.mongodb.org/atlas-sdk/v20230201002/admin"
-	"go.mongodb.org/atlas/mongodbatlas"
 	"log"
 	"net/http"
 	"os"
@@ -39,19 +39,13 @@ import (
 
 var defaultLabel = Labels{Key: aws.String("Infrastructure Tool"), Value: aws.String("MongoDB Atlas CloudFormation Provider")}
 
-var CreateRequiredFields = []string{constants.ProjectID, constants.ClusterName, constants.PrivateKey, constants.PublicKey, constants.ClusterSize, constants.DatabaseName}
+var CreateRequiredFields = []string{constants.ProjectID, constants.PrivateKey, constants.PublicKey, constants.ClusterSize, constants.DBUserName}
 var ReadRequiredFields = []string{constants.ProjectID, constants.ClusterName, constants.PublicKey, constants.PrivateKey}
-var UpdateRequiredFields = []string{constants.ProjectID, constants.Name}
 var DeleteRequiredFields = []string{constants.ProjectID, constants.ClusterName, constants.PublicKey, constants.PrivateKey}
-var ListRequiredFields = []string{constants.ProjectID}
+var ListRequiredFields = []string{constants.ProjectID, constants.PublicKey, constants.PrivateKey}
 
 func setup() {
 	util.SetupLogger("mongodb-atlas-cluster")
-}
-
-func castNO64(i *int64) *int {
-	x := cast.ToInt(&i)
-	return &x
 }
 
 func cast64(i *int) *int64 {
@@ -88,7 +82,6 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 			HttpError:      peErr.Error(),
 		}
 	}
-	cast.ToString(inputModel.ProjectId)
 	_, res, projectErr := client.ProjectsApi.GetProject(context.Background(), cast.ToString(inputModel.ProjectId)).Execute()
 	if projectErr != nil {
 		return atlasresponse.AtlasRespone{
@@ -116,8 +109,6 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 			}
 		}
 		_, _ = logger.Debugf("Cluster create projectId: %s, clusterName: %s", inputModel.ProjectId, inputModel.ClusterName)
-
-		// Callback
 	*/
 	currentModel, err := loadCurrentModel(*inputModel)
 	if err != nil {
@@ -151,10 +142,14 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 		}
 	}
 
+	if inputModel.ClusterName == nil {
+		currentModel.Name = generateClusterName(*inputModel)
+	}
+	currentModel.Name = inputModel.ClusterName
 	currentModel.StateName = cluster.StateName
 
 	return atlasresponse.AtlasRespone{
-		Response:       cluster,
+		Response:       currentModel,
 		HttpStatusCode: res.StatusCode,
 		HttpError:      "",
 	}
@@ -176,19 +171,35 @@ func loadCurrentModel(model InputModel) (Model, error) {
 		log.Fatal("Error during Unmarshal(): ", err)
 		return currentModel, err
 	}
-	var configKey bytes.Buffer
-	configKey.WriteString(strings.ToLower(*model.ClusterSize))
-	configKey.WriteString("-")
-	configKey.WriteString(strings.ToLower(*model.CloudProvider))
-	key := configKey.String()
+	key := extractClusterKey(model)
 	clusterConfig, ok := ClusterConfig[key]
 	if ok {
 		currentModel = clusterConfig
 	} else {
 		return currentModel, errors.New("provided Cluster Size is Invalid: " + *model.ClusterSize)
 	}
-	currentModel.Name = model.ClusterName
+	if model.ClusterName != nil {
+		currentModel.Name = model.ClusterName
+	}
+	if model.MongoDBVersion != nil {
+		currentModel.MongoDBVersion = model.MongoDBVersion
+	}
 	return currentModel, nil
+}
+
+func extractClusterKey(model InputModel) string {
+	var configKey bytes.Buffer
+	configKey.WriteString(strings.ToLower(*model.ClusterSize))
+	configKey.WriteString("-")
+	configKey.WriteString(strings.ToLower(*model.CloudProvider))
+	key := configKey.String()
+	return key
+}
+
+func generateClusterName(model InputModel) *string {
+	clusterNamePrefix := extractClusterKey(model)
+	toRet := clusterNamePrefix + "-" + uuid.NewString()
+	return &toRet
 }
 
 // Read handles the Read event from the Cloudformation service.
@@ -279,77 +290,71 @@ func Delete(inputModel *InputModel) atlasresponse.AtlasRespone {
 	}
 }
 
-/*
 // List handles the List event from the Cloudformation service.
 
-	func List(ctx context.Context, currentModel *Model) atlasresponse.AtlasRespone {
-		setup()
-		_, _ = logger.Debugf("List() currentModel:%+v", currentModel)
+func List(inputModel *InputModel) atlasresponse.AtlasRespone {
+	setup()
+	_, _ = logger.Debugf("List() currentModel:%+v", inputModel)
 
-		modelValidation := validateModel(ListRequiredFields, currentModel)
-		if modelValidation != nil {
-			return atlasresponse.AtlasRespone{
-				Response:       nil,
-				HttpStatusCode: http.StatusBadRequest,
-				HttpError:      "Validation error",
-			}
-		}
-
-		// Create atlas client
-		if currentModel.Profile == nil || *currentModel.Profile == "" {
-			currentModel.Profile = aws.String(profile.DefaultProfile)
-		}
-
-		client, peErr := util.NewMongoDBSDKClient(ctx)
-		if peErr != nil {
-			_, _ = logger.Warnf("CreateMongoDBClient error: %v", peErr.Error())
-			return atlasresponse.AtlasRespone{
-				Response:       nil,
-				HttpStatusCode: http.StatusBadRequest,
-				HttpError:      peErr.Error(),
-			}
-		}
-		// List call
-		itemsPerPage := 100
-		pageNum := 1
-		args := admin.ListClustersApiParams{
-			GroupId:      *currentModel.ProjectId,
-			ItemsPerPage: &itemsPerPage,
-			PageNum:      &pageNum,
-		}
-		clustersResponse, res, err := client.MultiCloudClustersApi.ListClustersWithParams(ctx, &args).Execute()
-		if err != nil {
-			return atlasresponse.AtlasRespone{
-				Response:       nil,
-				HttpStatusCode: res.StatusCode,
-				HttpError:      err.Error(),
-			}
-		}
-
-		models := make([]*Model, *clustersResponse.TotalCount)
-		for i := range clustersResponse.Results {
-			model := &Model{}
-			mapClusterToModel(model, &clustersResponse.Results[i])
-			// Call AdvancedSettings
-			processArgs, resp, err2 := client.ClustersApi.GetClusterAdvancedConfiguration(ctx, *model.ProjectId, *model.Name).Execute()
-			if err2 != nil {
-				return atlasresponse.AtlasRespone{
-					Response:       nil,
-					HttpStatusCode: resp.StatusCode,
-					HttpError:      err2.Error(),
-				}
-			}
-
-			model.AdvancedSettings = flattenProcessArgs(processArgs)
-			models = append(models, model)
-		}
+	modelValidation := validateModel(ListRequiredFields, inputModel)
+	if modelValidation != nil {
 		return atlasresponse.AtlasRespone{
-			Response:       models,
-			HttpStatusCode: res.StatusCode,
-			HttpError:      "",
+			Response:       nil,
+			HttpStatusCode: http.StatusBadRequest,
+			HttpError:      "Validation error",
 		}
 	}
-*/
+
+	client, peErr := util.NewMongoDBSDKClient(*inputModel.PublicKey, *inputModel.PrivateKey)
+	if peErr != nil {
+		_, _ = logger.Warnf("CreateMongoDBClient error: %v", peErr.Error())
+		return atlasresponse.AtlasRespone{
+			Response:       nil,
+			HttpStatusCode: http.StatusBadRequest,
+			HttpError:      peErr.Error(),
+		}
+	}
+	// List call
+	itemsPerPage := 100
+	pageNum := 1
+	args := admin.ListClustersApiParams{
+		GroupId:      *inputModel.ProjectId,
+		ItemsPerPage: &itemsPerPage,
+		PageNum:      &pageNum,
+	}
+	clustersResponse, res, err := client.MultiCloudClustersApi.ListClustersWithParams(context.Background(), &args).Execute()
+	if err != nil {
+		return atlasresponse.AtlasRespone{
+			Response:       nil,
+			HttpStatusCode: res.StatusCode,
+			HttpError:      err.Error(),
+		}
+	}
+
+	models := make([]*Model, *clustersResponse.TotalCount)
+	for i := range clustersResponse.Results {
+		model := &Model{}
+		mapClusterToModel(model, &clustersResponse.Results[i])
+		// Call AdvancedSettings
+		processArgs, resp, err2 := client.ClustersApi.GetClusterAdvancedConfiguration(context.Background(), *model.ProjectId, *model.Name).Execute()
+		if err2 != nil {
+			return atlasresponse.AtlasRespone{
+				Response:       nil,
+				HttpStatusCode: resp.StatusCode,
+				HttpError:      err2.Error(),
+			}
+		}
+
+		model.AdvancedSettings = flattenProcessArgs(processArgs)
+		models = append(models, model)
+	}
+	return atlasresponse.AtlasRespone{
+		Response:       models,
+		HttpStatusCode: res.StatusCode,
+		HttpError:      "",
+	}
+}
+
 func mapClusterToModel(model *Model, cluster *admin.AdvancedClusterDescription) {
 	model.Id = cluster.Id
 	model.ProjectId = cluster.GroupId
@@ -785,56 +790,6 @@ func formatMongoDBMajorVersion(val *string) *string {
 	return &ret
 }
 
-func isClusterInTargetState(client *mongodbatlas.Client, projectID, clusterName, targetState string) (isReady bool, stateName string, mongoCluster *mongodbatlas.AdvancedCluster, err error) {
-	cluster, resp, err := client.AdvancedClusters.Get(context.Background(), projectID, clusterName)
-	if err != nil {
-		if resp != nil && resp.StatusCode == 404 {
-			return constants.DeletedState == targetState, constants.DeletedState, nil, nil
-		}
-		return false, constants.Error, nil, fmt.Errorf("error fetching cluster info (%s): %s", clusterName, err)
-	}
-	_, _ = logger.Debugf("Cluster state: %s, targetState : %s", cluster.StateName, targetState)
-	return cluster.StateName == targetState, cluster.StateName, cluster, nil
-}
-
-func expandAdvancedSettings(processArgs ProcessArgs) *admin.ClusterDescriptionProcessArgs {
-	var args admin.ClusterDescriptionProcessArgs
-
-	if processArgs.DefaultReadConcern != nil {
-		args.DefaultReadConcern = processArgs.DefaultReadConcern
-	}
-	if processArgs.FailIndexKeyTooLong != nil {
-		args.FailIndexKeyTooLong = processArgs.FailIndexKeyTooLong
-	}
-	if processArgs.DefaultWriteConcern != nil {
-		args.DefaultWriteConcern = processArgs.DefaultWriteConcern
-	}
-	if processArgs.JavascriptEnabled != nil {
-		args.JavascriptEnabled = processArgs.JavascriptEnabled
-	}
-	if processArgs.MinimumEnabledTLSProtocol != nil {
-		args.MinimumEnabledTlsProtocol = processArgs.MinimumEnabledTLSProtocol
-	}
-	if processArgs.NoTableScan != nil {
-		args.NoTableScan = processArgs.NoTableScan
-	}
-	if processArgs.OplogSizeMB != nil {
-		args.OplogSizeMB = processArgs.OplogSizeMB
-	}
-	if processArgs.SampleSizeBIConnector != nil {
-		args.SampleSizeBIConnector = processArgs.SampleSizeBIConnector
-	}
-	if processArgs.SampleRefreshIntervalBIConnector != nil {
-		args.SampleRefreshIntervalBIConnector = processArgs.SampleRefreshIntervalBIConnector
-	}
-
-	if processArgs.OplogMinRetentionHours != nil {
-		args.OplogMinRetentionHours = processArgs.OplogMinRetentionHours
-	}
-
-	return &args
-}
-
 func readCluster(ctx context.Context, client *admin.APIClient, currentModel *Model) (*Model, *http.Response, error) {
 	cluster, res, err := client.MultiCloudClustersApi.GetCluster(ctx, *currentModel.ProjectId, *currentModel.Name).Execute()
 	if err != nil || res.StatusCode != 200 {
@@ -908,110 +863,6 @@ func setClusterData(currentModel *Model, cluster *admin.AdvancedClusterDescripti
 	}
 
 	currentModel.TerminationProtectionEnabled = cluster.TerminationProtectionEnabled
-}
-
-func updateCluster(ctx context.Context, client *admin.APIClient, currentModel *Model) (*Model, *http.Response, error) {
-	clusterRequest := admin.AdvancedClusterDescription{}
-
-	if currentModel.BackupEnabled != nil {
-		clusterRequest.BackupEnabled = currentModel.BackupEnabled
-	}
-
-	if currentModel.BiConnector != nil {
-		clusterRequest.BiConnector = expandBiConnector(currentModel.BiConnector)
-	}
-
-	if currentModel.ClusterType != nil {
-		clusterRequest.ClusterType = currentModel.ClusterType
-	}
-
-	if currentModel.DiskSizeGB != nil {
-		clusterRequest.DiskSizeGB = currentModel.DiskSizeGB
-	}
-
-	if currentModel.EncryptionAtRestProvider != nil {
-		clusterRequest.EncryptionAtRestProvider = currentModel.EncryptionAtRestProvider
-	}
-
-	if len(currentModel.Labels) > 0 {
-		clusterRequest.Labels = expandLabelSlice(currentModel.Labels)
-	}
-
-	if currentModel.MongoDBMajorVersion != nil {
-		clusterRequest.MongoDBMajorVersion = formatMongoDBMajorVersion(currentModel.MongoDBMajorVersion)
-	}
-
-	if currentModel.PitEnabled != nil {
-		clusterRequest.PitEnabled = currentModel.PitEnabled
-	}
-
-	if currentModel.ReplicationSpecs != nil {
-		clusterRequest.ReplicationSpecs = expandReplicationSpecs(currentModel.ReplicationSpecs)
-	}
-
-	if currentModel.RootCertType != nil {
-		clusterRequest.RootCertType = currentModel.RootCertType
-	}
-
-	if currentModel.VersionReleaseSystem != nil {
-		clusterRequest.VersionReleaseSystem = currentModel.VersionReleaseSystem
-	}
-	clusterRequest.TerminationProtectionEnabled = currentModel.TerminationProtectionEnabled
-
-	_, res, err := updateClusterSettings(currentModel, client, *currentModel.ProjectId, ctx)
-	if err != nil {
-		return nil, res, err
-	}
-	_, _ = logger.Debugf("params : %+v %+v %+v", ctx, client, clusterRequest)
-	cluster, resp, err := client.MultiCloudClustersApi.UpdateCluster(ctx, *currentModel.ProjectId, *currentModel.Name, &clusterRequest).Execute()
-	if cluster != nil {
-		currentModel.StateName = cluster.StateName
-	}
-
-	return currentModel, resp, err
-}
-
-func updateAdvancedCluster(ctx context.Context, conn *admin.APIClient,
-	request *admin.AdvancedClusterDescription, projectID, name string) (*admin.AdvancedClusterDescription, *http.Response, error) {
-	cluster, response, err := conn.MultiCloudClustersApi.UpdateCluster(ctx, projectID, name, request).Execute()
-	if err != nil {
-		return nil, response, err
-	}
-	return cluster, response, err
-}
-
-func updateClusterSettings(currentModel *Model, client *admin.APIClient,
-	projectID string, ctx context.Context) (*Model, *http.Response, error) {
-
-	cluster, res, err := client.MultiCloudClustersApi.GetCluster(ctx, projectID, *currentModel.Name).Execute()
-	if err != nil {
-		return nil, res, err
-	}
-	// Update advanced configuration
-	if currentModel.AdvancedSettings != nil {
-		_, _ = logger.Debugf("AdvancedSettings: %+v", *currentModel.AdvancedSettings)
-
-		advancedConfig := expandAdvancedSettings(*currentModel.AdvancedSettings)
-		args, res, err := client.ClustersApi.UpdateClusterAdvancedConfiguration(ctx, projectID, *cluster.Name, advancedConfig).Execute()
-		if err != nil {
-			return currentModel, res, err
-		}
-		currentModel.AdvancedSettings = flattenProcessArgs(args)
-	}
-	// Update pause
-	if (currentModel.Paused != nil) && (*currentModel.Paused != *cluster.Paused) {
-
-		cluster, res, err := updateAdvancedCluster(ctx, client, &admin.AdvancedClusterDescription{Paused: currentModel.Paused}, projectID, *currentModel.Name)
-		if err != nil {
-			_, _ = logger.Warnf("Cluster Pause - error: %+v", err)
-			return currentModel, res, err
-		}
-		setClusterData(currentModel, cluster)
-	}
-
-	jsonStr, _ := json.Marshal(currentModel)
-	_, _ = logger.Debugf("Cluster Response --- value: %s ", jsonStr)
-	return currentModel, res, nil
 }
 
 func setClusterRequest(currentModel *Model) (*admin.AdvancedClusterDescription, error) {

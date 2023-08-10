@@ -1,7 +1,6 @@
 package validator
 
 import (
-	"errors"
 	"fmt"
 	"reflect"
 	"strings"
@@ -18,8 +17,7 @@ func ValidateModel(fields []string, model interface{}) error {
 	if requiredFields == "" {
 		return nil
 	}
-
-	return errors.New(fmt.Sprintf("requried fields %s", requiredFields))
+	return fmt.Errorf("requried fields %s", requiredFields)
 }
 
 func fieldIsEmpty(model interface{}, field string) bool {

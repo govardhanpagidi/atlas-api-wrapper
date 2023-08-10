@@ -23,21 +23,18 @@ func GetCluster(w http.ResponseWriter, r *http.Request) {
 	privateKey := r.URL.Query().Get("privateKey")
 	response := cluster.Read(&cluster.InputModel{ProjectId: &groupId, ClusterName: &Name, PrivateKey: &privateKey, PublicKey: &publicKey})
 	responseHandler.Write(response, w, constants.ClusterHandler)
-	return
 }
 
-/*
-	func GetAllCluster(w http.ResponseWriter, r *http.Request) {
-		setupClusterLog()
-		vars := mux.Vars(r)
+func GetAllCluster(w http.ResponseWriter, r *http.Request) {
+	setupClusterLog()
+	vars := mux.Vars(r)
+	publicKey := r.URL.Query().Get("publicKey")
+	privateKey := r.URL.Query().Get("privateKey")
+	groupId := vars[constants.GroupID]
+	response := cluster.List(&cluster.InputModel{ProjectId: &groupId, PrivateKey: &privateKey, PublicKey: &publicKey})
+	responseHandler.Write(response, w, constants.ClusterHandler)
+}
 
-		// Read a specific parameter
-		groupId := vars[constants.GroupID]
-		response := cluster.List(r.Context(), &cluster.Model{ProjectId: &groupId})
-		responseHandler.Write(response, w, constants.ClusterHandler)
-		return
-	}
-*/
 func DeleteCluster(w http.ResponseWriter, r *http.Request) {
 	setupClusterLog()
 
@@ -49,7 +46,6 @@ func DeleteCluster(w http.ResponseWriter, r *http.Request) {
 	privateKey := r.URL.Query().Get("privateKey")
 	response := cluster.Delete(&cluster.InputModel{ProjectId: &groupId, ClusterName: &Name, PrivateKey: &privateKey, PublicKey: &publicKey})
 	responseHandler.Write(response, w, constants.ClusterHandler)
-	return
 }
 
 func CreateCluster(w http.ResponseWriter, r *http.Request) {
@@ -63,19 +59,4 @@ func CreateCluster(w http.ResponseWriter, r *http.Request) {
 	}
 	response := cluster.Create(r.Context(), &model)
 	responseHandler.Write(response, w, constants.ClusterHandler)
-	return
 }
-
-/*func UpdateCluster(w http.ResponseWriter, r *http.Request) {
-	setupClusterLog()
-	var model cluster.Model
-	err := json.NewDecoder(r.Body).Decode(&model)
-
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-	response := cluster.Update(r.Context(), &model)
-	responseHandler.Write(response, w, constants.ClusterHandler)
-	return
-}*/

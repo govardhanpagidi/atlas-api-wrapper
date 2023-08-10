@@ -17,4 +17,8 @@ const (
 	Cluster                   = "cluster"
 	ClusterWithGroupIdAndName = "cluster/{GroupId}/{Name}"
 	ClusterWithGroupId        = "cluster/{GroupId}"
+	DatabaseHandler           = "database"
+	DatabaseDeleteHandler     = "database/{DatabaseName}"
+	CollectionHandler         = "collection"
+	CollectionDeleteHandler   = "collection/{DatabaseName}/{CollectionName}"
 )

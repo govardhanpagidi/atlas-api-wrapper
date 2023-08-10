@@ -13,6 +13,8 @@ import (
 
 	"github.com/mongodb-forks/digest"
 	"go.mongodb.org/atlas/mongodbatlas"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 const (
@@ -72,6 +74,27 @@ func NewMongoDBSDKClient(publicKey string, privateKey string) (*admin.APIClient,
 	}
 
 	return client, err
+}
+
+func MongoDriverClient(userName string, password string, hostname string) (*mongo.Client, error) {
+	connectionString := "mongodb+srv://" + userName + ":" + password + "@" + hostname
+
+	// Set up a context and connect to the database
+	ctx := context.TODO()
+	clientOptions := options.Client().ApplyURI(connectionString)
+	client, err := mongo.Connect(ctx, clientOptions)
+	if err != nil {
+		fmt.Println("Error connecting to MongoDB:", err)
+		return client, err
+	}
+
+	// Check the connection
+	err = client.Ping(ctx, nil)
+	if err != nil {
+		fmt.Println("Error pinging MongoDB:", err)
+		return client, err
+	}
+	return client, nil
 }
 
 // SetupLogger is called by each resource handler to centrally

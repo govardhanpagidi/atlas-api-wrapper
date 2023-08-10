@@ -142,10 +142,6 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 		}
 	}
 
-	if inputModel.ClusterName == nil {
-		currentModel.Name = generateClusterName(*inputModel)
-	}
-	currentModel.Name = inputModel.ClusterName
 	currentModel.StateName = cluster.StateName
 
 	return atlasresponse.AtlasRespone{
@@ -180,6 +176,8 @@ func loadCurrentModel(model InputModel) (Model, error) {
 	}
 	if model.ClusterName != nil {
 		currentModel.Name = model.ClusterName
+	} else {
+		currentModel.Name = generateClusterName(model)
 	}
 	if model.MongoDBVersion != nil {
 		currentModel.MongoDBVersion = model.MongoDBVersion

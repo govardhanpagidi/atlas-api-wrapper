@@ -30,6 +30,12 @@ func main() {
 	apiRouter.HandleFunc(uri(constants.DatabaseuserGetHandler), handlers.DeleteDatabaseUser).Methods(http.MethodDelete)
 	apiRouter.HandleFunc(uri(constants.DatabaseuserHandler), handlers.CreateDatabaseUser).Methods(http.MethodPost)
 
+	apiRouter.HandleFunc(uri(constants.DatabaseHandler), handlers.CreateDatabase).Methods(http.MethodPost)
+	apiRouter.HandleFunc(uri(constants.DatabaseDeleteHandler), handlers.DeleteDatabase).Methods(http.MethodDelete)
+
+	apiRouter.HandleFunc(uri(constants.CollectionHandler), handlers.CreateCollection).Methods(http.MethodPost)
+	apiRouter.HandleFunc(uri(constants.CollectionDeleteHandler), handlers.DeleteCollection).Methods(http.MethodDelete)
+
 	// Start the server on a given port
 	log.Printf("Server listening on port %s", port)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", port), r))

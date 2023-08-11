@@ -11,7 +11,7 @@ import (
 )
 
 func setupCollectionLog() {
-	util.SetupLogger("atlas-api-helper.handlers.databaseuser")
+	util.SetupLogger("atlas-api-helper.handlers.collection")
 }
 
 func CreateCollection(w http.ResponseWriter, r *http.Request) {
@@ -30,12 +30,11 @@ func CreateCollection(w http.ResponseWriter, r *http.Request) {
 func DeleteCollection(w http.ResponseWriter, r *http.Request) {
 	setupCollectionLog()
 	vars := mux.Vars(r)
-	// Read a specific parameter
 	databaseName := vars[constants.DatabaseName]
 	collectionName := vars[constants.CollectionName]
-	hostname := r.URL.Query().Get("HostName")
-	username := r.URL.Query().Get("Username")
-	password := r.URL.Query().Get("Password")
+	hostname := r.URL.Query().Get(constants.HostName)
+	username := r.URL.Query().Get(constants.Username)
+	password := r.URL.Query().Get(constants.Password)
 
 	response := collection.Delete(&collection.InputModel{
 		DatabaseName:   &databaseName,

@@ -21,10 +21,10 @@ func setup() {
 	util.SetupLogger("mongodb-atlas-database-user")
 }
 
+// Create This method is used to create a collection in the database
 func Create(inputModel *InputModel) atlasresponse.AtlasRespone {
 	setup()
 	_, _ = logger.Debugf(" currentModel: %#+v", inputModel)
-
 	if errEvent := validateModel(CreateRequiredFields, inputModel); errEvent != nil {
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
@@ -34,6 +34,7 @@ func Create(inputModel *InputModel) atlasresponse.AtlasRespone {
 	}
 	client, err := util.MongoDriverClient(*inputModel.Username, *inputModel.Password, *inputModel.HostName)
 	if err != nil {
+		_, _ = logger.Debugf("Create MongoDriver Error : %+v", err.Error())
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: http.StatusBadRequest,
@@ -43,6 +44,7 @@ func Create(inputModel *InputModel) atlasresponse.AtlasRespone {
 	database := client.Database(*inputModel.DatabaseName)
 	dbCreateErr := database.CreateCollection(context.Background(), *inputModel.CollectionName, nil)
 	if dbCreateErr != nil {
+		_, _ = logger.Debugf("Create Collection error : %+v", dbCreateErr.Error())
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: http.StatusInternalServerError,
@@ -57,11 +59,12 @@ func Create(inputModel *InputModel) atlasresponse.AtlasRespone {
 	}
 }
 
+// Delete method drops the collection from the database
 func Delete(inputModel *InputModel) atlasresponse.AtlasRespone {
 	setup()
 	_, _ = logger.Debugf(" currentModel: %#+v", inputModel)
-
 	if errEvent := validateModel(DeleteRequiredFields, inputModel); errEvent != nil {
+		_, _ = logger.Debugf("Delete Collection Validation error : %+v", errEvent.Error())
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: http.StatusBadRequest,
@@ -70,6 +73,7 @@ func Delete(inputModel *InputModel) atlasresponse.AtlasRespone {
 	}
 	client, err := util.MongoDriverClient(*inputModel.Username, *inputModel.Password, *inputModel.HostName)
 	if err != nil {
+		_, _ = logger.Debugf("Create Mongo Driver Client Error : %+v", err.Error())
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: http.StatusBadRequest,
@@ -79,6 +83,7 @@ func Delete(inputModel *InputModel) atlasresponse.AtlasRespone {
 	database := client.Database(*inputModel.DatabaseName)
 	dbCreateErr := database.Collection(*inputModel.CollectionName).Drop(context.Background())
 	if dbCreateErr != nil {
+		_, _ = logger.Debugf("Drop Collection Error : %+v", dbCreateErr.Error())
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: http.StatusInternalServerError,

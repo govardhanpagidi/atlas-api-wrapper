@@ -11,7 +11,7 @@ import (
 )
 
 func setupDatabaseLog() {
-	util.SetupLogger("atlas-api-helper.handlers.databaseuser")
+	util.SetupLogger("atlas-api-helper.handlers.database")
 }
 
 func CreateDatabase(w http.ResponseWriter, r *http.Request) {
@@ -33,9 +33,9 @@ func DeleteDatabase(w http.ResponseWriter, r *http.Request) {
 	// Read a specific parameter
 	databaseName := vars[constants.DatabaseName]
 
-	hostname := r.URL.Query().Get("HostName")
-	username := r.URL.Query().Get("Username")
-	password := r.URL.Query().Get("Password")
+	hostname := r.URL.Query().Get(constants.HostName)
+	username := r.URL.Query().Get(constants.Username)
+	password := r.URL.Query().Get(constants.Password)
 	response := database.Delete(&database.DeleteInputModel{
 		DatabaseName: &databaseName,
 		HostName:     &hostname,

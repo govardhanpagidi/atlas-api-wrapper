@@ -44,6 +44,7 @@ var ReadRequiredFields = []string{constants.ProjectID, constants.ClusterName, co
 var DeleteRequiredFields = []string{constants.ProjectID, constants.ClusterName, constants.PublicKey, constants.PrivateKey}
 var ListRequiredFields = []string{constants.ProjectID, constants.PublicKey, constants.PrivateKey}
 
+// setup initializes logger
 func setup() {
 	util.SetupLogger("mongodb-atlas-cluster")
 }
@@ -84,6 +85,7 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 	}
 	_, res, projectErr := client.ProjectsApi.GetProject(context.Background(), cast.ToString(inputModel.ProjectId)).Execute()
 	if projectErr != nil {
+		_, _ = logger.Warnf("Get Project error: %v", projectErr.Error())
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: res.StatusCode,
@@ -92,26 +94,29 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 	}
 
 	/*	endPoints, res, endpointerr := client.PrivateEndpointServicesApi.ListPrivateEndpointServices(ctx, inputModel.ProjectId, "AWS").Execute()
-		if endpointerr != nil {
-			return atlasresponse.AtlasRespone{
-				Response:       nil,
-				HttpStatusCode: res.StatusCode,
-				HttpError:      endpointerr.Error(),
-			}
-		}
+				if endpointerr != nil {
+			_, _ = logger.Warnf("Get PrivateEndpoint error: %v", endpointerr.Error())
+					return atlasresponse.AtlasRespone{
+						Response:       nil,
+						HttpStatusCode: res.StatusCode,
+						HttpError:      endpointerr.Error(),
+					}
+				}
 
-		count := len(endPoints)
-		if count == 0 {
-			return atlasresponse.AtlasRespone{
-				Response:       nil,
-				HttpStatusCode: http.StatusInternalServerError,
-				HttpError:      "No Entpoints configured for this project",
-			}
-		}
-		_, _ = logger.Debugf("Cluster create projectId: %s, clusterName: %s", inputModel.ProjectId, inputModel.ClusterName)
+				count := len(endPoints)
+				if count == 0 {
+		_, _ = logger.Warnf("Get PrivateEndpoint Not Configured error: %v", endpointerr.Error())
+					return atlasresponse.AtlasRespone{
+						Response:       nil,
+						HttpStatusCode: http.StatusInternalServerError,
+						HttpError:      "No Entpoints configured for this project",
+					}
+				}
+				_, _ = logger.Debugf("Cluster create projectId: %s, clusterName: %s", inputModel.ProjectId, inputModel.ClusterName)
 	*/
 	currentModel, err := loadCurrentModel(*inputModel)
 	if err != nil {
+		_, _ = logger.Warnf("Create Current Model error: %v", err.Error())
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: http.StatusInternalServerError,
@@ -123,6 +128,7 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 	// Prepare cluster request
 	clusterRequest, err := setClusterRequest(&currentModel)
 	if err != nil {
+		_, _ = logger.Warnf("Create Cluster Request error: %v", err.Error())
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: http.StatusBadRequest,
@@ -141,9 +147,7 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 			HttpError:      err.Error(),
 		}
 	}
-
 	currentModel.StateName = cluster.StateName
-
 	return atlasresponse.AtlasRespone{
 		Response:       currentModel,
 		HttpStatusCode: res.StatusCode,
@@ -151,6 +155,7 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 	}
 }
 
+// loadCurrentModel This method loads the config.json file from project path
 func loadCurrentModel(model InputModel) (Model, error) {
 	var currentModel Model
 	var ClusterConfig map[string]Model
@@ -185,6 +190,7 @@ func loadCurrentModel(model InputModel) (Model, error) {
 	return currentModel, nil
 }
 
+// extractClusterKey This method generates the key using which the config is fetched
 func extractClusterKey(model InputModel) string {
 	var configKey bytes.Buffer
 	configKey.WriteString(strings.ToLower(*model.ClusterSize))
@@ -194,6 +200,7 @@ func extractClusterKey(model InputModel) string {
 	return key
 }
 
+// generateClusterName This method generates the cluster name which is then assigned to the created cluster
 func generateClusterName(model InputModel) *string {
 	clusterNamePrefix := extractClusterKey(model)
 	toRet := clusterNamePrefix + "-" + uuid.NewString()
@@ -201,13 +208,13 @@ func generateClusterName(model InputModel) *string {
 }
 
 // Read handles the Read event from the Cloudformation service.
-
 func Read(inputModel *InputModel) atlasresponse.AtlasRespone {
 	setup()
 	_, _ = logger.Debugf("Read() currentModel:%+v", inputModel)
 
 	modelValidation := validateModel(ReadRequiredFields, inputModel)
 	if modelValidation != nil {
+		_, _ = logger.Warnf("Input Validation error: %v", modelValidation.Error())
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: http.StatusBadRequest,
@@ -242,6 +249,7 @@ func Read(inputModel *InputModel) atlasresponse.AtlasRespone {
 	}
 }
 
+// Delete This method deletes the cluster based on the clusterName
 func Delete(inputModel *InputModel) atlasresponse.AtlasRespone {
 	setup()
 	_, _ = logger.Debugf("Delete() currentModel:%+v", inputModel)
@@ -353,6 +361,7 @@ func List(inputModel *InputModel) atlasresponse.AtlasRespone {
 	}
 }
 
+// mapClusterToModel This method is used to map the cluster object returned from the mongo client to our model
 func mapClusterToModel(model *Model, cluster *admin.AdvancedClusterDescription) {
 	model.Id = cluster.Id
 	model.ProjectId = cluster.GroupId
@@ -804,6 +813,7 @@ func readCluster(ctx context.Context, client *admin.APIClient, currentModel *Mod
 	return currentModel, res, err
 }
 
+// setClusterData This method sets the cluster details to Model
 func setClusterData(currentModel *Model, cluster *admin.AdvancedClusterDescription) {
 	if cluster == nil {
 		return
@@ -863,6 +873,7 @@ func setClusterData(currentModel *Model, cluster *admin.AdvancedClusterDescripti
 	currentModel.TerminationProtectionEnabled = cluster.TerminationProtectionEnabled
 }
 
+// setClusterRequest creates the ClusterRequest from the Model
 func setClusterRequest(currentModel *Model) (*admin.AdvancedClusterDescription, error) {
 	// Atlas client
 	clusterRequest := &admin.AdvancedClusterDescription{

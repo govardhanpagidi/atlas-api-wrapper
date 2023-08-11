@@ -22,8 +22,8 @@ func GetDatabaseUser(w http.ResponseWriter, r *http.Request) {
 	groupId := vars[constants.GroupID]
 	databaseName := vars[constants.DatabaseName]
 	username := vars[constants.Username]
-	publicKey := r.URL.Query().Get("publicKey")
-	privateKey := r.URL.Query().Get("privateKey")
+	publicKey := r.URL.Query().Get(constants.PublicKey)
+	privateKey := r.URL.Query().Get(constants.PrivateKey)
 	response := database_user.Read(&database_user.InputModel{ProjectId: &groupId, DatabaseName: &databaseName, Username: &username, PublicKey: &publicKey, PrivateKey: &privateKey})
 	responseHandler.Write(response, w, constants.DatabaseUserHandlerName)
 }
@@ -33,8 +33,8 @@ func GetAllDatabaseUser(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
 	groupId := vars[constants.GroupID]
-	publicKey := r.URL.Query().Get("publicKey")
-	privateKey := r.URL.Query().Get("privateKey")
+	publicKey := r.URL.Query().Get(constants.PublicKey)
+	privateKey := r.URL.Query().Get(constants.PrivateKey)
 	response := database_user.List(r.Context(), &database_user.InputModel{ProjectId: &groupId, PublicKey: &publicKey, PrivateKey: &privateKey})
 	responseHandler.Write(response, w, constants.DatabaseUserHandlerName)
 }
@@ -47,8 +47,8 @@ func DeleteDatabaseUser(w http.ResponseWriter, r *http.Request) {
 	groupId := vars[constants.GroupID]
 	databaseName := vars[constants.DatabaseName]
 	username := vars[constants.Username]
-	publicKey := r.URL.Query().Get("publicKey")
-	privateKey := r.URL.Query().Get("privateKey")
+	publicKey := r.URL.Query().Get(constants.PublicKey)
+	privateKey := r.URL.Query().Get(constants.PrivateKey)
 	response := database_user.Delete(r.Context(), &database_user.InputModel{ProjectId: &groupId, DatabaseName: &databaseName, Username: &username, PublicKey: &publicKey, PrivateKey: &privateKey})
 	responseHandler.Write(response, w, constants.DatabaseUserHandlerName)
 }

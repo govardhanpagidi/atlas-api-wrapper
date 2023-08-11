@@ -19,8 +19,8 @@ func GetCluster(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	groupId := vars[constants.GroupID]
 	Name := vars[constants.Name]
-	publicKey := r.URL.Query().Get("publicKey")
-	privateKey := r.URL.Query().Get("privateKey")
+	publicKey := r.URL.Query().Get(constants.PublicKey)
+	privateKey := r.URL.Query().Get(constants.PrivateKey)
 	response := cluster.Read(&cluster.InputModel{ProjectId: &groupId, ClusterName: &Name, PrivateKey: &privateKey, PublicKey: &publicKey})
 	responseHandler.Write(response, w, constants.ClusterHandler)
 }
@@ -28,8 +28,8 @@ func GetCluster(w http.ResponseWriter, r *http.Request) {
 func GetAllCluster(w http.ResponseWriter, r *http.Request) {
 	setupClusterLog()
 	vars := mux.Vars(r)
-	publicKey := r.URL.Query().Get("publicKey")
-	privateKey := r.URL.Query().Get("privateKey")
+	publicKey := r.URL.Query().Get(constants.PublicKey)
+	privateKey := r.URL.Query().Get(constants.PrivateKey)
 	groupId := vars[constants.GroupID]
 	response := cluster.List(&cluster.InputModel{ProjectId: &groupId, PrivateKey: &privateKey, PublicKey: &publicKey})
 	responseHandler.Write(response, w, constants.ClusterHandler)
@@ -39,11 +39,10 @@ func DeleteCluster(w http.ResponseWriter, r *http.Request) {
 	setupClusterLog()
 
 	vars := mux.Vars(r)
-	// Read a specific parameter
 	groupId := vars[constants.GroupID]
 	Name := vars[constants.Name]
-	publicKey := r.URL.Query().Get("publicKey")
-	privateKey := r.URL.Query().Get("privateKey")
+	publicKey := r.URL.Query().Get(constants.PublicKey)
+	privateKey := r.URL.Query().Get(constants.PrivateKey)
 	response := cluster.Delete(&cluster.InputModel{ProjectId: &groupId, ClusterName: &Name, PrivateKey: &privateKey, PublicKey: &publicKey})
 	responseHandler.Write(response, w, constants.ClusterHandler)
 }

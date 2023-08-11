@@ -236,7 +236,7 @@ func Read(inputModel *InputModel) atlasresponse.AtlasRespone {
 		}
 	}
 	return atlasresponse.AtlasRespone{
-		Response:       "cluster Status: " + *model.StateName,
+		Response:       "clusterStatus: " + *model.StateName,
 		HttpStatusCode: resp.StatusCode,
 		HttpError:      "",
 	}

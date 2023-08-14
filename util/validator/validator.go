@@ -17,7 +17,7 @@ func ValidateModel(fields []string, model interface{}) error {
 	if len(requiredFields) == 0 {
 		return nil
 	}
-	return fmt.Errorf("the following fields are missing: %s", []string{strings.Join(requiredFields, ", ")})
+	return fmt.Errorf("%s", []string{strings.Join(requiredFields, ", ")})
 }
 
 func fieldIsEmpty(model interface{}, field string) bool {

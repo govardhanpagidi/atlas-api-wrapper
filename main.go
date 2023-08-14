@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/atlas-api-helper/handlers"
+	"github.com/atlas-api-helper/util/configuration"
 	"github.com/atlas-api-helper/util/constants"
 	"github.com/gorilla/mux"
 	"log"
@@ -15,7 +16,7 @@ const (
 )
 
 func main() {
-
+	configuration.GetInstance()
 	// A router using gorilla/mux
 	r := mux.NewRouter()
 	apiRouter := r.PathPrefix(api).Subrouter()

@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"github.com/atlas-api-helper/util"
 	"github.com/atlas-api-helper/util/atlasresponse"
+	"github.com/atlas-api-helper/util/configuration"
 	"github.com/atlas-api-helper/util/constants"
 	"github.com/atlas-api-helper/util/logger"
 	"github.com/atlas-api-helper/util/validator"
@@ -218,7 +219,7 @@ func Read(inputModel *InputModel) atlasresponse.AtlasRespone {
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: http.StatusBadRequest,
-			HttpError:      modelValidation.Error(),
+			HttpError:      fmt.Sprintf(configuration.GetInstance().GetData()["INVALID_INPUT_PARAMETER"].Message, modelValidation.Error()),
 		}
 	}
 

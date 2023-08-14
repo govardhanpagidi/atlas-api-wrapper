@@ -1,0 +1,27 @@
+{
+  "INVALID_INPUT_PARAMETER": {
+    "Code": "400",
+    "Message": "Input parameter(s) are invalid : %s"
+
+  },
+  "PROJECT_NOT_EXIST": {
+    "Code": "400",
+    "Message": "Project does not exist for  : %s"
+
+  },
+  "CONFIGURATION_NOT_AVAILABLE": {
+    "Code": "400",
+    "Message": "Configuration is not available for T-Shirt Size : %s"
+
+  },
+  "NO_ACTIVE_PRIVATE_ENDPOINT": {
+    "Code": "400",
+    "Message": "The destination project(%s) does not have configured and active Private Endpoints connectivity"
+
+  },
+  "INVALID_REGION": {
+    "Code": "400",
+    "Message": "Private Endpoints configuration does not match desired cloud providers region(%s) distribution."
+
+  }
+}

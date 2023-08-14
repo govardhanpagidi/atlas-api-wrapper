@@ -7,17 +7,17 @@ import (
 )
 
 func ValidateModel(fields []string, model interface{}) error {
-	requiredFields := ""
+	var requiredFields []string
 
 	for _, field := range fields {
 		if fieldIsEmpty(model, field) {
-			requiredFields = fmt.Sprintf("%s %s", requiredFields, field)
+			requiredFields = append(requiredFields, field)
 		}
 	}
-	if requiredFields == "" {
+	if len(requiredFields) == 0 {
 		return nil
 	}
-	return fmt.Errorf("requried fields %s", requiredFields)
+	return fmt.Errorf("the following fields are missing: %s", []string{strings.Join(requiredFields, ", ")})
 }
 
 func fieldIsEmpty(model interface{}, field string) bool {
@@ -40,5 +40,6 @@ func fieldIsEmpty(model interface{}, field string) bool {
 	}
 	r := reflect.ValueOf(model)
 	f = reflect.Indirect(r).FieldByName(field)
-	return f.IsNil()
+	print(f.Elem().String())
+	return f.IsNil() || (f.IsValid() && f.Elem().String() == "")
 }

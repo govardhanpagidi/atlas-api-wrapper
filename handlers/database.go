@@ -31,11 +31,11 @@ func DeleteDatabase(w http.ResponseWriter, r *http.Request) {
 	setupDatabaseLog()
 	vars := mux.Vars(r)
 	// Read a specific parameter
-	databaseName := vars[constants.DatabaseName]
+	databaseName := vars[constants.DatabaseNamePathParam]
 
-	hostname := r.URL.Query().Get(constants.HostName)
-	username := r.URL.Query().Get(constants.Username)
-	password := r.URL.Query().Get(constants.Password)
+	hostname := r.URL.Query().Get(constants.HostNamePathParam)
+	username := r.URL.Query().Get(constants.UsernamePathParam)
+	password := r.URL.Query().Get(constants.PasswordPathParam)
 	response := database.Delete(&database.DeleteInputModel{
 		DatabaseName: &databaseName,
 		HostName:     &hostname,

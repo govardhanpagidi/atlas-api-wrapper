@@ -21,14 +21,14 @@ func main() {
 	apiRouter := r.PathPrefix(api).Subrouter()
 
 	apiRouter.HandleFunc(uri(constants.ClusterWithGroupIdAndName), handlers.GetCluster).Methods(http.MethodGet)
-	apiRouter.HandleFunc(uri(constants.ClusterWithGroupId), handlers.GetAllCluster).Methods(http.MethodGet)
+	apiRouter.HandleFunc(uri(constants.ClusterWithProjectId), handlers.GetAllCluster).Methods(http.MethodGet)
 	apiRouter.HandleFunc(uri(constants.ClusterWithGroupIdAndName), handlers.DeleteCluster).Methods(http.MethodDelete)
-	apiRouter.HandleFunc(uri(constants.Cluster), handlers.CreateCluster).Methods(http.MethodPost)
+	apiRouter.HandleFunc(uri(constants.ClusterWithProjectId), handlers.CreateCluster).Methods(http.MethodPost)
 
-	apiRouter.HandleFunc(uri(constants.DatabaseuserGetHandler), handlers.GetDatabaseUser).Methods(http.MethodGet)
-	apiRouter.HandleFunc(uri(constants.DatabaseuserWithGroupId), handlers.GetAllDatabaseUser).Methods(http.MethodGet)
-	apiRouter.HandleFunc(uri(constants.DatabaseuserGetHandler), handlers.DeleteDatabaseUser).Methods(http.MethodDelete)
-	apiRouter.HandleFunc(uri(constants.DatabaseuserHandler), handlers.CreateDatabaseUser).Methods(http.MethodPost)
+	apiRouter.HandleFunc(uri(constants.DatabaseUserGetHandler), handlers.GetDatabaseUser).Methods(http.MethodGet)
+	apiRouter.HandleFunc(uri(constants.DatabaseUserHandler), handlers.GetAllDatabaseUser).Methods(http.MethodGet)
+	apiRouter.HandleFunc(uri(constants.DatabaseUserGetHandler), handlers.DeleteDatabaseUser).Methods(http.MethodDelete)
+	apiRouter.HandleFunc(uri(constants.DatabaseUserHandler), handlers.CreateDatabaseUser).Methods(http.MethodPost)
 
 	apiRouter.HandleFunc(uri(constants.DatabaseHandler), handlers.CreateDatabase).Methods(http.MethodPost)
 	apiRouter.HandleFunc(uri(constants.DatabaseDeleteHandler), handlers.DeleteDatabase).Methods(http.MethodDelete)

@@ -1,24 +1,15 @@
 package constants
 
 const (
-	ProjectHandler          = "project"
-	ProjectHandlerWithId    = "project/{Id}"
-	DatabaseuserHandler     = "users"
-	DatabaseuserGetHandler  = "users/{GroupId}/{DatabaseName}/{Username}"
-	DatabaseuserWithGroupId = "users/{GroupId}"
-	CustomDbRole            = "customdbrole"
-	CustomDbRoleGetHandler  = "customdbrole/{GroupId}/{RoleName}"
-	CustomDbRoleWithGroupId = "customdbrole/{GroupId}"
+	DatabaseUserHandler    = "project/{projectId}/databaseUsers"
+	DatabaseUserGetHandler = "project/{projectId}/database/{databaseName}/databaseUsers/{username}"
 
-	ProjectInvite                       = "project/invite"
-	ProjectInviteWithGroupIDAndInviteId = "project/invite/{GroupId}/{InvitationId}"
-	ProjectInviteWithGroupId            = "project/invite/{GroupId}"
+	ClusterWithProjectId      = "project/{projectId}/cluster"
+	ClusterWithGroupIdAndName = "project/{projectId}/cluster/{clusterName}"
 
-	Cluster                   = "cluster"
-	ClusterWithGroupIdAndName = "cluster/{GroupId}/{Name}"
-	ClusterWithGroupId        = "cluster/{GroupId}"
-	DatabaseHandler           = "database"
-	DatabaseDeleteHandler     = "database/{DatabaseName}"
-	CollectionHandler         = "collection"
-	CollectionDeleteHandler   = "collection/{DatabaseName}/{CollectionName}"
+	DatabaseHandler       = "database"
+	DatabaseDeleteHandler = "database/{databaseName}"
+
+	CollectionHandler       = "database/{databaseName}/collections"
+	CollectionDeleteHandler = "database/{databaseName}/collection/{collectionName}"
 )

@@ -17,21 +17,21 @@ func setupClusterLog() {
 func GetCluster(w http.ResponseWriter, r *http.Request) {
 	setupClusterLog()
 	vars := mux.Vars(r)
-	groupId := vars[constants.GroupID]
-	Name := vars[constants.Name]
-	publicKey := r.URL.Query().Get(constants.PublicKey)
-	privateKey := r.URL.Query().Get(constants.PrivateKey)
-	response := cluster.Read(&cluster.InputModel{ProjectId: &groupId, ClusterName: &Name, PrivateKey: &privateKey, PublicKey: &publicKey})
+	projectId := vars[constants.ProjectIdPathParam]
+	Name := vars[constants.ClusterNamePathParam]
+	publicKey := r.URL.Query().Get(constants.PublicKeyQueryParam)
+	privateKey := r.URL.Query().Get(constants.PrivateKeyQueryParam)
+	response := cluster.Read(&cluster.InputModel{ProjectId: &projectId, ClusterName: &Name, PrivateKey: &privateKey, PublicKey: &publicKey})
 	responseHandler.Write(response, w, constants.ClusterHandler)
 }
 
 func GetAllCluster(w http.ResponseWriter, r *http.Request) {
 	setupClusterLog()
 	vars := mux.Vars(r)
-	publicKey := r.URL.Query().Get(constants.PublicKey)
-	privateKey := r.URL.Query().Get(constants.PrivateKey)
-	groupId := vars[constants.GroupID]
-	response := cluster.List(&cluster.InputModel{ProjectId: &groupId, PrivateKey: &privateKey, PublicKey: &publicKey})
+	publicKey := r.URL.Query().Get(constants.PublicKeyQueryParam)
+	privateKey := r.URL.Query().Get(constants.PrivateKeyQueryParam)
+	projectId := vars[constants.ProjectIdPathParam]
+	response := cluster.List(&cluster.InputModel{ProjectId: &projectId, PrivateKey: &privateKey, PublicKey: &publicKey})
 	responseHandler.Write(response, w, constants.ClusterHandler)
 }
 
@@ -39,23 +39,25 @@ func DeleteCluster(w http.ResponseWriter, r *http.Request) {
 	setupClusterLog()
 
 	vars := mux.Vars(r)
-	groupId := vars[constants.GroupID]
-	Name := vars[constants.Name]
-	publicKey := r.URL.Query().Get(constants.PublicKey)
-	privateKey := r.URL.Query().Get(constants.PrivateKey)
-	response := cluster.Delete(&cluster.InputModel{ProjectId: &groupId, ClusterName: &Name, PrivateKey: &privateKey, PublicKey: &publicKey})
+	projectId := vars[constants.ProjectIdPathParam]
+	name := vars[constants.ClusterNamePathParam]
+	publicKey := r.URL.Query().Get(constants.PublicKeyQueryParam)
+	privateKey := r.URL.Query().Get(constants.PrivateKeyQueryParam)
+	response := cluster.Delete(&cluster.InputModel{ProjectId: &projectId, ClusterName: &name, PrivateKey: &privateKey, PublicKey: &publicKey})
 	responseHandler.Write(response, w, constants.ClusterHandler)
 }
 
 func CreateCluster(w http.ResponseWriter, r *http.Request) {
 	setupClusterLog()
 	var model cluster.InputModel
-
+	vars := mux.Vars(r)
+	projectId := vars[constants.ProjectIdPathParam]
 	err := json.NewDecoder(r.Body).Decode(&model)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+	model.ProjectId = &projectId
 	response := cluster.Create(r.Context(), &model)
 	responseHandler.Write(response, w, constants.ClusterHandler)
 }

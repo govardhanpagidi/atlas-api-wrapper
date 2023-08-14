@@ -24,7 +24,7 @@ const (
 	ClusterHandler = "ClusterHandler"
 	PrivateKey     = "PrivateKey"
 	PublicKey      = "PublicKey"
-	ClusterSize    = "ClusterSize"
+	TshirtSize     = "TshirtSize"
 	DBUserName     = "DBUserName"
 
 	PrivateKeyQueryParam = "privateKey"

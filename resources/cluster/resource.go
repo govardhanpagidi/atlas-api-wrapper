@@ -40,7 +40,7 @@ import (
 
 var defaultLabel = Labels{Key: aws.String("Infrastructure Tool"), Value: aws.String("MongoDB Atlas CloudFormation Provider")}
 
-var CreateRequiredFields = []string{constants.ProjectID, constants.PrivateKey, constants.PublicKey, constants.ClusterSize, constants.DBUserName}
+var CreateRequiredFields = []string{constants.ProjectID, constants.PrivateKey, constants.PublicKey, constants.TshirtSize}
 var ReadRequiredFields = []string{constants.ProjectID, constants.ClusterName, constants.PublicKey, constants.PrivateKey}
 var DeleteRequiredFields = []string{constants.ProjectID, constants.ClusterName, constants.PublicKey, constants.PrivateKey}
 var ListRequiredFields = []string{constants.ProjectID, constants.PublicKey, constants.PrivateKey}
@@ -64,7 +64,7 @@ func validateModel(fields []string, model *InputModel) error {
 func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasRespone {
 	setup()
 
-	_, _ = logger.Debugf("Create cluster model : %+v", inputModel)
+	_, _ = logger.Debugf("Create cluster model : %+v", inputModel.String())
 	// Validate required fields in the request
 
 	modelValidation := validateModel(CreateRequiredFields, inputModel)
@@ -178,7 +178,7 @@ func loadCurrentModel(model InputModel) (Model, error) {
 	if ok {
 		currentModel = clusterConfig
 	} else {
-		return currentModel, errors.New("provided Cluster Size is Invalid: " + *model.ClusterSize)
+		return currentModel, errors.New("provided Cluster Size is Invalid: " + *model.TshirtSize)
 	}
 	if model.ClusterName != nil {
 		currentModel.Name = model.ClusterName
@@ -194,7 +194,7 @@ func loadCurrentModel(model InputModel) (Model, error) {
 // extractClusterKey This method generates the key using which the config is fetched
 func extractClusterKey(model InputModel) string {
 	var configKey bytes.Buffer
-	configKey.WriteString(strings.ToLower(*model.ClusterSize))
+	configKey.WriteString(strings.ToLower(*model.TshirtSize))
 	configKey.WriteString("-")
 	configKey.WriteString(strings.ToLower(*model.CloudProvider))
 	key := configKey.String()
@@ -211,7 +211,7 @@ func generateClusterName(model InputModel) *string {
 // Read handles the Read event from the Cloudformation service.
 func Read(inputModel *InputModel) atlasresponse.AtlasRespone {
 	setup()
-	_, _ = logger.Debugf("Read() currentModel:%+v", inputModel)
+	_, _ = logger.Debugf("Read() currentModel:%+v", inputModel.String())
 
 	modelValidation := validateModel(ReadRequiredFields, inputModel)
 	if modelValidation != nil {
@@ -253,7 +253,7 @@ func Read(inputModel *InputModel) atlasresponse.AtlasRespone {
 // Delete This method deletes the cluster based on the clusterName
 func Delete(inputModel *InputModel) atlasresponse.AtlasRespone {
 	setup()
-	_, _ = logger.Debugf("Delete() currentModel:%+v", inputModel)
+	_, _ = logger.Debugf("Delete() currentModel:%+v", inputModel.String())
 
 	modelValidation := validateModel(DeleteRequiredFields, inputModel)
 	if modelValidation != nil {
@@ -301,7 +301,7 @@ func Delete(inputModel *InputModel) atlasresponse.AtlasRespone {
 
 func List(inputModel *InputModel) atlasresponse.AtlasRespone {
 	setup()
-	_, _ = logger.Debugf("List() currentModel:%+v", inputModel)
+	_, _ = logger.Debugf("List() currentModel:%+v", inputModel.String())
 
 	modelValidation := validateModel(ListRequiredFields, inputModel)
 	if modelValidation != nil {

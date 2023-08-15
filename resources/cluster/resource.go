@@ -71,8 +71,8 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 	if modelValidation != nil {
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
-			HttpStatusCode: http.StatusBadRequest,
-			HttpError:      modelValidation.Error(),
+			HttpStatusCode: configuration.GetConfig()[constants.InvalidInputParameter].Code,
+			HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.InvalidInputParameter].Message, modelValidation.Error()),
 		}
 	}
 	client, peErr := util.NewMongoDBSDKClient(cast.ToString(inputModel.PublicKey), cast.ToString(inputModel.PrivateKey))
@@ -80,17 +80,17 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 		_, _ = logger.Warnf("CreateMongoDBClient error: %v", peErr.Error())
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
-			HttpStatusCode: http.StatusBadRequest,
-			HttpError:      peErr.Error(),
+			HttpStatusCode: configuration.GetConfig()[constants.MongoClientCreationError].Code,
+			HttpError:      configuration.GetConfig()[constants.MongoClientCreationError].Message,
 		}
 	}
-	_, res, projectErr := client.ProjectsApi.GetProject(context.Background(), cast.ToString(inputModel.ProjectId)).Execute()
+	_, _, projectErr := client.ProjectsApi.GetProject(context.Background(), cast.ToString(inputModel.ProjectId)).Execute()
 	if projectErr != nil {
 		_, _ = logger.Warnf("Get Project error: %v", projectErr.Error())
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
-			HttpStatusCode: res.StatusCode,
-			HttpError:      projectErr.Error(),
+			HttpStatusCode: configuration.GetConfig()[constants.ProjectDoesNotExist].Code,
+			HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.ProjectDoesNotExist].Message, *inputModel.ProjectId),
 		}
 	}
 
@@ -120,8 +120,8 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 		_, _ = logger.Warnf("Create Current Model error: %v", err.Error())
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
-			HttpStatusCode: http.StatusInternalServerError,
-			HttpError:      err.Error(),
+			HttpStatusCode: configuration.GetConfig()[constants.ClusterModelError].Code,
+			HttpError:      configuration.GetConfig()[constants.ClusterModelError].Message,
 		}
 	}
 	currentModel.validateDefaultLabel()
@@ -132,27 +132,27 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 		_, _ = logger.Warnf("Create Cluster Request error: %v", err.Error())
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
-			HttpStatusCode: http.StatusBadRequest,
-			HttpError:      err.Error(),
+			HttpStatusCode: configuration.GetConfig()[constants.ClusterRequestError].Code,
+			HttpError:      configuration.GetConfig()[constants.ClusterRequestError].Message,
 		}
 	}
 
 	// Create Cluster
-	cluster, res, err := client.MultiCloudClustersApi.CreateCluster(ctx, cast.ToString(currentModel.ProjectId), clusterRequest).Execute()
+	cluster, _, err := client.MultiCloudClustersApi.CreateCluster(ctx, cast.ToString(currentModel.ProjectId), clusterRequest).Execute()
 
 	if err != nil {
 		_, _ = logger.Warnf("Create - Cluster.Create() - error: %+v", err)
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
-			HttpStatusCode: res.StatusCode,
-			HttpError:      err.Error(),
+			HttpStatusCode: configuration.GetConfig()[constants.ClusterCreateError].Code,
+			HttpError:      configuration.GetConfig()[constants.ClusterCreateError].Message,
 		}
 	}
 	currentModel.StateName = cluster.StateName
 	return atlasresponse.AtlasRespone{
-		Response:       currentModel,
-		HttpStatusCode: res.StatusCode,
-		HttpError:      "",
+		Response:       nil,
+		HttpStatusCode: configuration.GetConfig()[constants.ClusterCreateSuccess].Code,
+		HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.ClusterCreateSuccess].Message, cluster.Name),
 	}
 }
 
@@ -175,6 +175,7 @@ func loadCurrentModel(model InputModel) (Model, error) {
 	}
 	key := extractClusterKey(model)
 	clusterConfig, ok := ClusterConfig[key]
+	_, _ = logger.Debugf("Selected Cluster Configuration : %+v", clusterConfig)
 	if ok {
 		currentModel = clusterConfig
 	} else {
@@ -218,8 +219,8 @@ func Read(inputModel *InputModel) atlasresponse.AtlasRespone {
 		_, _ = logger.Warnf("Input Validation error: %v", modelValidation.Error())
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
-			HttpStatusCode: http.StatusBadRequest,
-			HttpError:      fmt.Sprintf(configuration.GetInstance().GetData()["INVALID_INPUT_PARAMETER"].Message, modelValidation.Error()),
+			HttpStatusCode: configuration.GetConfig()[constants.InvalidInputParameter].Code,
+			HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.InvalidInputParameter].Message, modelValidation.Error()),
 		}
 	}
 
@@ -228,8 +229,8 @@ func Read(inputModel *InputModel) atlasresponse.AtlasRespone {
 		_, _ = logger.Warnf("CreateMongoDBClient error: %v", peErr.Error())
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
-			HttpStatusCode: http.StatusBadRequest,
-			HttpError:      peErr.Error(),
+			HttpStatusCode: configuration.GetConfig()[constants.MongoClientCreationError].Code,
+			HttpError:      configuration.GetConfig()[constants.MongoClientCreationError].Message,
 		}
 	}
 
@@ -239,13 +240,13 @@ func Read(inputModel *InputModel) atlasresponse.AtlasRespone {
 		_, _ = logger.Warnf("error cluster get- err:%+v resp:%+v", err, resp)
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
-			HttpStatusCode: resp.StatusCode,
-			HttpError:      err.Error(),
+			HttpStatusCode: configuration.GetConfig()[constants.ClusterDoesNotExist].Code,
+			HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.ClusterDoesNotExist].Message, *inputModel.ClusterName),
 		}
 	}
 	return atlasresponse.AtlasRespone{
-		Response:       "clusterStatus: " + *model.StateName,
-		HttpStatusCode: resp.StatusCode,
+		Response:       fmt.Sprintf(configuration.GetConfig()[constants.ClusterReadSuccess].Message, *model.StateName),
+		HttpStatusCode: configuration.GetConfig()[constants.ClusterReadSuccess].Code,
 		HttpError:      "",
 	}
 }
@@ -259,8 +260,8 @@ func Delete(inputModel *InputModel) atlasresponse.AtlasRespone {
 	if modelValidation != nil {
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
-			HttpStatusCode: http.StatusBadRequest,
-			HttpError:      "Validation error",
+			HttpStatusCode: configuration.GetConfig()[constants.InvalidInputParameter].Code,
+			HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.InvalidInputParameter].Message, modelValidation.Error()),
 		}
 	}
 
@@ -269,8 +270,8 @@ func Delete(inputModel *InputModel) atlasresponse.AtlasRespone {
 		_, _ = logger.Warnf("CreateMongoDBClient error: %v", peErr.Error())
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
-			HttpStatusCode: http.StatusBadRequest,
-			HttpError:      peErr.Error(),
+			HttpStatusCode: configuration.GetConfig()[constants.MongoClientCreationError].Code,
+			HttpError:      configuration.GetConfig()[constants.MongoClientCreationError].Message,
 		}
 	}
 
@@ -281,19 +282,19 @@ func Delete(inputModel *InputModel) atlasresponse.AtlasRespone {
 		RetainBackups: &retainBackup,
 	}
 
-	response, err := client.MultiCloudClustersApi.DeleteClusterWithParams(context.Background(), &args).Execute()
+	_, err := client.MultiCloudClustersApi.DeleteClusterWithParams(context.Background(), &args).Execute()
 	if err != nil {
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
-			HttpStatusCode: response.StatusCode,
-			HttpError:      err.Error(),
+			HttpStatusCode: configuration.GetConfig()[constants.ClusterDeleteError].Code,
+			HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.ClusterDeleteError].Message, *inputModel.ClusterName),
 		}
 	}
 
 	return atlasresponse.AtlasRespone{
 		Response:       nil,
-		HttpStatusCode: response.StatusCode,
-		HttpError:      "",
+		HttpStatusCode: configuration.GetConfig()[constants.ClusterDeleteSuccess].Code,
+		HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.ClusterDeleteSuccess].Message, *inputModel.ClusterName),
 	}
 }
 
@@ -307,8 +308,8 @@ func List(inputModel *InputModel) atlasresponse.AtlasRespone {
 	if modelValidation != nil {
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
-			HttpStatusCode: http.StatusBadRequest,
-			HttpError:      "Validation error",
+			HttpStatusCode: configuration.GetConfig()[constants.InvalidInputParameter].Code,
+			HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.InvalidInputParameter].Message, modelValidation.Error()),
 		}
 	}
 
@@ -317,8 +318,8 @@ func List(inputModel *InputModel) atlasresponse.AtlasRespone {
 		_, _ = logger.Warnf("CreateMongoDBClient error: %v", peErr.Error())
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
-			HttpStatusCode: http.StatusBadRequest,
-			HttpError:      peErr.Error(),
+			HttpStatusCode: configuration.GetConfig()[constants.MongoClientCreationError].Code,
+			HttpError:      configuration.GetConfig()[constants.MongoClientCreationError].Message,
 		}
 	}
 	// List call
@@ -329,12 +330,12 @@ func List(inputModel *InputModel) atlasresponse.AtlasRespone {
 		ItemsPerPage: &itemsPerPage,
 		PageNum:      &pageNum,
 	}
-	clustersResponse, res, err := client.MultiCloudClustersApi.ListClustersWithParams(context.Background(), &args).Execute()
+	clustersResponse, _, err := client.MultiCloudClustersApi.ListClustersWithParams(context.Background(), &args).Execute()
 	if err != nil {
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
-			HttpStatusCode: res.StatusCode,
-			HttpError:      err.Error(),
+			HttpStatusCode: configuration.GetConfig()[constants.ClusterListError].Code,
+			HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.ClusterListError].Message, *inputModel.ProjectId),
 		}
 	}
 
@@ -343,12 +344,12 @@ func List(inputModel *InputModel) atlasresponse.AtlasRespone {
 		model := &Model{}
 		mapClusterToModel(model, &clustersResponse.Results[i])
 		// Call AdvancedSettings
-		processArgs, resp, err2 := client.ClustersApi.GetClusterAdvancedConfiguration(context.Background(), *model.ProjectId, *model.Name).Execute()
+		processArgs, _, err2 := client.ClustersApi.GetClusterAdvancedConfiguration(context.Background(), *model.ProjectId, *model.Name).Execute()
 		if err2 != nil {
 			return atlasresponse.AtlasRespone{
 				Response:       nil,
-				HttpStatusCode: resp.StatusCode,
-				HttpError:      err2.Error(),
+				HttpStatusCode: configuration.GetConfig()[constants.ClusterAdvancedListError].Code,
+				HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.ClusterAdvancedListError].Message, *inputModel.ProjectId),
 			}
 		}
 
@@ -357,8 +358,8 @@ func List(inputModel *InputModel) atlasresponse.AtlasRespone {
 	}
 	return atlasresponse.AtlasRespone{
 		Response:       models,
-		HttpStatusCode: res.StatusCode,
-		HttpError:      "",
+		HttpStatusCode: configuration.GetConfig()[constants.ClusterListSuccess].Code,
+		HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.ClusterListSuccess].Message, *inputModel.ProjectId),
 	}
 }
 

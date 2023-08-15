@@ -31,9 +31,13 @@ func (s *ErrorMessageConfig) GetData() map[string]ErrorConfig {
 	return s.errorConfig
 }
 
+func GetConfig() map[string]ErrorConfig {
+	return GetInstance().errorConfig
+}
+
 func loadGlobalErrorConfig() map[string]ErrorConfig {
 	var errorConfig map[string]ErrorConfig
-	content, err := os.ReadFile("./errorConfig.json")
+	content, err := os.ReadFile("./messageConfig.json")
 	if err != nil {
 		log.Fatal("Error when opening file: ", err)
 	}

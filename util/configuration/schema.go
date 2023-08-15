@@ -1,6 +1,6 @@
 package configuration
 
 type ErrorConfig struct {
-	Code    string
+	Code    int
 	Message string
 }

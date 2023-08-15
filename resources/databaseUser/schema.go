@@ -1,5 +1,7 @@
 package database_user
 
+import "fmt"
+
 type Model struct {
 	DeleteAfterDate   *string
 	AWSIAMType        *string
@@ -42,4 +44,20 @@ type InputModel struct {
 	PublicKey    *string
 	PrivateKey   *string
 	ProjectId    *string
+}
+
+func (model InputModel) String() string {
+	return fmt.Sprintf(
+		"Username: %s, Password: %s, DatabaseName: %s, ProjectId: %s",
+		toString(model.Username),
+		toString(model.DatabaseName),
+		toString(model.ProjectId),
+	)
+}
+
+func toString(s *string) string {
+	if s != nil {
+		return *s
+	}
+	return ""
 }

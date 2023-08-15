@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"github.com/atlas-api-helper/util"
 	"github.com/atlas-api-helper/util/atlasresponse"
+	"github.com/atlas-api-helper/util/configuration"
 	"github.com/atlas-api-helper/util/constants"
 	"github.com/atlas-api-helper/util/logger"
 	"github.com/atlas-api-helper/util/validator"
 	"go.mongodb.org/atlas-sdk/v20230201002/admin"
-	"net/http"
 )
 
 var CreateRequiredFields = []string{constants.Username, constants.Password, constants.DatabaseName, constants.PublicKey, constants.PrivateKey, constants.ProjectID}
@@ -29,13 +29,13 @@ func validateModel(fields []string, model *InputModel) error {
 // Create handles the Create event from the Cloudformation service.
 func Create(inputModel *InputModel) atlasresponse.AtlasRespone {
 	setup()
-	_, _ = logger.Debugf(" currentModel: %#+v", inputModel)
+	_, _ = logger.Debugf(" currentModel: %#+v", inputModel.String())
 
 	if errEvent := validateModel(CreateRequiredFields, inputModel); errEvent != nil {
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
-			HttpStatusCode: http.StatusBadRequest,
-			HttpError:      errEvent.Error(),
+			HttpStatusCode: configuration.GetConfig()[constants.InvalidInputParameter].Code,
+			HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.InvalidInputParameter].Message, errEvent.Error()),
 		}
 	}
 
@@ -43,48 +43,41 @@ func Create(inputModel *InputModel) atlasresponse.AtlasRespone {
 	if peErr != nil {
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
-			HttpStatusCode: http.StatusBadRequest,
-			HttpError:      peErr.Error(),
+			HttpStatusCode: configuration.GetConfig()[constants.MongoClientCreationError].Code,
+			HttpError:      configuration.GetConfig()[constants.MongoClientCreationError].Message,
 		}
 	}
 
 	groupID, dbUser := setModel(inputModel)
 	_, _ = logger.Debugf("Arguments: Project ID: %s, Request %#+v", groupID, dbUser)
 	request := client.DatabaseUsersApi.CreateDatabaseUser(context.Background(), groupID, dbUser)
-	databaseUser, res, err := request.Execute()
-	if err != nil {
-		return atlasresponse.AtlasRespone{
-			Response:       nil,
-			HttpStatusCode: res.StatusCode,
-			HttpError:      err.Error(),
-		}
-	}
+	databaseUser, _, err := request.Execute()
 	if err != nil {
 		fmt.Println("Error creating database user:", err)
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
-			HttpStatusCode: res.StatusCode,
-			HttpError:      err.Error(),
+			HttpStatusCode: configuration.GetConfig()[constants.UserCreateError].Code,
+			HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.UserCreateError].Message, *inputModel.Username),
 		}
 	}
 	_, _ = logger.Debugf("newUser: %+v", databaseUser)
 
 	return atlasresponse.AtlasRespone{
 		Response:       databaseUser,
-		HttpStatusCode: res.StatusCode,
-		HttpError:      "",
+		HttpStatusCode: configuration.GetConfig()[constants.UserCreateSuccess].Code,
+		HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.UserCreateSuccess].Message, *inputModel.Username),
 	}
 }
 
 // Read handles the Read event from the Cloudformation service.
 func Read(inputModel *InputModel) atlasresponse.AtlasRespone {
 	setup()
-
+	_, _ = logger.Debugf(" currentModel: %#+v", inputModel.String())
 	if errEvent := validateModel(ReadRequiredFields, inputModel); errEvent != nil {
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
-			HttpStatusCode: http.StatusBadRequest,
-			HttpError:      "Validation Error",
+			HttpStatusCode: configuration.GetConfig()[constants.InvalidInputParameter].Code,
+			HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.InvalidInputParameter].Message, errEvent.Error()),
 		}
 	}
 
@@ -92,8 +85,8 @@ func Read(inputModel *InputModel) atlasresponse.AtlasRespone {
 	if peErr != nil {
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
-			HttpStatusCode: http.StatusBadRequest,
-			HttpError:      peErr.Error(),
+			HttpStatusCode: configuration.GetConfig()[constants.MongoClientCreationError].Code,
+			HttpError:      configuration.GetConfig()[constants.MongoClientCreationError].Message,
 		}
 	}
 
@@ -101,16 +94,12 @@ func Read(inputModel *InputModel) atlasresponse.AtlasRespone {
 	username := *inputModel.Username
 	dbName := *inputModel.DatabaseName
 
-	databaseUser, res, err := client.DatabaseUsersApi.GetDatabaseUser(context.Background(), groupID, dbName, username).Execute()
-	statuscode := http.StatusBadRequest
-	if res != nil {
-		statuscode = res.StatusCode
-	}
+	databaseUser, _, err := client.DatabaseUsersApi.GetDatabaseUser(context.Background(), groupID, dbName, username).Execute()
 	if err != nil {
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
-			HttpStatusCode: statuscode,
-			HttpError:      err.Error(),
+			HttpStatusCode: configuration.GetConfig()[constants.UserNotFound].Code,
+			HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.UserNotFound].Message, *inputModel.Username),
 		}
 	}
 	var currentModel Model
@@ -162,19 +151,20 @@ func Read(inputModel *InputModel) atlasresponse.AtlasRespone {
 	currentModel.UserCFNIdentifier = &cfnid
 	return atlasresponse.AtlasRespone{
 		Response:       currentModel,
-		HttpStatusCode: res.StatusCode,
-		HttpError:      "",
+		HttpStatusCode: configuration.GetConfig()[constants.FetchUser].Code,
+		HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.FetchUser].Message, *inputModel.Username),
 	}
 }
 
 // Delete handles the Delete event from the Cloudformation service.
 func Delete(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasRespone {
 	setup()
+	_, _ = logger.Debugf(" currentModel: %#+v", inputModel.String())
 	if errEvent := validateModel(DeleteRequiredFields, inputModel); errEvent != nil {
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
-			HttpStatusCode: http.StatusBadRequest,
-			HttpError:      errEvent.Error(),
+			HttpStatusCode: configuration.GetConfig()[constants.InvalidInputParameter].Code,
+			HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.InvalidInputParameter].Message, errEvent.Error()),
 		}
 	}
 
@@ -182,8 +172,8 @@ func Delete(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 	if peErr != nil {
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
-			HttpStatusCode: http.StatusBadRequest,
-			HttpError:      peErr.Error(),
+			HttpStatusCode: configuration.GetConfig()[constants.MongoClientCreationError].Code,
+			HttpError:      configuration.GetConfig()[constants.MongoClientCreationError].Message,
 		}
 	}
 
@@ -191,30 +181,30 @@ func Delete(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 	username := *inputModel.Username
 	dbName := *inputModel.DatabaseName
 
-	dbuser, res, err := client.DatabaseUsersApi.DeleteDatabaseUser(ctx, groupID, dbName, username).Execute()
+	user, _, err := client.DatabaseUsersApi.DeleteDatabaseUser(ctx, groupID, dbName, username).Execute()
 	if err != nil {
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
-			HttpStatusCode: res.StatusCode,
-			HttpError:      err.Error(),
+			HttpStatusCode: configuration.GetConfig()[constants.DeleteDatabaseUserError].Code,
+			HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.DeleteDatabaseUserError].Message, *inputModel.Username),
 		}
 	}
 	return atlasresponse.AtlasRespone{
-		Response:       dbuser,
-		HttpStatusCode: res.StatusCode,
-		HttpError:      "",
+		Response:       user,
+		HttpStatusCode: configuration.GetConfig()[constants.DeleteDatabaseUserSuccess].Code,
+		HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.DeleteDatabaseUserSuccess].Message, *inputModel.Username),
 	}
 }
 
 // List handles listing database users
 func List(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasRespone {
 	setup()
-
+	_, _ = logger.Debugf(" currentModel: %#+v", inputModel.String())
 	if errEvent := validateModel(ListRequiredFields, inputModel); errEvent != nil {
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
-			HttpStatusCode: http.StatusBadRequest,
-			HttpError:      errEvent.Error(),
+			HttpStatusCode: configuration.GetConfig()[constants.InvalidInputParameter].Code,
+			HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.InvalidInputParameter].Message, errEvent.Error()),
 		}
 	}
 
@@ -222,8 +212,8 @@ func List(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasRespon
 	if peErr != nil {
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
-			HttpStatusCode: http.StatusBadRequest,
-			HttpError:      peErr.Error(),
+			HttpStatusCode: configuration.GetConfig()[constants.MongoClientCreationError].Code,
+			HttpError:      configuration.GetConfig()[constants.MongoClientCreationError].Message,
 		}
 	}
 
@@ -231,12 +221,12 @@ func List(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasRespon
 
 	dbUserModels := make([]interface{}, 0)
 
-	databaseUsers, res, err := client.DatabaseUsersApi.ListDatabaseUsers(ctx, groupID).Execute()
+	databaseUsers, _, err := client.DatabaseUsersApi.ListDatabaseUsers(ctx, groupID).Execute()
 	if err != nil {
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
-			HttpStatusCode: res.StatusCode,
-			HttpError:      err.Error(),
+			HttpStatusCode: configuration.GetConfig()[constants.UserListError].Code,
+			HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.UserListError].Message, *inputModel.ProjectId),
 		}
 	}
 
@@ -284,9 +274,9 @@ func List(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasRespon
 	}
 
 	return atlasresponse.AtlasRespone{
-		Response:       dbUserModels,
-		HttpStatusCode: res.StatusCode,
-		HttpError:      "",
+		Response:       databaseUsers,
+		HttpStatusCode: configuration.GetConfig()[constants.UserListSuccess].Code,
+		HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.UserListSuccess].Message, *inputModel.ProjectId),
 	}
 }
 

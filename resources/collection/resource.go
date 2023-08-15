@@ -2,12 +2,13 @@ package collection
 
 import (
 	"context"
+	"fmt"
 	"github.com/atlas-api-helper/util"
 	"github.com/atlas-api-helper/util/atlasresponse"
+	"github.com/atlas-api-helper/util/configuration"
 	"github.com/atlas-api-helper/util/constants"
 	"github.com/atlas-api-helper/util/logger"
 	"github.com/atlas-api-helper/util/validator"
-	"net/http"
 )
 
 var CreateRequiredFields = []string{constants.CollectionName, constants.DatabaseName, constants.HostName, constants.Username, constants.Password}
@@ -24,12 +25,12 @@ func setup() {
 // Create This method is used to create a collection in the database
 func Create(inputModel *InputModel) atlasresponse.AtlasRespone {
 	setup()
-	_, _ = logger.Debugf(" currentModel: %#+v", inputModel)
+	_, _ = logger.Debugf(" currentModel: %#+v", inputModel.String())
 	if errEvent := validateModel(CreateRequiredFields, inputModel); errEvent != nil {
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
-			HttpStatusCode: http.StatusBadRequest,
-			HttpError:      errEvent.Error(),
+			HttpStatusCode: configuration.GetConfig()[constants.InvalidInputParameter].Code,
+			HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.InvalidInputParameter].Message, errEvent.Error()),
 		}
 	}
 	client, err := util.MongoDriverClient(*inputModel.Username, *inputModel.Password, *inputModel.HostName)
@@ -37,8 +38,8 @@ func Create(inputModel *InputModel) atlasresponse.AtlasRespone {
 		_, _ = logger.Debugf("Create MongoDriver Error : %+v", err.Error())
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
-			HttpStatusCode: http.StatusBadRequest,
-			HttpError:      err.Error(),
+			HttpStatusCode: configuration.GetConfig()[constants.MongoClientCreationError].Code,
+			HttpError:      configuration.GetConfig()[constants.MongoClientCreationError].Message,
 		}
 	}
 	database := client.Database(*inputModel.DatabaseName)
@@ -47,14 +48,13 @@ func Create(inputModel *InputModel) atlasresponse.AtlasRespone {
 		_, _ = logger.Debugf("Create Collection error : %+v", dbCreateErr.Error())
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
-			HttpStatusCode: http.StatusInternalServerError,
-			HttpError:      dbCreateErr.Error(),
+			HttpStatusCode: configuration.GetConfig()[constants.CollectionError].Code,
+			HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.CollectionError].Message, *inputModel.CollectionName),
 		}
 	}
-	dbName := client.Database(*inputModel.DatabaseName).Name()
 	return atlasresponse.AtlasRespone{
-		Response:       "Collection Created Successfully:" + dbName,
-		HttpStatusCode: http.StatusOK,
+		Response:       fmt.Sprintf(configuration.GetConfig()[constants.CollectionSuccess].Message, *inputModel.CollectionName),
+		HttpStatusCode: configuration.GetConfig()[constants.CollectionSuccess].Code,
 		HttpError:      "",
 	}
 }
@@ -62,13 +62,13 @@ func Create(inputModel *InputModel) atlasresponse.AtlasRespone {
 // Delete method drops the collection from the database
 func Delete(inputModel *InputModel) atlasresponse.AtlasRespone {
 	setup()
-	_, _ = logger.Debugf(" currentModel: %#+v", inputModel)
+	_, _ = logger.Debugf(" currentModel: %#+v", inputModel.String())
 	if errEvent := validateModel(DeleteRequiredFields, inputModel); errEvent != nil {
 		_, _ = logger.Debugf("Delete Collection Validation error : %+v", errEvent.Error())
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
-			HttpStatusCode: http.StatusBadRequest,
-			HttpError:      errEvent.Error(),
+			HttpStatusCode: configuration.GetConfig()[constants.InvalidInputParameter].Code,
+			HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.InvalidInputParameter].Message, errEvent.Error()),
 		}
 	}
 	client, err := util.MongoDriverClient(*inputModel.Username, *inputModel.Password, *inputModel.HostName)
@@ -76,8 +76,8 @@ func Delete(inputModel *InputModel) atlasresponse.AtlasRespone {
 		_, _ = logger.Debugf("Create Mongo Driver Client Error : %+v", err.Error())
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
-			HttpStatusCode: http.StatusBadRequest,
-			HttpError:      err.Error(),
+			HttpStatusCode: configuration.GetConfig()[constants.MongoClientCreationError].Code,
+			HttpError:      configuration.GetConfig()[constants.MongoClientCreationError].Message,
 		}
 	}
 	database := client.Database(*inputModel.DatabaseName)
@@ -86,14 +86,13 @@ func Delete(inputModel *InputModel) atlasresponse.AtlasRespone {
 		_, _ = logger.Debugf("Drop Collection Error : %+v", dbCreateErr.Error())
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
-			HttpStatusCode: http.StatusInternalServerError,
-			HttpError:      dbCreateErr.Error(),
+			HttpStatusCode: configuration.GetConfig()[constants.CollectionDeleteError].Code,
+			HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.CollectionDeleteError].Message, *inputModel.CollectionName),
 		}
 	}
-	dbName := client.Database(*inputModel.DatabaseName).Name()
 	return atlasresponse.AtlasRespone{
-		Response:       "Collection Deleted Successfully:" + dbName,
-		HttpStatusCode: http.StatusOK,
+		Response:       fmt.Sprintf(configuration.GetConfig()[constants.CollectionDeleteSuccess].Message, *inputModel.CollectionName),
+		HttpStatusCode: configuration.GetConfig()[constants.CollectionDeleteSuccess].Code,
 		HttpError:      "",
 	}
 }

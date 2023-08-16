@@ -32,6 +32,7 @@ func Create(inputModel *InputModel) atlasresponse.AtlasRespone {
 	_, _ = logger.Debugf(" currentModel: %#+v", inputModel.String())
 
 	if errEvent := validateModel(CreateRequiredFields, inputModel); errEvent != nil {
+		_, _ = logger.Warnf(" database Create Validation Error: %#+v", errEvent.Error())
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.InvalidInputParameter].Code,
@@ -41,6 +42,7 @@ func Create(inputModel *InputModel) atlasresponse.AtlasRespone {
 
 	client, peErr := util.NewMongoDBSDKClient(*inputModel.PublicKey, *inputModel.PrivateKey)
 	if peErr != nil {
+		_, _ = logger.Warnf(" Create Mongo client Error: %#+v", peErr.Error())
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.MongoClientCreationError].Code,
@@ -74,6 +76,7 @@ func Read(inputModel *InputModel) atlasresponse.AtlasRespone {
 	setup()
 	_, _ = logger.Debugf(" currentModel: %#+v", inputModel.String())
 	if errEvent := validateModel(ReadRequiredFields, inputModel); errEvent != nil {
+		_, _ = logger.Warnf(" database Create Valitaion Error: %#+v", errEvent.Error())
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.InvalidInputParameter].Code,
@@ -83,6 +86,7 @@ func Read(inputModel *InputModel) atlasresponse.AtlasRespone {
 
 	client, peErr := util.NewMongoDBSDKClient(*inputModel.PublicKey, *inputModel.PrivateKey)
 	if peErr != nil {
+		_, _ = logger.Warnf(" Create Mongo client Error: %#+v", peErr.Error())
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.MongoClientCreationError].Code,
@@ -96,6 +100,7 @@ func Read(inputModel *InputModel) atlasresponse.AtlasRespone {
 
 	databaseUser, _, err := client.DatabaseUsersApi.GetDatabaseUser(context.Background(), groupID, dbName, username).Execute()
 	if err != nil {
+		_, _ = logger.Warnf(" Get Database User Error: %#+v", err.Error())
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.UserNotFound].Code,
@@ -161,6 +166,7 @@ func Delete(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 	setup()
 	_, _ = logger.Debugf(" currentModel: %#+v", inputModel.String())
 	if errEvent := validateModel(DeleteRequiredFields, inputModel); errEvent != nil {
+		_, _ = logger.Warnf(" database Create Valitaion Error: %#+v", errEvent.Error())
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.InvalidInputParameter].Code,
@@ -170,6 +176,7 @@ func Delete(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 
 	client, peErr := util.NewMongoDBSDKClient(*inputModel.PublicKey, *inputModel.PrivateKey)
 	if peErr != nil {
+		_, _ = logger.Warnf(" Create Mongo client Error: %#+v", peErr.Error())
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.MongoClientCreationError].Code,
@@ -183,6 +190,7 @@ func Delete(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 
 	user, _, err := client.DatabaseUsersApi.DeleteDatabaseUser(ctx, groupID, dbName, username).Execute()
 	if err != nil {
+		_, _ = logger.Warnf(" Delete DatabaseUser Error: %#+v", err.Error())
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.DeleteDatabaseUserError].Code,

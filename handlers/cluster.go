@@ -14,6 +14,7 @@ func setupClusterLog() {
 	util.SetupLogger("atlas-api-helper.handlers.cluster")
 }
 
+// GetCluster handles GET requests to return the state of the cluster
 func GetCluster(w http.ResponseWriter, r *http.Request) {
 	setupClusterLog()
 	vars := mux.Vars(r)
@@ -25,6 +26,7 @@ func GetCluster(w http.ResponseWriter, r *http.Request) {
 	responseHandler.Write(response, w, constants.ClusterHandler)
 }
 
+// GetAllCluster handles GET requests to return all the clusters along with cluster's advanced configuration
 func GetAllCluster(w http.ResponseWriter, r *http.Request) {
 	setupClusterLog()
 	vars := mux.Vars(r)
@@ -35,6 +37,7 @@ func GetAllCluster(w http.ResponseWriter, r *http.Request) {
 	responseHandler.Write(response, w, constants.ClusterHandler)
 }
 
+// DeleteCluster handles the DELETE requests to terminate the cluster
 func DeleteCluster(w http.ResponseWriter, r *http.Request) {
 	setupClusterLog()
 
@@ -47,6 +50,7 @@ func DeleteCluster(w http.ResponseWriter, r *http.Request) {
 	responseHandler.Write(response, w, constants.ClusterHandler)
 }
 
+// CreateCluster handles the POST requests to create the cluster with the provided TshirtSize
 func CreateCluster(w http.ResponseWriter, r *http.Request) {
 	setupClusterLog()
 	var model cluster.InputModel

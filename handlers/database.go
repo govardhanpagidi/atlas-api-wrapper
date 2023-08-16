@@ -14,6 +14,7 @@ func setupDatabaseLog() {
 	util.SetupLogger("atlas-api-helper.handlers.database")
 }
 
+// CreateDatabase handles POST calls to create a new database using the provided parameters
 func CreateDatabase(w http.ResponseWriter, r *http.Request) {
 	setupDatabaseLog()
 	var model database.InputModel
@@ -27,6 +28,7 @@ func CreateDatabase(w http.ResponseWriter, r *http.Request) {
 	responseHandler.Write(response, w, constants.ClusterHandler)
 }
 
+// DeleteDatabase handles the DELETE calls to delete the requested database
 func DeleteDatabase(w http.ResponseWriter, r *http.Request) {
 	setupDatabaseLog()
 	vars := mux.Vars(r)

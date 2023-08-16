@@ -1,6 +1,9 @@
 package database_user
 
-import "fmt"
+import (
+	"fmt"
+	"github.com/atlas-api-helper/util"
+)
 
 type Model struct {
 	DeleteAfterDate   *string
@@ -49,15 +52,8 @@ type InputModel struct {
 func (model InputModel) String() string {
 	return fmt.Sprintf(
 		"Username: %s, Password: %s, DatabaseName: %s, ProjectId: %s",
-		toString(model.Username),
-		toString(model.DatabaseName),
-		toString(model.ProjectId),
+		util.ToString(model.Username),
+		util.ToString(model.DatabaseName),
+		util.ToString(model.ProjectId),
 	)
-}
-
-func toString(s *string) string {
-	if s != nil {
-		return *s
-	}
-	return ""
 }

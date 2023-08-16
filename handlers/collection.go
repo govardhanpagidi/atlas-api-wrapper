@@ -14,6 +14,7 @@ func setupCollectionLog() {
 	util.SetupLogger("atlas-api-helper.handlers.collection")
 }
 
+// CreateCollection handles POST requests to create a new collection using the credentials
 func CreateCollection(w http.ResponseWriter, r *http.Request) {
 	setupCollectionLog()
 	var model collection.InputModel
@@ -29,6 +30,7 @@ func CreateCollection(w http.ResponseWriter, r *http.Request) {
 	responseHandler.Write(response, w, constants.ClusterHandler)
 }
 
+// DeleteCollection handles DELETE requests deletes the requested collection
 func DeleteCollection(w http.ResponseWriter, r *http.Request) {
 	setupCollectionLog()
 	vars := mux.Vars(r)

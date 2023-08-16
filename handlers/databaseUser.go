@@ -14,7 +14,7 @@ func setupDatabaseUserLog() {
 	util.SetupLogger("atlas-api-helper.handlers.databaseuser")
 }
 
-// GetDatabaseUser handles GET requests to retrieve all database users
+// GetDatabaseUser handles GET requests to retrieve one database user
 func GetDatabaseUser(w http.ResponseWriter, r *http.Request) {
 	setupDatabaseUserLog()
 	vars := mux.Vars(r)
@@ -27,6 +27,7 @@ func GetDatabaseUser(w http.ResponseWriter, r *http.Request) {
 	responseHandler.Write(response, w, constants.DatabaseUserHandlerName)
 }
 
+// GetAllDatabaseUser handles GET requests to retrieve all database users
 func GetAllDatabaseUser(w http.ResponseWriter, r *http.Request) {
 	setupDatabaseUserLog()
 	vars := mux.Vars(r)
@@ -37,6 +38,7 @@ func GetAllDatabaseUser(w http.ResponseWriter, r *http.Request) {
 	responseHandler.Write(response, w, constants.DatabaseUserHandlerName)
 }
 
+// DeleteDatabaseUser handles DELETE requests to delete one database user
 func DeleteDatabaseUser(w http.ResponseWriter, r *http.Request) {
 	setupDatabaseUserLog()
 
@@ -50,6 +52,7 @@ func DeleteDatabaseUser(w http.ResponseWriter, r *http.Request) {
 	responseHandler.Write(response, w, constants.DatabaseUserHandlerName)
 }
 
+// CreateDatabaseUser handles POST requests to create one database user
 func CreateDatabaseUser(w http.ResponseWriter, r *http.Request) {
 	setupDatabaseUserLog()
 	var model database_user.InputModel

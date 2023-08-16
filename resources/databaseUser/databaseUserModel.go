@@ -51,7 +51,7 @@ type InputModel struct {
 
 func (model InputModel) String() string {
 	return fmt.Sprintf(
-		"Username: %s, Password: %s, DatabaseName: %s, ProjectId: %s",
+		"Username: %s, DatabaseName: %s, ProjectId: %s",
 		util.ToString(model.Username),
 		util.ToString(model.DatabaseName),
 		util.ToString(model.ProjectId),

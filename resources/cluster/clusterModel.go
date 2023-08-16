@@ -159,6 +159,6 @@ func (model InputModel) String() string {
 		mongoDBVersion = *model.MongoDBVersion
 	}
 
-	return fmt.Sprintf("ProjectId: %s, ClusterName: %s, ClusterSize: %s, DBUserName: %s, CloudProvider: %s, MongoDBVersion: %s",
+	return fmt.Sprintf("ProjectId: %s, ClusterName: %s, ClusterSize: %s CloudProvider: %s, MongoDBVersion: %s",
 		projectId, clusterName, TshirtSize, cloudProvider, mongoDBVersion)
 }

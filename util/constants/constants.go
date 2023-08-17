@@ -44,6 +44,8 @@ const (
 	ClusterListError         = "CLUSTER_LIST_ERROR"
 	ClusterAdvancedListError = "CLUSTER_ADVANCED_LIST_ERROR"
 	ClusterListSuccess       = "CLUSTER_LIST_SUCCESS"
+	ListEndpointError        = "LIST_ENDPOINT_ERROR"
+	NoEndpointConfigured     = "NO_ENDPOINT_ERROR"
 
 	CollectionError         = "COLLECTION_ERROR"
 	CollectionSuccess       = "COLLECTION_SUCCESS"
@@ -63,4 +65,8 @@ const (
 	DeleteDatabaseUserSuccess = "DELETE_USER_SUCCESS"
 	UserListError             = "USER_LIST_ERROR"
 	UserListSuccess           = "USER_LIST_SUCCESS"
+
+	DbuserDbName = "admin"
+
+	ClusterConfigLocation = "./config.json"
 )

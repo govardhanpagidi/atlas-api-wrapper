@@ -6,8 +6,10 @@ import (
 	"github.com/atlas-api-helper/util"
 	responseHandler "github.com/atlas-api-helper/util/Responsehandler"
 	"github.com/atlas-api-helper/util/constants"
+	"github.com/atlas-api-helper/util/logger"
 	"github.com/gorilla/mux"
 	"net/http"
+	"time"
 )
 
 func setupClusterLog() {
@@ -22,7 +24,14 @@ func GetCluster(w http.ResponseWriter, r *http.Request) {
 	Name := vars[constants.ClusterNamePathParam]
 	publicKey := r.URL.Query().Get(constants.PublicKeyQueryParam)
 	privateKey := r.URL.Query().Get(constants.PrivateKeyQueryParam)
-	response := cluster.Read(&cluster.InputModel{ProjectId: &projectId, ClusterName: &Name, PrivateKey: &privateKey, PublicKey: &publicKey})
+
+	model := cluster.InputModel{ProjectId: &projectId, ClusterName: &Name, PrivateKey: &privateKey, PublicKey: &publicKey}
+	_, _ = logger.Debugf("Get clusters request : %s", model.String())
+	startTime := time.Now()
+	response := cluster.Read(&model)
+	elapsedTime := time.Since(startTime)
+	logger.Debugf("Get all Clusters REST API  response:%+v and execution time:%s", response.String(), elapsedTime.String())
+
 	responseHandler.Write(response, w, constants.ClusterHandler)
 }
 
@@ -33,7 +42,12 @@ func GetAllCluster(w http.ResponseWriter, r *http.Request) {
 	publicKey := r.URL.Query().Get(constants.PublicKeyQueryParam)
 	privateKey := r.URL.Query().Get(constants.PrivateKeyQueryParam)
 	projectId := vars[constants.ProjectIdPathParam]
-	response := cluster.List(&cluster.InputModel{ProjectId: &projectId, PrivateKey: &privateKey, PublicKey: &publicKey})
+	model := cluster.InputModel{ProjectId: &projectId, PrivateKey: &privateKey, PublicKey: &publicKey}
+	_, _ = logger.Debugf("Get all clusters request : %+v", model.String())
+	startTime := time.Now()
+	response := cluster.List(&model)
+	elapsedTime := time.Since(startTime)
+	logger.Debugf("Get all Clusters REST API  response:%+v and execution time:%s", response.String(), elapsedTime.String())
 	responseHandler.Write(response, w, constants.ClusterHandler)
 }
 
@@ -46,7 +60,13 @@ func DeleteCluster(w http.ResponseWriter, r *http.Request) {
 	name := vars[constants.ClusterNamePathParam]
 	publicKey := r.URL.Query().Get(constants.PublicKeyQueryParam)
 	privateKey := r.URL.Query().Get(constants.PrivateKeyQueryParam)
-	response := cluster.Delete(&cluster.InputModel{ProjectId: &projectId, ClusterName: &name, PrivateKey: &privateKey, PublicKey: &publicKey})
+	model := cluster.InputModel{ProjectId: &projectId, ClusterName: &name, PrivateKey: &privateKey, PublicKey: &publicKey}
+
+	_, _ = logger.Debugf("Delete cluster request : %+v", model.String())
+	startTime := time.Now()
+	response := cluster.Delete(&model)
+	elapsedTime := time.Since(startTime)
+	logger.Debugf("Delete Cluster REST API  response:%+v and execution time:%s", response.String(), elapsedTime.String())
 	responseHandler.Write(response, w, constants.ClusterHandler)
 }
 
@@ -62,6 +82,12 @@ func CreateCluster(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	model.ProjectId = &projectId
+
+	_, _ = logger.Debugf("Create cluster request : %+v", model.String())
+
+	startTime := time.Now()
 	response := cluster.Create(r.Context(), &model)
+	elapsedTime := time.Since(startTime)
+	logger.Debugf("Create Cluster REST API  response:%+v and execution time:%s", response.String(), elapsedTime.String())
 	responseHandler.Write(response, w, constants.ClusterHandler)
 }

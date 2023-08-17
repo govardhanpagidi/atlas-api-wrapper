@@ -6,8 +6,10 @@ import (
 	"github.com/atlas-api-helper/util"
 	"github.com/atlas-api-helper/util/Responsehandler"
 	"github.com/atlas-api-helper/util/constants"
+	"github.com/atlas-api-helper/util/logger"
 	"github.com/gorilla/mux"
 	"net/http"
+	"time"
 )
 
 func setupDatabaseUserLog() {
@@ -19,11 +21,19 @@ func GetDatabaseUser(w http.ResponseWriter, r *http.Request) {
 	setupDatabaseUserLog()
 	vars := mux.Vars(r)
 	projectId := vars[constants.ProjectIdPathParam]
-	databaseName := vars[constants.DatabaseNamePathParam]
 	username := vars[constants.UsernamePathParam]
 	publicKey := r.URL.Query().Get(constants.PublicKeyQueryParam)
 	privateKey := r.URL.Query().Get(constants.PrivateKeyQueryParam)
-	response := database_user.Read(&database_user.InputModel{ProjectId: &projectId, DatabaseName: &databaseName, Username: &username, PublicKey: &publicKey, PrivateKey: &privateKey})
+
+	model := database_user.InputModel{ProjectId: &projectId, Username: &username, PublicKey: &publicKey, PrivateKey: &privateKey}
+	_, _ = logger.Debugf("Get databaseUser Request : %+v", model.String())
+	startTime := time.Now()
+
+	response := database_user.Read(&model)
+
+	elapsedTime := time.Since(startTime)
+	logger.Debugf("Get databaseUser REST API  response:%+v and execution time:%s", response.String(), elapsedTime.String())
+
 	responseHandler.Write(response, w, constants.DatabaseUserHandlerName)
 }
 
@@ -34,7 +44,16 @@ func GetAllDatabaseUser(w http.ResponseWriter, r *http.Request) {
 	projectId := vars[constants.ProjectIdPathParam]
 	publicKey := r.URL.Query().Get(constants.PublicKeyQueryParam)
 	privateKey := r.URL.Query().Get(constants.PrivateKeyQueryParam)
-	response := database_user.List(r.Context(), &database_user.InputModel{ProjectId: &projectId, PublicKey: &publicKey, PrivateKey: &privateKey})
+
+	model := database_user.InputModel{ProjectId: &projectId, PublicKey: &publicKey, PrivateKey: &privateKey}
+	_, _ = logger.Debugf("Get all databaseUser Request : %+v", model.String())
+	startTime := time.Now()
+
+	response := database_user.List(r.Context(), &model)
+
+	elapsedTime := time.Since(startTime)
+	logger.Debugf("Get all databaseUser REST API  response:%+v and execution time:%s", response.String(), elapsedTime.String())
+
 	responseHandler.Write(response, w, constants.DatabaseUserHandlerName)
 }
 
@@ -44,11 +63,18 @@ func DeleteDatabaseUser(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 	projectId := vars[constants.ProjectIdPathParam]
-	databaseName := vars[constants.DatabaseNamePathParam]
 	username := vars[constants.UsernamePathParam]
 	publicKey := r.URL.Query().Get(constants.PublicKeyQueryParam)
 	privateKey := r.URL.Query().Get(constants.PrivateKeyQueryParam)
-	response := database_user.Delete(r.Context(), &database_user.InputModel{ProjectId: &projectId, DatabaseName: &databaseName, Username: &username, PublicKey: &publicKey, PrivateKey: &privateKey})
+
+	model := database_user.InputModel{ProjectId: &projectId, Username: &username, PublicKey: &publicKey, PrivateKey: &privateKey}
+	_, _ = logger.Debugf("Delete databaseUser Request : %+v", model.String())
+	startTime := time.Now()
+	response := database_user.Delete(r.Context(), &model)
+
+	elapsedTime := time.Since(startTime)
+	logger.Debugf("Delete databaseUser REST API  response:%+v and execution time:%s", response.String(), elapsedTime.String())
+
 	responseHandler.Write(response, w, constants.DatabaseUserHandlerName)
 }
 
@@ -64,6 +90,14 @@ func CreateDatabaseUser(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	projectId := vars[constants.ProjectIdPathParam]
 	model.ProjectId = &projectId
+
+	_, _ = logger.Debugf("Create databaseUser Request : %+v", model.String())
+	startTime := time.Now()
+
 	response := database_user.Create(&model)
+
+	elapsedTime := time.Since(startTime)
+	logger.Debugf("Create databaseUser REST API  response:%+v and execution time:%s", response.String(), elapsedTime.String())
+
 	responseHandler.Write(response, w, constants.DatabaseUserHandlerName)
 }

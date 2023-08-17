@@ -25,8 +25,8 @@ func setup() {
 // Create This method is used to create a collection in the database
 func Create(inputModel *InputModel) atlasresponse.AtlasRespone {
 	setup()
-	_, _ = logger.Debugf(" currentModel: %#+v", inputModel.String())
 	if errEvent := validateModel(CreateRequiredFields, inputModel); errEvent != nil {
+		_, _ = logger.Warnf("create collection is failing with invalid parameters : %+v", errEvent.Error())
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.InvalidInputParameter].Code,
@@ -62,9 +62,8 @@ func Create(inputModel *InputModel) atlasresponse.AtlasRespone {
 // Delete method drops the collection from the database
 func Delete(inputModel *InputModel) atlasresponse.AtlasRespone {
 	setup()
-	_, _ = logger.Debugf(" currentModel: %#+v", inputModel.String())
 	if errEvent := validateModel(DeleteRequiredFields, inputModel); errEvent != nil {
-		_, _ = logger.Warnf("Delete Collection Validation error : %+v", errEvent.Error())
+		_, _ = logger.Warnf("delete collection is failing with invalid parameters : %+v", errEvent.Error())
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.InvalidInputParameter].Code,

@@ -27,7 +27,6 @@ import (
 	"github.com/atlas-api-helper/util/logger"
 	"github.com/atlas-api-helper/util/validator"
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/google/uuid"
 	"github.com/spf13/cast"
 	"go.mongodb.org/atlas-sdk/v20230201002/admin"
 	"log"
@@ -36,6 +35,7 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+	"time"
 )
 
 var defaultLabel = Labels{Key: aws.String("Infrastructure Tool"), Value: aws.String("MongoDB Atlas CloudFormation Provider")}
@@ -63,12 +63,11 @@ func validateModel(fields []string, model *InputModel) error {
 // Create handles the Create event from the Cloudformation service.
 func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasRespone {
 	setup()
-
-	_, _ = logger.Debugf("Create cluster model : %+v", inputModel.String())
 	// Validate required fields in the request
 
 	modelValidation := validateModel(CreateRequiredFields, inputModel)
 	if modelValidation != nil {
+		_, _ = logger.Warnf("create cluster is failing with invalid parameters : %+v", modelValidation.Error())
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.InvalidInputParameter].Code,
@@ -94,28 +93,7 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 		}
 	}
 
-	/*	endPoints, res, endpointerr := client.PrivateEndpointServicesApi.ListPrivateEndpointServices(ctx, inputModel.ProjectId, "AWS").Execute()
-				if endpointerr != nil {
-			_, _ = logger.Warnf("Get PrivateEndpoint error: %v", endpointerr.Error())
-					return atlasresponse.AtlasRespone{
-						Response:       nil,
-						HttpStatusCode: res.StatusCode,
-						HttpError:      endpointerr.Error(),
-					}
-				}
-
-				count := len(endPoints)
-				if count == 0 {
-		_, _ = logger.Warnf("Get PrivateEndpoint Not Configured error: %v", endpointerr.Error())
-					return atlasresponse.AtlasRespone{
-						Response:       nil,
-						HttpStatusCode: http.StatusInternalServerError,
-						HttpError:      "No Entpoints configured for this project",
-					}
-				}
-				_, _ = logger.Debugf("Cluster create projectId: %s, clusterName: %s", inputModel.ProjectId, inputModel.ClusterName)
-	*/
-	currentModel, err := loadCurrentModel(*inputModel)
+	currentModel, err := loadClusterConfiguration(*inputModel)
 	if err != nil {
 		_, _ = logger.Warnf("Create Current Model error: %v", err.Error())
 		return atlasresponse.AtlasRespone{
@@ -126,8 +104,52 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 	}
 	currentModel.validateDefaultLabel()
 
+	/*endPoints, _, endpointerr := client.PrivateEndpointServicesApi.ListPrivateEndpointServices(ctx, *inputModel.ProjectId, *inputModel.CloudProvider).Execute()
+	if endpointerr != nil {
+		_, _ = logger.Warnf("Get PrivateEndpoint error: %v", endpointerr.Error())
+		return atlasresponse.AtlasRespone{
+			Response:       nil,
+			HttpStatusCode: configuration.GetConfig()[constants.ListEndpointError].Code,
+			HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.ListEndpointError].Message, *inputModel.ProjectId),
+		}
+	}
+
+	count := len(endPoints)
+	if count == 0 {
+		_, _ = logger.Warnf("PrivateEndpoint Not Configured for ProjectId %s error: %v", *inputModel.ProjectId, errors.New(configuration.GetConfig()[constants.NoEndpointConfigured].Message))
+		return atlasresponse.AtlasRespone{
+			Response:       nil,
+			HttpStatusCode: configuration.GetConfig()[constants.NoEndpointConfigured].Code,
+			HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.NoEndpointConfigured].Message, *inputModel.ProjectId),
+		}
+	}
+
+	_, _ = logger.Debugf("Cluster create projectId: %s, clusterName: %s", *inputModel.ProjectId, *inputModel.ClusterName)
+	var endpointRegions []string
+	for _, endPoint := range endPoints {
+		endpointRegions = append(endpointRegions, *endPoint.RegionName)
+	}
+
+	var clusterAdvancedConfigRegions []string
+	for _, specs := range currentModel.ReplicationSpecs {
+		for _, advancedConfig := range specs.AdvancedRegionConfigs {
+			clusterAdvancedConfigRegions = append(clusterAdvancedConfigRegions, *advancedConfig.RegionName)
+		}
+
+	}
+
+	isEndPointConfigured := hasCommonValues(endpointRegions, clusterAdvancedConfigRegions)
+	if !isEndPointConfigured {
+		_, _ = logger.Warnf("PrivateEndpoint Not Configured for ProjectId %s error: %v", *inputModel.ProjectId, endpointerr.Error())
+		return atlasresponse.AtlasRespone{
+			Response:       nil,
+			HttpStatusCode: configuration.GetConfig()[constants.NoEndpointConfigured].Code,
+			HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.NoEndpointConfigured].Message, *inputModel.ProjectId),
+		}
+	}
+	*/
 	// Prepare cluster request
-	clusterRequest, err := setClusterRequest(&currentModel)
+	clusterRequest, err := createClusterRequest(&currentModel)
 	if err != nil {
 		_, _ = logger.Warnf("Create Cluster Request error: %v", err.Error())
 		return atlasresponse.AtlasRespone{
@@ -150,20 +172,37 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 	}
 	currentModel.StateName = cluster.StateName
 	return atlasresponse.AtlasRespone{
-		Response:       nil,
+		Response:       cluster,
 		HttpStatusCode: configuration.GetConfig()[constants.ClusterCreateSuccess].Code,
-		HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.ClusterCreateSuccess].Message, cluster.Name),
+		HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.ClusterCreateSuccess].Message, *cluster.Name),
 	}
 }
 
-// loadCurrentModel This method loads the config.json file from project path
-func loadCurrentModel(model InputModel) (Model, error) {
+func hasCommonValues(slice1, slice2 []string) bool {
+	// Create a map to store values from the first slice
+	seen := make(map[string]bool)
+	for _, item := range slice1 {
+		seen[item] = true
+	}
+
+	// Check if any value from the second slice exists in the map
+	for _, item := range slice2 {
+		if seen[item] {
+			return true
+		}
+	}
+
+	return false
+}
+
+// loadClusterConfiguration This method loads the config.json file from project path
+func loadClusterConfiguration(model InputModel) (Model, error) {
 	var currentModel Model
 	var ClusterConfig map[string]Model
 
-	content, err := os.ReadFile("./config.json")
+	content, err := os.ReadFile(constants.ClusterConfigLocation)
 	if err != nil {
-		log.Fatal("Error when opening file: ", err)
+		log.Fatal("Error when loading cluster configuration file: ", err)
 		return currentModel, err
 	}
 
@@ -175,7 +214,7 @@ func loadCurrentModel(model InputModel) (Model, error) {
 	}
 	key := extractClusterKey(model)
 	clusterConfig, ok := ClusterConfig[key]
-	_, _ = logger.Debugf("Selected Cluster Configuration : %+v", clusterConfig)
+	_, _ = logger.Debugf("Selected Cluster Configuration : %+v  for the T-shirt Size :%s", clusterConfig, *model.TshirtSize)
 	if ok {
 		currentModel = clusterConfig
 	} else {
@@ -204,19 +243,20 @@ func extractClusterKey(model InputModel) string {
 
 // generateClusterName This method generates the cluster name which is then assigned to the created cluster
 func generateClusterName(model InputModel) *string {
-	clusterNamePrefix := extractClusterKey(model)
-	toRet := clusterNamePrefix + "-" + uuid.NewString()
+	toRet := time.Now().Format("02-01-06 15:04:05")
+	toRet = strings.ReplaceAll(toRet, ":", "-")
+	toRet = strings.ReplaceAll(toRet, " ", "-")
+	toRet = strings.ReplaceAll(toRet, "-", "-")
+	toRet = *model.CloudProvider + "-" + *model.ProjectId + "-" + *model.TshirtSize + toRet
 	return &toRet
 }
 
 // Read handles the Read event from the Cloudformation service.
 func Read(inputModel *InputModel) atlasresponse.AtlasRespone {
 	setup()
-	_, _ = logger.Debugf("Read() currentModel:%+v", inputModel.String())
-
 	modelValidation := validateModel(ReadRequiredFields, inputModel)
 	if modelValidation != nil {
-		_, _ = logger.Warnf("Input Validation error: %v", modelValidation.Error())
+		_, _ = logger.Warnf("read cluster is failing with invalid parameters : %+v", modelValidation.Error())
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.InvalidInputParameter].Code,
@@ -254,10 +294,9 @@ func Read(inputModel *InputModel) atlasresponse.AtlasRespone {
 // Delete This method deletes the cluster based on the clusterName
 func Delete(inputModel *InputModel) atlasresponse.AtlasRespone {
 	setup()
-	_, _ = logger.Debugf("Delete() currentModel:%+v", inputModel.String())
-
 	modelValidation := validateModel(DeleteRequiredFields, inputModel)
 	if modelValidation != nil {
+		_, _ = logger.Warnf("delete cluster is failing with invalid parameters : %+v", modelValidation.Error())
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.InvalidInputParameter].Code,
@@ -284,6 +323,7 @@ func Delete(inputModel *InputModel) atlasresponse.AtlasRespone {
 
 	_, err := client.MultiCloudClustersApi.DeleteClusterWithParams(context.Background(), &args).Execute()
 	if err != nil {
+		_, _ = logger.Warnf("Delete cluster error: %v", err.Error())
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.ClusterDeleteError].Code,
@@ -302,10 +342,9 @@ func Delete(inputModel *InputModel) atlasresponse.AtlasRespone {
 
 func List(inputModel *InputModel) atlasresponse.AtlasRespone {
 	setup()
-	_, _ = logger.Debugf("List() currentModel:%+v", inputModel.String())
-
 	modelValidation := validateModel(ListRequiredFields, inputModel)
 	if modelValidation != nil {
+		_, _ = logger.Warnf("list clusters is failing with invalid parameters : %+v", modelValidation.Error())
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.InvalidInputParameter].Code,
@@ -323,12 +362,8 @@ func List(inputModel *InputModel) atlasresponse.AtlasRespone {
 		}
 	}
 	// List call
-	itemsPerPage := 100
-	pageNum := 1
 	args := admin.ListClustersApiParams{
-		GroupId:      *inputModel.ProjectId,
-		ItemsPerPage: &itemsPerPage,
-		PageNum:      &pageNum,
+		GroupId: *inputModel.ProjectId,
 	}
 	clustersResponse, _, err := client.MultiCloudClustersApi.ListClustersWithParams(context.Background(), &args).Execute()
 	if err != nil {
@@ -344,8 +379,8 @@ func List(inputModel *InputModel) atlasresponse.AtlasRespone {
 		model := &Model{}
 		mapClusterToModel(model, &clustersResponse.Results[i])
 		// Call AdvancedSettings
-		processArgs, _, err2 := client.ClustersApi.GetClusterAdvancedConfiguration(context.Background(), *model.ProjectId, *model.Name).Execute()
-		if err2 != nil {
+		processArgs, _, clusterErr := client.ClustersApi.GetClusterAdvancedConfiguration(context.Background(), *model.ProjectId, *model.Name).Execute()
+		if clusterErr != nil {
 			return atlasresponse.AtlasRespone{
 				Response:       nil,
 				HttpStatusCode: configuration.GetConfig()[constants.ClusterAdvancedListError].Code,
@@ -365,26 +400,87 @@ func List(inputModel *InputModel) atlasresponse.AtlasRespone {
 
 // mapClusterToModel This method is used to map the cluster object returned from the mongo client to our model
 func mapClusterToModel(model *Model, cluster *admin.AdvancedClusterDescription) {
-	model.Id = cluster.Id
-	model.ProjectId = cluster.GroupId
-	model.Name = cluster.Name
-	model.BackupEnabled = cluster.BackupEnabled
-	model.BiConnector = flattenBiConnectorConfig(cluster.BiConnector)
-	model.ConnectionStrings = flattenConnectionStrings(cluster.ConnectionStrings)
-	model.ClusterType = cluster.ClusterType
-	createdDate := cluster.CreateDate.Format("2006-01-02 15:04:05")
-	model.CreatedDate = &createdDate
-	model.DiskSizeGB = cluster.DiskSizeGB
-	model.EncryptionAtRestProvider = cluster.EncryptionAtRestProvider
-	model.Labels = flattenLabels(cluster.Labels)
-	model.MongoDBMajorVersion = cluster.MongoDBMajorVersion
-	model.MongoDBVersion = cluster.MongoDBVersion
-	model.Paused = cluster.Paused
-	model.PitEnabled = cluster.PitEnabled
-	model.RootCertType = cluster.RootCertType
-	model.ReplicationSpecs = flattenReplicationSpecs(cluster.ReplicationSpecs)
-	model.StateName = cluster.StateName
-	model.VersionReleaseSystem = cluster.VersionReleaseSystem
+
+	if cluster.Id != nil {
+		model.Id = cluster.Id
+	}
+
+	if cluster.GroupId != nil {
+		model.ProjectId = cluster.GroupId
+	}
+
+	if cluster.Name != nil {
+		model.Name = cluster.Name
+	}
+
+	if cluster.BackupEnabled != nil {
+		model.BackupEnabled = cluster.BackupEnabled
+	}
+
+	if cluster.BiConnector != nil {
+		model.BiConnector = flattenBiConnectorConfig(cluster.BiConnector)
+	}
+
+	if cluster.ConnectionStrings != nil {
+		model.ConnectionStrings = flattenConnectionStrings(cluster.ConnectionStrings)
+	}
+
+	if cluster.ClusterType != nil {
+		model.ClusterType = cluster.ClusterType
+	}
+
+	if cluster.CreateDate != nil {
+		createdDate := cluster.CreateDate.Format("2006-01-02 15:04:05")
+		model.CreatedDate = &createdDate
+	}
+
+	if cluster.DiskSizeGB != nil {
+		model.DiskSizeGB = cluster.DiskSizeGB
+	}
+
+	if cluster.EncryptionAtRestProvider != nil {
+		model.EncryptionAtRestProvider = cluster.EncryptionAtRestProvider
+	}
+
+	if cluster.Labels != nil {
+		model.Labels = flattenLabels(cluster.Labels)
+	}
+
+	if cluster.MongoDBMajorVersion != nil {
+		model.MongoDBMajorVersion = cluster.MongoDBMajorVersion
+	}
+
+	if cluster.MongoDBVersion != nil {
+		model.MongoDBVersion = cluster.MongoDBVersion
+	}
+
+	if cluster.Paused != nil {
+		model.Paused = cluster.Paused
+	}
+
+	if cluster.PitEnabled != nil {
+		model.PitEnabled = cluster.PitEnabled
+	}
+
+	if cluster.ReplicationSpecs != nil {
+		model.ReplicationSpecs = flattenReplicationSpecs(cluster.ReplicationSpecs)
+	}
+
+	if cluster.RootCertType != nil {
+		model.RootCertType = cluster.RootCertType
+	}
+
+	if cluster.StateName != nil {
+		model.StateName = cluster.StateName
+	}
+
+	if cluster.VersionReleaseSystem != nil {
+		model.VersionReleaseSystem = cluster.VersionReleaseSystem
+	}
+
+	if cluster.TerminationProtectionEnabled != nil {
+		model.TerminationProtectionEnabled = cluster.TerminationProtectionEnabled
+	}
 }
 
 func (m *Model) HasAdvanceSettings() bool {
@@ -401,16 +497,6 @@ func (m *Model) HasAdvanceSettings() bool {
 		m.AdvancedSettings.SampleSizeBIConnector != nil ||
 		m.AdvancedSettings.SampleRefreshIntervalBIConnector != nil ||
 		m.AdvancedSettings.OplogMinRetentionHours != nil)
-}
-
-func containsLabelOrKey(list []Labels, item Labels) bool {
-	for _, v := range list {
-		if reflect.DeepEqual(v, item) || *v.Key == *item.Key {
-			return true
-		}
-	}
-
-	return false
 }
 
 func expandBiConnector(biConnector *BiConnector) *admin.BiConnector {
@@ -875,8 +961,8 @@ func setClusterData(currentModel *Model, cluster *admin.AdvancedClusterDescripti
 	currentModel.TerminationProtectionEnabled = cluster.TerminationProtectionEnabled
 }
 
-// setClusterRequest creates the ClusterRequest from the Model
-func setClusterRequest(currentModel *Model) (*admin.AdvancedClusterDescription, error) {
+// createClusterRequest creates the ClusterRequest from the Model
+func createClusterRequest(currentModel *Model) (*admin.AdvancedClusterDescription, error) {
 	// Atlas client
 	clusterRequest := &admin.AdvancedClusterDescription{
 		Name:             currentModel.Name,
@@ -931,4 +1017,14 @@ func (m *Model) validateDefaultLabel() {
 	if !containsLabelOrKey(m.Labels, defaultLabel) {
 		m.Labels = append(m.Labels, defaultLabel)
 	}
+}
+
+func containsLabelOrKey(list []Labels, item Labels) bool {
+	for _, v := range list {
+		if reflect.DeepEqual(v, item) || *v.Key == *item.Key {
+			return true
+		}
+	}
+
+	return false
 }

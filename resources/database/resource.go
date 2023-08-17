@@ -32,10 +32,9 @@ func setup() {
 // Create This method is used to create a database and provided collection in the cluster
 func Create(inputModel *InputModel) atlasresponse.AtlasRespone {
 	setup()
-	_, _ = logger.Debugf(" currentModel: %#+v", inputModel.String())
 
 	if errEvent := validateModel(CreateRequiredFields, inputModel); errEvent != nil {
-		_, _ = logger.Warnf(" database Create Valitaion Error: %#+v", errEvent.Error())
+		_, _ = logger.Warnf(" create database is failing with invalid parameters: %#+v", errEvent.Error())
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.InvalidInputParameter].Code,
@@ -71,10 +70,9 @@ func Create(inputModel *InputModel) atlasresponse.AtlasRespone {
 // Delete method drops the database from the cluster
 func Delete(inputModel *DeleteInputModel) atlasresponse.AtlasRespone {
 	setup()
-	_, _ = logger.Debugf(" currentModel: %#+v", inputModel.String())
 
 	if errEvent := validateDeleteModel(DeleteRequiredFields, inputModel); errEvent != nil {
-		_, _ = logger.Warnf(" database delete Valitaion Error: %#+v", errEvent.Error())
+		_, _ = logger.Warnf(" delete database is failing with invalid parameters: %#+v", errEvent.Error())
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.InvalidInputParameter].Code,
@@ -92,7 +90,7 @@ func Delete(inputModel *DeleteInputModel) atlasresponse.AtlasRespone {
 	}
 	dbDeleteErr := client.Database(*inputModel.DatabaseName).Drop(context.Background())
 	if dbDeleteErr != nil {
-		_, _ = logger.Warnf(" database Delete database Error: %#+v", dbDeleteErr.Error())
+		_, _ = logger.Warnf("delete database Error: %#+v", dbDeleteErr.Error())
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.DatabaseDeleteError].Code,

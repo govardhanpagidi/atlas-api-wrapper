@@ -6,8 +6,10 @@ import (
 	"github.com/atlas-api-helper/util"
 	responseHandler "github.com/atlas-api-helper/util/Responsehandler"
 	"github.com/atlas-api-helper/util/constants"
+	"github.com/atlas-api-helper/util/logger"
 	"github.com/gorilla/mux"
 	"net/http"
+	"time"
 )
 
 func setupCollectionLog() {
@@ -26,7 +28,12 @@ func CreateCollection(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	model.DatabaseName = &databaseName
+	_, _ = logger.Debugf("Create Collection Request : %+v", model.String())
+	startTime := time.Now()
+
 	response := collection.Create(&model)
+	elapsedTime := time.Since(startTime)
+	logger.Debugf("Create collection REST API  response:%+v and execution time:%s", response.String(), elapsedTime.String())
 	responseHandler.Write(response, w, constants.ClusterHandler)
 }
 
@@ -40,12 +47,19 @@ func DeleteCollection(w http.ResponseWriter, r *http.Request) {
 	username := r.URL.Query().Get(constants.UsernamePathParam)
 	password := r.URL.Query().Get(constants.PasswordPathParam)
 
-	response := collection.Delete(&collection.InputModel{
+	model := collection.InputModel{
 		DatabaseName:   &databaseName,
 		HostName:       &hostname,
 		Username:       &username,
 		Password:       &password,
 		CollectionName: &collectionName,
-	})
+	}
+	_, _ = logger.Debugf("Delete Collection Request : %+v", model.String())
+	startTime := time.Now()
+
+	response := collection.Delete(&model)
+	elapsedTime := time.Since(startTime)
+	logger.Debugf("Delete collection REST API  response:%+v and execution time:%s", response.String(), elapsedTime.String())
+
 	responseHandler.Write(response, w, constants.ClusterHandler)
 }

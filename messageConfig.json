@@ -104,7 +104,7 @@
     "Message": "The Database under the Name: %s is deleted successfully."
   },
   "USER_CREATE_ERROR": {
-    "Code": 200,
+    "Code": 500,
     "Message": "Failed to create Database User with name: %s."
   },
   "USER_CREATE_SUCCESS": {
@@ -112,7 +112,7 @@
     "Message": "Database User with name: %s is created."
   },
   "USER_NOT_FOUND": {
-    "Code": 200,
+    "Code": 401,
     "Message": "Database User with name: %s is not found."
   },
   "FETCH_USER": {
@@ -120,7 +120,7 @@
     "Message": "Database User with name: %s is fetched found."
   },
   "DELETE_USER_ERROR": {
-    "Code": 200,
+    "Code": 500,
     "Message": "Error occurred when deleting database User with name: %s."
   },
   "DELETE_USER_SUCCESS": {
@@ -128,11 +128,19 @@
     "Message": "Database User with name: %s has been deleted successfully."
   },
   "USER_LIST_ERROR": {
-    "Code": 200,
+    "Code": 500,
     "Message": "Error occurred when listing Database users for ProjectId: %s."
   },
   "USER_LIST_SUCCESS": {
     "Code": 200,
     "Message": "Database users for ProjectId: %s has been listed."
+  },
+  "LIST_ENDPOINT_ERROR": {
+    "Code": 500,
+    "Message": "Error occured when listing private endpoints for ProjectId: %s ."
+  },
+  "NO_ENDPOINT_ERROR": {
+    "Code": 500,
+    "Message": "No private endpoints configured for ProjectId: %s ."
   }
 }

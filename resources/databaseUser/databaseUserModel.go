@@ -41,19 +41,17 @@ type ScopeDefinition struct {
 }
 
 type InputModel struct {
-	Username     *string
-	Password     *string
-	DatabaseName *string
-	PublicKey    *string
-	PrivateKey   *string
-	ProjectId    *string
+	Username   *string
+	Password   *string
+	PublicKey  *string
+	PrivateKey *string
+	ProjectId  *string
 }
 
 func (model InputModel) String() string {
 	return fmt.Sprintf(
-		"Username: %s, DatabaseName: %s, ProjectId: %s",
+		"Username: %s, ProjectId: %s",
 		util.ToString(model.Username),
-		util.ToString(model.DatabaseName),
 		util.ToString(model.ProjectId),
 	)
 }

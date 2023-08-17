@@ -12,9 +12,9 @@ import (
 	"go.mongodb.org/atlas-sdk/v20230201002/admin"
 )
 
-var CreateRequiredFields = []string{constants.Username, constants.Password, constants.DatabaseName, constants.PublicKey, constants.PrivateKey, constants.ProjectID}
-var ReadRequiredFields = []string{constants.ProjectID, constants.DatabaseName, constants.Username, constants.PublicKey, constants.PrivateKey}
-var DeleteRequiredFields = []string{constants.ProjectID, constants.DatabaseName, constants.Username, constants.PublicKey, constants.PrivateKey}
+var CreateRequiredFields = []string{constants.Username, constants.Password, constants.PublicKey, constants.PrivateKey, constants.ProjectID}
+var ReadRequiredFields = []string{constants.ProjectID, constants.Username, constants.PublicKey, constants.PrivateKey}
+var DeleteRequiredFields = []string{constants.ProjectID, constants.Username, constants.PublicKey, constants.PrivateKey}
 var ListRequiredFields = []string{constants.ProjectID, constants.PublicKey, constants.PrivateKey, constants.PublicKey, constants.PrivateKey}
 
 func setup() {
@@ -29,10 +29,8 @@ func validateModel(fields []string, model *InputModel) error {
 // Create handles the Create event from the Cloudformation service.
 func Create(inputModel *InputModel) atlasresponse.AtlasRespone {
 	setup()
-	_, _ = logger.Debugf(" currentModel: %#+v", inputModel.String())
-
 	if errEvent := validateModel(CreateRequiredFields, inputModel); errEvent != nil {
-		_, _ = logger.Warnf(" database Create Validation Error: %#+v", errEvent.Error())
+		_, _ = logger.Warnf(" create databaseuser is failing with invalid parameters: %#+v", errEvent.Error())
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.InvalidInputParameter].Code,
@@ -74,9 +72,8 @@ func Create(inputModel *InputModel) atlasresponse.AtlasRespone {
 // Read handles the Read event from the Cloudformation service.
 func Read(inputModel *InputModel) atlasresponse.AtlasRespone {
 	setup()
-	_, _ = logger.Debugf(" currentModel: %#+v", inputModel.String())
 	if errEvent := validateModel(ReadRequiredFields, inputModel); errEvent != nil {
-		_, _ = logger.Warnf(" database Create Valitaion Error: %#+v", errEvent.Error())
+		_, _ = logger.Warnf(" read database user is failing with invalid parameters: %#+v", errEvent.Error())
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.InvalidInputParameter].Code,
@@ -96,7 +93,7 @@ func Read(inputModel *InputModel) atlasresponse.AtlasRespone {
 
 	groupID := *inputModel.ProjectId
 	username := *inputModel.Username
-	dbName := *inputModel.DatabaseName
+	dbName := constants.DbuserDbName
 
 	databaseUser, _, err := client.DatabaseUsersApi.GetDatabaseUser(context.Background(), groupID, dbName, username).Execute()
 	if err != nil {
@@ -109,7 +106,7 @@ func Read(inputModel *InputModel) atlasresponse.AtlasRespone {
 	}
 	var currentModel Model
 	currentModel.Username = inputModel.Username
-	currentModel.DatabaseName = inputModel.DatabaseName
+	currentModel.DatabaseName = &databaseUser.DatabaseName
 	currentModel.ProjectId = inputModel.ProjectId
 	currentModel.DatabaseName = &databaseUser.DatabaseName
 
@@ -164,9 +161,8 @@ func Read(inputModel *InputModel) atlasresponse.AtlasRespone {
 // Delete handles the Delete event from the Cloudformation service.
 func Delete(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasRespone {
 	setup()
-	_, _ = logger.Debugf(" currentModel: %#+v", inputModel.String())
 	if errEvent := validateModel(DeleteRequiredFields, inputModel); errEvent != nil {
-		_, _ = logger.Warnf(" database Create Valitaion Error: %#+v", errEvent.Error())
+		_, _ = logger.Warnf("delete databaseUser is failing with invalid parameters: %#+v", errEvent.Error())
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.InvalidInputParameter].Code,
@@ -186,7 +182,7 @@ func Delete(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 
 	groupID := *inputModel.ProjectId
 	username := *inputModel.Username
-	dbName := *inputModel.DatabaseName
+	dbName := constants.DbuserDbName
 
 	user, _, err := client.DatabaseUsersApi.DeleteDatabaseUser(ctx, groupID, dbName, username).Execute()
 	if err != nil {
@@ -207,8 +203,9 @@ func Delete(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 // List handles listing database users
 func List(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasRespone {
 	setup()
-	_, _ = logger.Debugf(" currentModel: %#+v", inputModel.String())
 	if errEvent := validateModel(ListRequiredFields, inputModel); errEvent != nil {
+		_, _ = logger.Warnf("list databaseUsers is failing with invalid parameters: %#+v", errEvent.Error())
+
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.InvalidInputParameter].Code,
@@ -218,6 +215,7 @@ func List(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasRespon
 
 	client, peErr := util.NewMongoDBSDKClient(*inputModel.PublicKey, *inputModel.PrivateKey)
 	if peErr != nil {
+		_, _ = logger.Warnf(" Create Mongo client Error: %#+v", peErr.Error())
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.MongoClientCreationError].Code,
@@ -231,6 +229,7 @@ func List(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasRespon
 
 	databaseUsers, _, err := client.DatabaseUsersApi.ListDatabaseUsers(ctx, groupID).Execute()
 	if err != nil {
+		_, _ = logger.Warnf(" list databaseUsers Error: %#+v", err.Error())
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.UserListError].Code,
@@ -305,7 +304,7 @@ func setModel(inputModel *InputModel) (string, *admin.CloudDatabaseUser) {
 	roles = append(roles, adminDefaultAtlasRole)
 	databaseUser := admin.CloudDatabaseUser{
 		AwsIAMType:      nil,
-		DatabaseName:    *inputModel.DatabaseName,
+		DatabaseName:    constants.DbuserDbName,
 		DeleteAfterDate: nil,
 		GroupId:         *inputModel.ProjectId,
 		Labels:          nil,

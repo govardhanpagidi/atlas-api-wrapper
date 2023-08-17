@@ -6,8 +6,10 @@ import (
 	"github.com/atlas-api-helper/util"
 	responseHandler "github.com/atlas-api-helper/util/Responsehandler"
 	"github.com/atlas-api-helper/util/constants"
+	"github.com/atlas-api-helper/util/logger"
 	"github.com/gorilla/mux"
 	"net/http"
+	"time"
 )
 
 func setupDatabaseLog() {
@@ -24,7 +26,14 @@ func CreateDatabase(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+
+	_, _ = logger.Debugf("Create database Request : %+v", model.String())
+	startTime := time.Now()
+
 	response := database.Create(&model)
+	elapsedTime := time.Since(startTime)
+	logger.Debugf("Create database REST API  response:%+v and execution time:%s", response.String(), elapsedTime.String())
+
 	responseHandler.Write(response, w, constants.ClusterHandler)
 }
 
@@ -38,11 +47,18 @@ func DeleteDatabase(w http.ResponseWriter, r *http.Request) {
 	hostname := r.URL.Query().Get(constants.HostNamePathParam)
 	username := r.URL.Query().Get(constants.UsernamePathParam)
 	password := r.URL.Query().Get(constants.PasswordPathParam)
-	response := database.Delete(&database.DeleteInputModel{
+
+	model := database.DeleteInputModel{
 		DatabaseName: &databaseName,
 		HostName:     &hostname,
 		Username:     &username,
 		Password:     &password,
-	})
+	}
+	_, _ = logger.Debugf("Delete database Request : %+v", model.String())
+	startTime := time.Now()
+	response := database.Delete(&model)
+	elapsedTime := time.Since(startTime)
+	logger.Debugf("Delete database REST API  response:%+v and execution time:%s", response.String(), elapsedTime.String())
+
 	responseHandler.Write(response, w, constants.ClusterHandler)
 }

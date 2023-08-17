@@ -39,6 +39,7 @@ func Create(inputModel *InputModel) atlasresponse.AtlasRespone {
 	}
 
 	client, peErr := util.NewMongoDBSDKClient(*inputModel.PublicKey, *inputModel.PrivateKey)
+
 	if peErr != nil {
 		_, _ = logger.Warnf(" Create Mongo client Error: %#+v", peErr.Error())
 		return atlasresponse.AtlasRespone{
@@ -50,8 +51,11 @@ func Create(inputModel *InputModel) atlasresponse.AtlasRespone {
 
 	groupID, dbUser := setModel(inputModel)
 	_, _ = logger.Debugf("Arguments: Project ID: %s, Request %#+v", groupID, dbUser)
+
 	request := client.DatabaseUsersApi.CreateDatabaseUser(context.Background(), groupID, dbUser)
+
 	databaseUser, _, err := request.Execute()
+
 	if err != nil {
 		fmt.Println("Error creating database user:", err)
 		return atlasresponse.AtlasRespone{
@@ -82,6 +86,7 @@ func Read(inputModel *InputModel) atlasresponse.AtlasRespone {
 	}
 
 	client, peErr := util.NewMongoDBSDKClient(*inputModel.PublicKey, *inputModel.PrivateKey)
+
 	if peErr != nil {
 		_, _ = logger.Warnf(" Create Mongo client Error: %#+v", peErr.Error())
 		return atlasresponse.AtlasRespone{
@@ -96,6 +101,7 @@ func Read(inputModel *InputModel) atlasresponse.AtlasRespone {
 	dbName := constants.DbuserDbName
 
 	databaseUser, _, err := client.DatabaseUsersApi.GetDatabaseUser(context.Background(), groupID, dbName, username).Execute()
+
 	if err != nil {
 		_, _ = logger.Warnf(" Get Database User Error: %#+v", err.Error())
 		return atlasresponse.AtlasRespone{
@@ -104,6 +110,7 @@ func Read(inputModel *InputModel) atlasresponse.AtlasRespone {
 			HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.UserNotFound].Message, *inputModel.Username),
 		}
 	}
+
 	var currentModel Model
 	currentModel.Username = inputModel.Username
 	currentModel.DatabaseName = &databaseUser.DatabaseName
@@ -171,6 +178,7 @@ func Delete(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 	}
 
 	client, peErr := util.NewMongoDBSDKClient(*inputModel.PublicKey, *inputModel.PrivateKey)
+
 	if peErr != nil {
 		_, _ = logger.Warnf(" Create Mongo client Error: %#+v", peErr.Error())
 		return atlasresponse.AtlasRespone{
@@ -185,6 +193,7 @@ func Delete(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 	dbName := constants.DbuserDbName
 
 	user, _, err := client.DatabaseUsersApi.DeleteDatabaseUser(ctx, groupID, dbName, username).Execute()
+
 	if err != nil {
 		_, _ = logger.Warnf(" Delete DatabaseUser Error: %#+v", err.Error())
 		return atlasresponse.AtlasRespone{
@@ -193,6 +202,7 @@ func Delete(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 			HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.DeleteDatabaseUserError].Message, *inputModel.Username),
 		}
 	}
+
 	return atlasresponse.AtlasRespone{
 		Response:       user,
 		HttpStatusCode: configuration.GetConfig()[constants.DeleteDatabaseUserSuccess].Code,
@@ -214,6 +224,7 @@ func List(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasRespon
 	}
 
 	client, peErr := util.NewMongoDBSDKClient(*inputModel.PublicKey, *inputModel.PrivateKey)
+
 	if peErr != nil {
 		_, _ = logger.Warnf(" Create Mongo client Error: %#+v", peErr.Error())
 		return atlasresponse.AtlasRespone{
@@ -228,6 +239,7 @@ func List(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasRespon
 	dbUserModels := make([]interface{}, 0)
 
 	databaseUsers, _, err := client.DatabaseUsersApi.ListDatabaseUsers(ctx, groupID).Execute()
+
 	if err != nil {
 		_, _ = logger.Warnf(" list databaseUsers Error: %#+v", err.Error())
 		return atlasresponse.AtlasRespone{

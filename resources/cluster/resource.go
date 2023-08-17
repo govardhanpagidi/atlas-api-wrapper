@@ -74,7 +74,9 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 			HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.InvalidInputParameter].Message, modelValidation.Error()),
 		}
 	}
+
 	client, peErr := util.NewMongoDBSDKClient(cast.ToString(inputModel.PublicKey), cast.ToString(inputModel.PrivateKey))
+
 	if peErr != nil {
 		_, _ = logger.Warnf("CreateMongoDBClient error: %v", peErr.Error())
 		return atlasresponse.AtlasRespone{
@@ -83,7 +85,9 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 			HttpError:      configuration.GetConfig()[constants.MongoClientCreationError].Message,
 		}
 	}
+
 	_, _, projectErr := client.ProjectsApi.GetProject(context.Background(), cast.ToString(inputModel.ProjectId)).Execute()
+
 	if projectErr != nil {
 		_, _ = logger.Warnf("Get Project error: %v", projectErr.Error())
 		return atlasresponse.AtlasRespone{
@@ -94,6 +98,7 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 	}
 
 	currentModel, err := loadClusterConfiguration(*inputModel)
+
 	if err != nil {
 		_, _ = logger.Warnf("Create Current Model error: %v", err.Error())
 		return atlasresponse.AtlasRespone{
@@ -104,7 +109,8 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 	}
 	currentModel.validateDefaultLabel()
 
-	/*endPoints, _, endpointerr := client.PrivateEndpointServicesApi.ListPrivateEndpointServices(ctx, *inputModel.ProjectId, *inputModel.CloudProvider).Execute()
+	endPoints, _, endpointerr := client.PrivateEndpointServicesApi.ListPrivateEndpointServices(ctx, *inputModel.ProjectId, *inputModel.CloudProvider).Execute()
+
 	if endpointerr != nil {
 		_, _ = logger.Warnf("Get PrivateEndpoint error: %v", endpointerr.Error())
 		return atlasresponse.AtlasRespone{
@@ -115,6 +121,7 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 	}
 
 	count := len(endPoints)
+
 	if count == 0 {
 		_, _ = logger.Warnf("PrivateEndpoint Not Configured for ProjectId %s error: %v", *inputModel.ProjectId, errors.New(configuration.GetConfig()[constants.NoEndpointConfigured].Message))
 		return atlasresponse.AtlasRespone{
@@ -139,6 +146,7 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 	}
 
 	isEndPointConfigured := hasCommonValues(endpointRegions, clusterAdvancedConfigRegions)
+
 	if !isEndPointConfigured {
 		_, _ = logger.Warnf("PrivateEndpoint Not Configured for ProjectId %s error: %v", *inputModel.ProjectId, endpointerr.Error())
 		return atlasresponse.AtlasRespone{
@@ -147,9 +155,10 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 			HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.NoEndpointConfigured].Message, *inputModel.ProjectId),
 		}
 	}
-	*/
+
 	// Prepare cluster request
 	clusterRequest, err := createClusterRequest(&currentModel)
+
 	if err != nil {
 		_, _ = logger.Warnf("Create Cluster Request error: %v", err.Error())
 		return atlasresponse.AtlasRespone{
@@ -170,7 +179,9 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 			HttpError:      configuration.GetConfig()[constants.ClusterCreateError].Message,
 		}
 	}
+
 	currentModel.StateName = cluster.StateName
+
 	return atlasresponse.AtlasRespone{
 		Response:       cluster,
 		HttpStatusCode: configuration.GetConfig()[constants.ClusterCreateSuccess].Code,
@@ -212,6 +223,7 @@ func loadClusterConfiguration(model InputModel) (Model, error) {
 		log.Fatal("Error during Unmarshal(): ", err)
 		return currentModel, err
 	}
+
 	key := extractClusterKey(model)
 	clusterConfig, ok := ClusterConfig[key]
 	_, _ = logger.Debugf("Selected Cluster Configuration : %+v  for the T-shirt Size :%s", clusterConfig, *model.TshirtSize)
@@ -255,6 +267,7 @@ func generateClusterName(model InputModel) *string {
 func Read(inputModel *InputModel) atlasresponse.AtlasRespone {
 	setup()
 	modelValidation := validateModel(ReadRequiredFields, inputModel)
+
 	if modelValidation != nil {
 		_, _ = logger.Warnf("read cluster is failing with invalid parameters : %+v", modelValidation.Error())
 		return atlasresponse.AtlasRespone{
@@ -265,6 +278,7 @@ func Read(inputModel *InputModel) atlasresponse.AtlasRespone {
 	}
 
 	client, peErr := util.NewMongoDBSDKClient(cast.ToString(inputModel.PublicKey), cast.ToString(inputModel.PrivateKey))
+
 	if peErr != nil {
 		_, _ = logger.Warnf("CreateMongoDBClient error: %v", peErr.Error())
 		return atlasresponse.AtlasRespone{
@@ -276,6 +290,7 @@ func Read(inputModel *InputModel) atlasresponse.AtlasRespone {
 
 	// Read call
 	model, resp, err := readCluster(context.Background(), client, &Model{ProjectId: inputModel.ProjectId, Name: inputModel.ClusterName})
+
 	if err != nil {
 		_, _ = logger.Warnf("error cluster get- err:%+v resp:%+v", err, resp)
 		return atlasresponse.AtlasRespone{
@@ -284,6 +299,7 @@ func Read(inputModel *InputModel) atlasresponse.AtlasRespone {
 			HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.ClusterDoesNotExist].Message, *inputModel.ClusterName),
 		}
 	}
+
 	return atlasresponse.AtlasRespone{
 		Response:       fmt.Sprintf(configuration.GetConfig()[constants.ClusterReadSuccess].Message, *model.StateName),
 		HttpStatusCode: configuration.GetConfig()[constants.ClusterReadSuccess].Code,
@@ -305,6 +321,7 @@ func Delete(inputModel *InputModel) atlasresponse.AtlasRespone {
 	}
 
 	client, peErr := util.NewMongoDBSDKClient(cast.ToString(inputModel.PublicKey), cast.ToString(inputModel.PrivateKey))
+
 	if peErr != nil {
 		_, _ = logger.Warnf("CreateMongoDBClient error: %v", peErr.Error())
 		return atlasresponse.AtlasRespone{
@@ -322,6 +339,7 @@ func Delete(inputModel *InputModel) atlasresponse.AtlasRespone {
 	}
 
 	_, err := client.MultiCloudClustersApi.DeleteClusterWithParams(context.Background(), &args).Execute()
+
 	if err != nil {
 		_, _ = logger.Warnf("Delete cluster error: %v", err.Error())
 		return atlasresponse.AtlasRespone{
@@ -353,6 +371,7 @@ func List(inputModel *InputModel) atlasresponse.AtlasRespone {
 	}
 
 	client, peErr := util.NewMongoDBSDKClient(*inputModel.PublicKey, *inputModel.PrivateKey)
+
 	if peErr != nil {
 		_, _ = logger.Warnf("CreateMongoDBClient error: %v", peErr.Error())
 		return atlasresponse.AtlasRespone{
@@ -365,7 +384,9 @@ func List(inputModel *InputModel) atlasresponse.AtlasRespone {
 	args := admin.ListClustersApiParams{
 		GroupId: *inputModel.ProjectId,
 	}
+
 	clustersResponse, _, err := client.MultiCloudClustersApi.ListClustersWithParams(context.Background(), &args).Execute()
+
 	if err != nil {
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
@@ -391,6 +412,7 @@ func List(inputModel *InputModel) atlasresponse.AtlasRespone {
 		model.AdvancedSettings = flattenProcessArgs(processArgs)
 		models = append(models, model)
 	}
+
 	return atlasresponse.AtlasRespone{
 		Response:       models,
 		HttpStatusCode: configuration.GetConfig()[constants.ClusterListSuccess].Code,

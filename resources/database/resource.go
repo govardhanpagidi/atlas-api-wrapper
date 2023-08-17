@@ -41,7 +41,9 @@ func Create(inputModel *InputModel) atlasresponse.AtlasRespone {
 			HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.InvalidInputParameter].Message, errEvent.Error()),
 		}
 	}
+
 	client, err := util.MongoDriverClient(*inputModel.Username, *inputModel.Password, *inputModel.HostName)
+
 	if err != nil {
 		_, _ = logger.Warnf(" Create Mongo client Error: %#+v", err.Error())
 		return atlasresponse.AtlasRespone{
@@ -50,7 +52,9 @@ func Create(inputModel *InputModel) atlasresponse.AtlasRespone {
 			HttpError:      configuration.GetConfig()[constants.MongoClientCreationError].Message,
 		}
 	}
+
 	dbCreateErr := client.Database(*inputModel.DatabaseName).CreateCollection(context.Background(), *inputModel.CollectionName, nil)
+
 	if dbCreateErr != nil {
 		_, _ = logger.Warnf(" database Create database Error: %#+v", dbCreateErr.Error())
 		return atlasresponse.AtlasRespone{
@@ -59,7 +63,9 @@ func Create(inputModel *InputModel) atlasresponse.AtlasRespone {
 			HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.DatabaseError].Message, *inputModel.DatabaseName),
 		}
 	}
+
 	dbName := client.Database(*inputModel.DatabaseName).Name()
+
 	return atlasresponse.AtlasRespone{
 		Response:       fmt.Sprintf(configuration.GetConfig()[constants.DatabaseSuccess].Message, dbName),
 		HttpStatusCode: configuration.GetConfig()[constants.DatabaseSuccess].Code,
@@ -79,7 +85,9 @@ func Delete(inputModel *DeleteInputModel) atlasresponse.AtlasRespone {
 			HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.InvalidInputParameter].Message, errEvent.Error()),
 		}
 	}
+
 	client, err := util.MongoDriverClient(*inputModel.Username, *inputModel.Password, *inputModel.HostName)
+
 	if err != nil {
 		_, _ = logger.Warnf(" Create Mongo client Error: %#+v", err.Error())
 		return atlasresponse.AtlasRespone{
@@ -88,7 +96,9 @@ func Delete(inputModel *DeleteInputModel) atlasresponse.AtlasRespone {
 			HttpError:      configuration.GetConfig()[constants.MongoClientCreationError].Message,
 		}
 	}
+
 	dbDeleteErr := client.Database(*inputModel.DatabaseName).Drop(context.Background())
+
 	if dbDeleteErr != nil {
 		_, _ = logger.Warnf("delete database Error: %#+v", dbDeleteErr.Error())
 		return atlasresponse.AtlasRespone{
@@ -97,7 +107,9 @@ func Delete(inputModel *DeleteInputModel) atlasresponse.AtlasRespone {
 			HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.DatabaseDeleteError].Message, *inputModel.DatabaseName),
 		}
 	}
+
 	dbName := client.Database(*inputModel.DatabaseName).Name()
+
 	return atlasresponse.AtlasRespone{
 		Response:       fmt.Sprintf(configuration.GetConfig()[constants.DatabaseDeleteSuccess].Message, dbName),
 		HttpStatusCode: configuration.GetConfig()[constants.DatabaseDeleteSuccess].Code,

@@ -297,7 +297,7 @@ func List(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasRespon
 	}
 
 	return atlasresponse.AtlasRespone{
-		Response:       databaseUsers,
+		Response:       dbUserModels,
 		HttpStatusCode: configuration.GetConfig()[constants.UserListSuccess].Code,
 		HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.UserListSuccess].Message, *inputModel.ProjectId),
 	}
@@ -306,13 +306,13 @@ func List(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasRespon
 func setModel(inputModel *InputModel) (string, *admin.CloudDatabaseUser) {
 	adminDefaultDbRole := admin.DatabaseUserRole{
 		CollectionName: nil,
-		DatabaseName:   "admin",
-		RoleName:       "dbAdmin",
+		DatabaseName:   constants.DbuserDbName,
+		RoleName:       constants.DbAdminRoleName,
 	}
 	adminDefaultAtlasRole := admin.DatabaseUserRole{
 		CollectionName: nil,
-		DatabaseName:   "admin",
-		RoleName:       "atlasAdmin",
+		DatabaseName:   constants.DbuserDbName,
+		RoleName:       constants.AtlasAdminRole,
 	}
 	var roles []admin.DatabaseUserRole
 

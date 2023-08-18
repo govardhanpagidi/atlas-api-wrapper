@@ -88,8 +88,8 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 		util.Warnf(ctx, "Get Project error: %v", projectErr.Error())
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
-			HttpStatusCode: configuration.GetConfig()[constants.ProjectDoesNotExist].Code,
-			HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.ProjectDoesNotExist].Message, *inputModel.ProjectId),
+			HttpStatusCode: configuration.GetConfig()[constants.ResourceDoesNotExist].Code,
+			HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.ResourceDoesNotExist].Message, constants.Project, *inputModel.ProjectId),
 		}
 	}
 
@@ -298,8 +298,8 @@ func Read(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasRespon
 		util.Warnf(ctx, "error cluster get- err:%+v resp:%+v", err, resp)
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
-			HttpStatusCode: configuration.GetConfig()[constants.ClusterDoesNotExist].Code,
-			HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.ClusterDoesNotExist].Message, *inputModel.ClusterName),
+			HttpStatusCode: configuration.GetConfig()[constants.ResourceDoesNotExist].Code,
+			HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.ResourceDoesNotExist].Message, constants.Cluster, *inputModel.ClusterName),
 		}
 	}
 

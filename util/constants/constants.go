@@ -1,8 +1,8 @@
 package constants
 
+type TraceIDKeyType string
+
 const (
-	PubKey                  = "ApiKeys.PublicKey"
-	PvtKey                  = "ApiKeys.PrivateKey"
 	ClusterNamePathParam    = "clusterName"
 	ProjectID               = "ProjectId"
 	ProjectIdPathParam      = "projectId"
@@ -25,15 +25,13 @@ const (
 	PrivateKey     = "PrivateKey"
 	PublicKey      = "PublicKey"
 	TshirtSize     = "TshirtSize"
-	DBUserName     = "DBUserName"
 
 	PrivateKeyQueryParam = "privateKey"
 	PublicKeyQueryParam  = "publicKey"
 
 	InvalidInputParameter    = "INVALID_INPUT_PARAMETER"
 	MongoClientCreationError = "MONGO_CLIENT_CREATE_ERROR"
-	ClusterDoesNotExist      = "CLUSTER_NOT_EXIST"
-	ProjectDoesNotExist      = "PROJECT_NOT_EXIST"
+	ResourceDoesNotExist     = "RESOURCE_NOT_EXIST"
 	ClusterModelError        = "CLUSTER_MODEL_ERROR"
 	ClusterRequestError      = "CLUSTER_REQUEST_ERROR"
 	ClusterCreateError       = "CLUSTER_CREATE_ERROR"
@@ -66,7 +64,16 @@ const (
 	UserListError             = "USER_LIST_ERROR"
 	UserListSuccess           = "USER_LIST_SUCCESS"
 
-	DbuserDbName = "admin"
+	DbuserDbName    = "admin"
+	DbAdminRoleName = "dbAdmin"
+	AtlasAdminRole  = "atlasAdmin"
 
-	ClusterConfigLocation = "./config.json"
+	ClusterConfigLocation                = "./config.json"
+	TraceID               TraceIDKeyType = "traceID"
+	Project                              = "Project"
+	Cluster                              = "Cluster"
 )
+
+func (c TraceIDKeyType) String() string {
+	return string(c)
+}

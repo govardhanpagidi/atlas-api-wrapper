@@ -56,7 +56,7 @@ func TraceIDMiddleware(next http.Handler) http.Handler {
 
 		// Add the trace ID to the request context
 		ctx := r.Context()
-		ctx = context.WithValue(ctx, "traceID", traceID)
+		ctx = context.WithValue(ctx, constants.TraceID, traceID)
 		r = r.WithContext(ctx)
 
 		// Call the next handler

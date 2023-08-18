@@ -3,9 +3,9 @@
     "Code": 400,
     "Message": "Input parameter(s) are invalid : %s"
   },
-  "PROJECT_NOT_EXIST": {
+  "RESOURCE_NOT_EXIST": {
     "Code": 400,
-    "Message": "Project does not exist for  : %s"
+    "Message": "%s does not exist for  : %s"
   },
   "CONFIGURATION_NOT_AVAILABLE": {
     "Code": 400,

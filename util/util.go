@@ -93,13 +93,14 @@ func ToString(s *string) string {
 func Debugf(ctx context.Context, format string, args ...interface{}) {
 	traceId := ctx.Value("traceID").(string)
 	newArgs := append([]interface{}{traceId}, args...)
-	logger.Debugf("[%s]"+format, newArgs...)
+	_, _ = logger.Debugf("[%s]"+format, newArgs...)
+
 }
 
 func Warnf(ctx context.Context, format string, args ...interface{}) {
 	traceId := ctx.Value("traceID").(string)
 	newArgs := append([]interface{}{traceId}, args...)
-	logger.Warnf("[%s]"+format, newArgs...)
+	_, _ = logger.Warnf("[%s]"+format, newArgs...)
 }
 
 func Cast64(i *int) *int64 {

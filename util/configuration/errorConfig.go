@@ -7,7 +7,7 @@ import (
 	"sync"
 )
 
-// Singleton represents the singleton instance.
+// ErrorMessageConfig Singleton represents the singleton instance.
 type ErrorMessageConfig struct {
 	errorConfig map[string]ErrorConfig
 }

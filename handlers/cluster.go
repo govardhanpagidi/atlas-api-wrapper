@@ -38,8 +38,8 @@ func GetCluster(w http.ResponseWriter, r *http.Request) {
 	responseHandler.Write(response, w, constants.ClusterHandler)
 }
 
-// GetAllCluster handles GET requests to return all the clusters along with cluster's advanced configuration
-func GetAllCluster(w http.ResponseWriter, r *http.Request) {
+// GetAllClusters handles GET requests to return all the clusters along with cluster's advanced configuration
+func GetAllClusters(w http.ResponseWriter, r *http.Request) {
 	setupClusterLog()
 
 	//fetch all input parameters and create input model

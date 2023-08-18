@@ -25,7 +25,7 @@ func main() {
 	apiRouter := r.PathPrefix(api).Subrouter()
 
 	apiRouter.HandleFunc(uri(constants.ClusterWithGroupIdAndName), handlers.GetCluster).Methods(http.MethodGet)
-	apiRouter.HandleFunc(uri(constants.ClusterWithProjectId), handlers.GetAllCluster).Methods(http.MethodGet)
+	apiRouter.HandleFunc(uri(constants.ClusterWithProjectId), handlers.GetAllClusters).Methods(http.MethodGet)
 	apiRouter.HandleFunc(uri(constants.ClusterWithGroupIdAndName), handlers.DeleteCluster).Methods(http.MethodDelete)
 	apiRouter.HandleFunc(uri(constants.ClusterWithProjectId), handlers.CreateCluster).Methods(http.MethodPost)
 

@@ -260,7 +260,7 @@ func generateClusterName(model InputModel) *string {
 	toRet = strings.ReplaceAll(toRet, ":", "-")
 	toRet = strings.ReplaceAll(toRet, " ", "-")
 	toRet = strings.ReplaceAll(toRet, "-", "-")
-	toRet = *model.CloudProvider + "-" + *model.ProjectId + "-" + *model.TshirtSize + toRet
+	toRet = *model.CloudProvider + "-" + *model.ProjectId + "-" + *model.TshirtSize + "-" + toRet
 	return &toRet
 }
 

@@ -8,26 +8,26 @@ import (
 )
 
 // ErrorMessageConfig Singleton represents the singleton instance.
-type ErrorMessageConfig struct {
+type MessageConfig struct {
 	errorConfig map[string]ErrorConfig
 }
 
 var (
-	instance *ErrorMessageConfig
+	instance *MessageConfig
 	once     sync.Once
 )
 
 // GetInstance returns the singleton instance.
-func GetInstance() *ErrorMessageConfig {
+func GetInstance() *MessageConfig {
 	once.Do(func() {
-		instance = &ErrorMessageConfig{}
+		instance = &MessageConfig{}
 		instance.errorConfig = loadGlobalErrorConfig()
 	})
 	return instance
 }
 
 // GetData returns data from the singleton instance.
-func (s *ErrorMessageConfig) GetData() map[string]ErrorConfig {
+func (s *MessageConfig) GetData() map[string]ErrorConfig {
 	return s.errorConfig
 }
 

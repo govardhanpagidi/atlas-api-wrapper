@@ -2,10 +2,11 @@ package constants
 
 const (
 	DatabaseUserHandler    = "project/{projectId}/databaseUsers"
-	DatabaseUserGetHandler = "project/{projectId}/database/{databaseName}/databaseUsers/{username}"
+	DatabaseUserGetHandler = "project/{projectId}/databaseUsers/{username}"
 
 	ClusterWithProjectId      = "project/{projectId}/cluster"
 	ClusterWithGroupIdAndName = "project/{projectId}/cluster/{clusterName}"
+	ClusterStatus             = "project/{projectId}/cluster/{clusterName}/status"
 
 	DatabaseHandler       = "database"
 	DatabaseDeleteHandler = "database/{databaseName}"

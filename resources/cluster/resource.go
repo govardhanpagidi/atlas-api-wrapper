@@ -62,8 +62,8 @@ func validateModel(fields []string, model *InputModel) error {
 // Create handles the Create event from the Cloudformation service.
 func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasRespone {
 	setup()
-	// Validate required fields in the request
 
+	// Validate required fields in the request
 	modelValidation := validateModel(CreateRequiredFields, inputModel)
 	if modelValidation != nil {
 		util.Warnf(ctx, "create cluster is failing with invalid parameters : %+v", modelValidation.Error())
@@ -74,6 +74,7 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 		}
 	}
 
+	//Create a mongo client using public key and private key
 	client, peErr := util.NewMongoDBSDKClient(cast.ToString(inputModel.PublicKey), cast.ToString(inputModel.PrivateKey))
 
 	if peErr != nil {
@@ -85,6 +86,7 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 		}
 	}
 
+	//check if project already exists
 	_, _, projectErr := client.ProjectsApi.GetProject(context.Background(), cast.ToString(inputModel.ProjectId)).Execute()
 
 	if projectErr != nil {
@@ -96,6 +98,7 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 		}
 	}
 
+	//load cluster configuration based on TshirtSize from config.json
 	currentModel, err := loadClusterConfiguration(ctx, *inputModel)
 
 	if err != nil {
@@ -108,6 +111,7 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 	}
 	currentModel.validateDefaultLabel()
 
+	//list all private endpoints for the specific project
 	endPoints, _, endpointerr := client.PrivateEndpointServicesApi.ListPrivateEndpointServices(ctx, *inputModel.ProjectId, *inputModel.CloudProvider).Execute()
 
 	if endpointerr != nil {
@@ -119,8 +123,8 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 		}
 	}
 
+	//check if at least one private endpoint is attached to the project
 	count := len(endPoints)
-
 	if count == 0 {
 		util.Warnf(ctx, "PrivateEndpoint Not Configured for ProjectId %s error: %v", *inputModel.ProjectId, errors.New(configuration.GetConfig()[constants.NoEndpointConfigured].Message))
 		return atlasresponse.AtlasRespone{
@@ -130,12 +134,14 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 		}
 	}
 
+	//load all region names from the private endpoints
 	util.Debugf(ctx, "Cluster create projectId: %s, clusterName: %s", *inputModel.ProjectId, *inputModel.ClusterName)
 	var endpointRegions []string
 	for _, endPoint := range endPoints {
 		endpointRegions = append(endpointRegions, *endPoint.RegionName)
 	}
 
+	//load all region names from config.json
 	var clusterAdvancedConfigRegions []string
 	for _, specs := range currentModel.ReplicationSpecs {
 		for _, advancedConfig := range specs.AdvancedRegionConfigs {
@@ -144,6 +150,7 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 
 	}
 
+	//compare if the regions from json matches the regions from private endpoints
 	isEndPointConfigured := hasCommonValues(endpointRegions, clusterAdvancedConfigRegions)
 
 	if !isEndPointConfigured {
@@ -265,8 +272,9 @@ func generateClusterName(model InputModel) *string {
 // Read handles the Read event from the Cloudformation service.
 func Read(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasRespone {
 	setup()
-	modelValidation := validateModel(ReadRequiredFields, inputModel)
 
+	//validate the input fields
+	modelValidation := validateModel(ReadRequiredFields, inputModel)
 	if modelValidation != nil {
 		util.Warnf(ctx, "read cluster is failing with invalid parameters : %+v", modelValidation.Error())
 		return atlasresponse.AtlasRespone{
@@ -276,6 +284,7 @@ func Read(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasRespon
 		}
 	}
 
+	//Create a mongo client using public key and private key
 	client, peErr := util.NewMongoDBSDKClient(cast.ToString(inputModel.PublicKey), cast.ToString(inputModel.PrivateKey))
 
 	if peErr != nil {
@@ -287,7 +296,7 @@ func Read(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasRespon
 		}
 	}
 
-	// Read call
+	// Read the cluster based on the provided params
 	model, resp, err := readCluster(context.Background(), client, &Model{ProjectId: inputModel.ProjectId, Name: inputModel.ClusterName})
 
 	if err != nil {
@@ -319,6 +328,7 @@ func Delete(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 		}
 	}
 
+	//Create a mongo client using public key and private key
 	client, peErr := util.NewMongoDBSDKClient(cast.ToString(inputModel.PublicKey), cast.ToString(inputModel.PrivateKey))
 
 	if peErr != nil {
@@ -337,6 +347,7 @@ func Delete(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 		RetainBackups: &retainBackup,
 	}
 
+	//make API call to delete the cluster
 	_, err := client.MultiCloudClustersApi.DeleteClusterWithParams(context.Background(), &args).Execute()
 
 	if err != nil {
@@ -368,6 +379,7 @@ func List(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasRespon
 		}
 	}
 
+	//Create a mongo client using public key and private key
 	client, peErr := util.NewMongoDBSDKClient(*inputModel.PublicKey, *inputModel.PrivateKey)
 
 	if peErr != nil {
@@ -383,6 +395,7 @@ func List(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasRespon
 		GroupId: *inputModel.ProjectId,
 	}
 
+	//make API call to list all clusters associated with the project
 	clustersResponse, _, err := client.MultiCloudClustersApi.ListClustersWithParams(context.Background(), &args).Execute()
 
 	if err != nil {
@@ -397,7 +410,7 @@ func List(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasRespon
 	for i := range clustersResponse.Results {
 		model := &Model{}
 		mapClusterToModel(ctx, model, &clustersResponse.Results[i])
-		// Call AdvancedSettings
+		// fetch advanced cluster config
 		processArgs, _, clusterErr := client.ClustersApi.GetClusterAdvancedConfiguration(context.Background(), *model.ProjectId, *model.Name).Execute()
 		if clusterErr != nil {
 			return atlasresponse.AtlasRespone{

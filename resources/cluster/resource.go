@@ -24,7 +24,6 @@ import (
 	"github.com/atlas-api-helper/util/atlasresponse"
 	"github.com/atlas-api-helper/util/configuration"
 	"github.com/atlas-api-helper/util/constants"
-	"github.com/atlas-api-helper/util/logger"
 	"github.com/atlas-api-helper/util/validator"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/spf13/cast"
@@ -67,7 +66,7 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 
 	modelValidation := validateModel(CreateRequiredFields, inputModel)
 	if modelValidation != nil {
-		_, _ = logger.Warnf("create cluster is failing with invalid parameters : %+v", modelValidation.Error())
+		util.Warnf(ctx, "create cluster is failing with invalid parameters : %+v", modelValidation.Error())
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.InvalidInputParameter].Code,
@@ -78,7 +77,7 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 	client, peErr := util.NewMongoDBSDKClient(cast.ToString(inputModel.PublicKey), cast.ToString(inputModel.PrivateKey))
 
 	if peErr != nil {
-		_, _ = logger.Warnf("CreateMongoDBClient error: %v", peErr.Error())
+		util.Warnf(ctx, "CreateMongoDBClient error: %v", peErr.Error())
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.MongoClientCreationError].Code,
@@ -89,7 +88,7 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 	_, _, projectErr := client.ProjectsApi.GetProject(context.Background(), cast.ToString(inputModel.ProjectId)).Execute()
 
 	if projectErr != nil {
-		_, _ = logger.Warnf("Get Project error: %v", projectErr.Error())
+		util.Warnf(ctx, "Get Project error: %v", projectErr.Error())
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.ProjectDoesNotExist].Code,
@@ -97,10 +96,10 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 		}
 	}
 
-	currentModel, err := loadClusterConfiguration(*inputModel)
+	currentModel, err := loadClusterConfiguration(ctx, *inputModel)
 
 	if err != nil {
-		_, _ = logger.Warnf("Create Current Model error: %v", err.Error())
+		util.Warnf(ctx, "Create Current Model error: %v", err.Error())
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.ClusterModelError].Code,
@@ -112,7 +111,7 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 	endPoints, _, endpointerr := client.PrivateEndpointServicesApi.ListPrivateEndpointServices(ctx, *inputModel.ProjectId, *inputModel.CloudProvider).Execute()
 
 	if endpointerr != nil {
-		_, _ = logger.Warnf("Get PrivateEndpoint error: %v", endpointerr.Error())
+		util.Warnf(ctx, "Get PrivateEndpoint error: %v", endpointerr.Error())
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.ListEndpointError].Code,
@@ -123,7 +122,7 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 	count := len(endPoints)
 
 	if count == 0 {
-		_, _ = logger.Warnf("PrivateEndpoint Not Configured for ProjectId %s error: %v", *inputModel.ProjectId, errors.New(configuration.GetConfig()[constants.NoEndpointConfigured].Message))
+		util.Warnf(ctx, "PrivateEndpoint Not Configured for ProjectId %s error: %v", *inputModel.ProjectId, errors.New(configuration.GetConfig()[constants.NoEndpointConfigured].Message))
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.NoEndpointConfigured].Code,
@@ -131,7 +130,7 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 		}
 	}
 
-	_, _ = logger.Debugf("Cluster create projectId: %s, clusterName: %s", *inputModel.ProjectId, *inputModel.ClusterName)
+	util.Debugf(ctx, "Cluster create projectId: %s, clusterName: %s", *inputModel.ProjectId, *inputModel.ClusterName)
 	var endpointRegions []string
 	for _, endPoint := range endPoints {
 		endpointRegions = append(endpointRegions, *endPoint.RegionName)
@@ -148,7 +147,7 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 	isEndPointConfigured := hasCommonValues(endpointRegions, clusterAdvancedConfigRegions)
 
 	if !isEndPointConfigured {
-		_, _ = logger.Warnf("PrivateEndpoint Not Configured for ProjectId %s error: %v", *inputModel.ProjectId, endpointerr.Error())
+		util.Warnf(ctx, "PrivateEndpoint Not Configured for ProjectId %s error: %v", *inputModel.ProjectId, endpointerr.Error())
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.NoEndpointConfigured].Code,
@@ -157,10 +156,10 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 	}
 
 	// Prepare cluster request
-	clusterRequest, err := createClusterRequest(&currentModel)
+	clusterRequest, err := createClusterRequest(ctx, &currentModel)
 
 	if err != nil {
-		_, _ = logger.Warnf("Create Cluster Request error: %v", err.Error())
+		util.Warnf(ctx, "Create Cluster Request error: %v", err.Error())
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.ClusterRequestError].Code,
@@ -172,7 +171,7 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 	cluster, _, err := client.MultiCloudClustersApi.CreateCluster(ctx, cast.ToString(currentModel.ProjectId), clusterRequest).Execute()
 
 	if err != nil {
-		_, _ = logger.Warnf("Create - Cluster.Create() - error: %+v", err)
+		util.Warnf(ctx, "Create - Cluster.Create() - error: %+v", err)
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.ClusterCreateError].Code,
@@ -207,7 +206,7 @@ func hasCommonValues(slice1, slice2 []string) bool {
 }
 
 // loadClusterConfiguration This method loads the config.json file from project path
-func loadClusterConfiguration(model InputModel) (Model, error) {
+func loadClusterConfiguration(ctx context.Context, model InputModel) (Model, error) {
 	var currentModel Model
 	var ClusterConfig map[string]Model
 
@@ -226,7 +225,7 @@ func loadClusterConfiguration(model InputModel) (Model, error) {
 
 	key := extractClusterKey(model)
 	clusterConfig, ok := ClusterConfig[key]
-	_, _ = logger.Debugf("Selected Cluster Configuration : %+v  for the T-shirt Size :%s", clusterConfig, *model.TshirtSize)
+	util.Debugf(ctx, "Selected Cluster Configuration : %+v  for the T-shirt Size :%s", clusterConfig, *model.TshirtSize)
 	if ok {
 		currentModel = clusterConfig
 	} else {
@@ -264,12 +263,12 @@ func generateClusterName(model InputModel) *string {
 }
 
 // Read handles the Read event from the Cloudformation service.
-func Read(inputModel *InputModel) atlasresponse.AtlasRespone {
+func Read(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasRespone {
 	setup()
 	modelValidation := validateModel(ReadRequiredFields, inputModel)
 
 	if modelValidation != nil {
-		_, _ = logger.Warnf("read cluster is failing with invalid parameters : %+v", modelValidation.Error())
+		util.Warnf(ctx, "read cluster is failing with invalid parameters : %+v", modelValidation.Error())
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.InvalidInputParameter].Code,
@@ -280,7 +279,7 @@ func Read(inputModel *InputModel) atlasresponse.AtlasRespone {
 	client, peErr := util.NewMongoDBSDKClient(cast.ToString(inputModel.PublicKey), cast.ToString(inputModel.PrivateKey))
 
 	if peErr != nil {
-		_, _ = logger.Warnf("CreateMongoDBClient error: %v", peErr.Error())
+		util.Warnf(ctx, "CreateMongoDBClient error: %v", peErr.Error())
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.MongoClientCreationError].Code,
@@ -292,7 +291,7 @@ func Read(inputModel *InputModel) atlasresponse.AtlasRespone {
 	model, resp, err := readCluster(context.Background(), client, &Model{ProjectId: inputModel.ProjectId, Name: inputModel.ClusterName})
 
 	if err != nil {
-		_, _ = logger.Warnf("error cluster get- err:%+v resp:%+v", err, resp)
+		util.Warnf(ctx, "error cluster get- err:%+v resp:%+v", err, resp)
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.ClusterDoesNotExist].Code,
@@ -301,18 +300,18 @@ func Read(inputModel *InputModel) atlasresponse.AtlasRespone {
 	}
 
 	return atlasresponse.AtlasRespone{
-		Response:       fmt.Sprintf(configuration.GetConfig()[constants.ClusterReadSuccess].Message, *model.StateName),
+		Response:       nil,
 		HttpStatusCode: configuration.GetConfig()[constants.ClusterReadSuccess].Code,
-		HttpError:      "",
+		HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.ClusterReadSuccess].Message, *model.StateName),
 	}
 }
 
 // Delete This method deletes the cluster based on the clusterName
-func Delete(inputModel *InputModel) atlasresponse.AtlasRespone {
+func Delete(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasRespone {
 	setup()
 	modelValidation := validateModel(DeleteRequiredFields, inputModel)
 	if modelValidation != nil {
-		_, _ = logger.Warnf("delete cluster is failing with invalid parameters : %+v", modelValidation.Error())
+		util.Warnf(ctx, "delete cluster is failing with invalid parameters : %+v", modelValidation.Error())
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.InvalidInputParameter].Code,
@@ -323,7 +322,7 @@ func Delete(inputModel *InputModel) atlasresponse.AtlasRespone {
 	client, peErr := util.NewMongoDBSDKClient(cast.ToString(inputModel.PublicKey), cast.ToString(inputModel.PrivateKey))
 
 	if peErr != nil {
-		_, _ = logger.Warnf("CreateMongoDBClient error: %v", peErr.Error())
+		util.Warnf(ctx, "CreateMongoDBClient error: %v", peErr.Error())
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.MongoClientCreationError].Code,
@@ -341,7 +340,7 @@ func Delete(inputModel *InputModel) atlasresponse.AtlasRespone {
 	_, err := client.MultiCloudClustersApi.DeleteClusterWithParams(context.Background(), &args).Execute()
 
 	if err != nil {
-		_, _ = logger.Warnf("Delete cluster error: %v", err.Error())
+		util.Warnf(ctx, "Delete cluster error: %v", err.Error())
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.ClusterDeleteError].Code,
@@ -357,12 +356,11 @@ func Delete(inputModel *InputModel) atlasresponse.AtlasRespone {
 }
 
 // List handles the List event from the Cloudformation service.
-
-func List(inputModel *InputModel) atlasresponse.AtlasRespone {
+func List(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasRespone {
 	setup()
 	modelValidation := validateModel(ListRequiredFields, inputModel)
 	if modelValidation != nil {
-		_, _ = logger.Warnf("list clusters is failing with invalid parameters : %+v", modelValidation.Error())
+		util.Warnf(ctx, "list clusters is failing with invalid parameters : %+v", modelValidation.Error())
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.InvalidInputParameter].Code,
@@ -373,7 +371,7 @@ func List(inputModel *InputModel) atlasresponse.AtlasRespone {
 	client, peErr := util.NewMongoDBSDKClient(*inputModel.PublicKey, *inputModel.PrivateKey)
 
 	if peErr != nil {
-		_, _ = logger.Warnf("CreateMongoDBClient error: %v", peErr.Error())
+		util.Warnf(ctx, "CreateMongoDBClient error: %v", peErr.Error())
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.MongoClientCreationError].Code,
@@ -398,7 +396,7 @@ func List(inputModel *InputModel) atlasresponse.AtlasRespone {
 	models := make([]*Model, *clustersResponse.TotalCount)
 	for i := range clustersResponse.Results {
 		model := &Model{}
-		mapClusterToModel(model, &clustersResponse.Results[i])
+		mapClusterToModel(ctx, model, &clustersResponse.Results[i])
 		// Call AdvancedSettings
 		processArgs, _, clusterErr := client.ClustersApi.GetClusterAdvancedConfiguration(context.Background(), *model.ProjectId, *model.Name).Execute()
 		if clusterErr != nil {
@@ -421,7 +419,7 @@ func List(inputModel *InputModel) atlasresponse.AtlasRespone {
 }
 
 // mapClusterToModel This method is used to map the cluster object returned from the mongo client to our model
-func mapClusterToModel(model *Model, cluster *admin.AdvancedClusterDescription) {
+func mapClusterToModel(ctx context.Context, model *Model, cluster *admin.AdvancedClusterDescription) {
 
 	if cluster.Id != nil {
 		model.Id = cluster.Id
@@ -485,7 +483,7 @@ func mapClusterToModel(model *Model, cluster *admin.AdvancedClusterDescription) 
 	}
 
 	if cluster.ReplicationSpecs != nil {
-		model.ReplicationSpecs = flattenReplicationSpecs(cluster.ReplicationSpecs)
+		model.ReplicationSpecs = flattenReplicationSpecs(ctx, cluster.ReplicationSpecs)
 	}
 
 	if cluster.RootCertType != nil {
@@ -531,7 +529,7 @@ func expandBiConnector(biConnector *BiConnector) *admin.BiConnector {
 	}
 }
 
-func expandReplicationSpecs(replicationSpecs []AdvancedReplicationSpec) []admin.ReplicationSpec {
+func expandReplicationSpecs(ctx context.Context, replicationSpecs []AdvancedReplicationSpec) []admin.ReplicationSpec {
 	var rSpecs []admin.ReplicationSpec
 
 	for i := range replicationSpecs {
@@ -541,7 +539,7 @@ func expandReplicationSpecs(replicationSpecs []AdvancedReplicationSpec) []admin.
 		rSpec := admin.ReplicationSpec{
 			Id:            nil,
 			NumShards:     &numShards,
-			RegionConfigs: expandRegionsConfig(replicationSpecs[i].AdvancedRegionConfigs),
+			RegionConfigs: expandRegionsConfig(ctx, replicationSpecs[i].AdvancedRegionConfigs),
 		}
 
 		if replicationSpecs[i].NumShards != nil {
@@ -587,15 +585,15 @@ func expandAutoScaling(scaling *AdvancedAutoScaling) *admin.AdvancedAutoScalingS
 	return advAutoScaling
 }
 
-func expandRegionsConfig(regionConfigs []AdvancedRegionConfig) []admin.CloudRegionConfig {
+func expandRegionsConfig(ctx context.Context, regionConfigs []AdvancedRegionConfig) []admin.CloudRegionConfig {
 	var regionsConfigs []admin.CloudRegionConfig
 	for _, regionCfg := range regionConfigs {
-		regionsConfigs = append(regionsConfigs, expandRegionConfig(regionCfg))
+		regionsConfigs = append(regionsConfigs, expandRegionConfig(ctx, regionCfg))
 	}
 	return regionsConfigs
 }
 
-func expandRegionConfig(regionCfg AdvancedRegionConfig) admin.CloudRegionConfig {
+func expandRegionConfig(ctx context.Context, regionCfg AdvancedRegionConfig) admin.CloudRegionConfig {
 	var region string
 	if regionCfg.RegionName != nil {
 		region = *regionCfg.RegionName
@@ -619,13 +617,13 @@ func expandRegionConfig(regionCfg AdvancedRegionConfig) admin.CloudRegionConfig 
 		advRegionConfig.AnalyticsAutoScaling = expandAutoScaling(regionCfg.AnalyticsAutoScaling)
 	}
 	if regionCfg.AnalyticsSpecs != nil {
-		advRegionConfig.AnalyticsSpecs = expandRegionConfigSpec(regionCfg.AnalyticsSpecs)
+		advRegionConfig.AnalyticsSpecs = expandRegionConfigSpec(ctx, regionCfg.AnalyticsSpecs)
 	}
 	if regionCfg.ElectableSpecs != nil {
-		advRegionConfig.ElectableSpecs = expandRegionConfigSpecElectableSpecs(regionCfg.ElectableSpecs)
+		advRegionConfig.ElectableSpecs = expandRegionConfigSpecElectableSpecs(ctx, regionCfg.ElectableSpecs)
 	}
 	if regionCfg.ReadOnlySpecs != nil {
-		advRegionConfig.ReadOnlySpecs = expandRegionConfigSpec(regionCfg.ReadOnlySpecs)
+		advRegionConfig.ReadOnlySpecs = expandRegionConfigSpec(ctx, regionCfg.ReadOnlySpecs)
 	}
 	if regionCfg.BackingProviderName != nil {
 		advRegionConfig.BackingProviderName = regionCfg.BackingProviderName
@@ -633,7 +631,7 @@ func expandRegionConfig(regionCfg AdvancedRegionConfig) admin.CloudRegionConfig 
 	return advRegionConfig
 }
 
-func expandRegionConfigSpec(spec *Specs) *admin.DedicatedHardwareSpec {
+func expandRegionConfigSpec(ctx context.Context, spec *Specs) *admin.DedicatedHardwareSpec {
 	if spec == nil {
 		return nil
 	}
@@ -651,7 +649,7 @@ func expandRegionConfigSpec(spec *Specs) *admin.DedicatedHardwareSpec {
 		if err == nil {
 			val = v
 		}
-		_, _ = logger.Debugf("set diskIops %d", val)
+		util.Debugf(ctx, "set diskIops %d", val)
 	}
 	return &admin.DedicatedHardwareSpec{
 		DiskIOPS:      &val,
@@ -661,7 +659,7 @@ func expandRegionConfigSpec(spec *Specs) *admin.DedicatedHardwareSpec {
 	}
 }
 
-func expandRegionConfigSpecElectableSpecs(spec *Specs) *admin.HardwareSpec {
+func expandRegionConfigSpecElectableSpecs(ctx context.Context, spec *Specs) *admin.HardwareSpec {
 	if spec == nil {
 		return nil
 	}
@@ -679,7 +677,7 @@ func expandRegionConfigSpecElectableSpecs(spec *Specs) *admin.HardwareSpec {
 		if err == nil {
 			val = v
 		}
-		_, _ = logger.Debugf("set diskIops %d", val)
+		util.Debugf(ctx, "set diskIops %d", val)
 	}
 	return &admin.HardwareSpec{
 		DiskIOPS:      &val,
@@ -738,7 +736,7 @@ func flattenAutoScaling(scaling *admin.AdvancedAutoScalingSettings) *AdvancedAut
 	return advAutoScaling
 }
 
-func flattenReplicationSpecs(replicationSpecs []admin.ReplicationSpec) []AdvancedReplicationSpec {
+func flattenReplicationSpecs(ctx context.Context, replicationSpecs []admin.ReplicationSpec) []AdvancedReplicationSpec {
 	var rSpecs []AdvancedReplicationSpec
 	for ind := range replicationSpecs {
 		configs := replicationSpecs[ind].RegionConfigs
@@ -746,7 +744,7 @@ func flattenReplicationSpecs(replicationSpecs []admin.ReplicationSpec) []Advance
 			ID:                    replicationSpecs[ind].Id,
 			NumShards:             replicationSpecs[ind].NumShards,
 			ZoneName:              replicationSpecs[ind].ZoneName,
-			AdvancedRegionConfigs: flattenRegionsConfig(configs),
+			AdvancedRegionConfigs: flattenRegionsConfig(ctx, configs),
 		}
 		rSpecs = append(rSpecs, rSpec)
 	}
@@ -754,15 +752,15 @@ func flattenReplicationSpecs(replicationSpecs []admin.ReplicationSpec) []Advance
 	return rSpecs
 }
 
-func flattenRegionsConfig(regionConfigs []admin.CloudRegionConfig) []AdvancedRegionConfig {
+func flattenRegionsConfig(ctx context.Context, regionConfigs []admin.CloudRegionConfig) []AdvancedRegionConfig {
 	var regionsConfigs []AdvancedRegionConfig
 	for i := range regionConfigs {
-		regionsConfigs = append(regionsConfigs, flattenRegionConfig(&regionConfigs[i]))
+		regionsConfigs = append(regionsConfigs, flattenRegionConfig(ctx, &regionConfigs[i]))
 	}
 	return regionsConfigs
 }
 
-func flattenRegionConfig(regionCfg *admin.CloudRegionConfig) AdvancedRegionConfig {
+func flattenRegionConfig(ctx context.Context, regionCfg *admin.CloudRegionConfig) AdvancedRegionConfig {
 	advRegConfig := AdvancedRegionConfig{
 		AutoScaling:          flattenAutoScaling(regionCfg.AutoScaling),
 		AnalyticsAutoScaling: flattenAutoScaling(regionCfg.AnalyticsAutoScaling),
@@ -770,27 +768,27 @@ func flattenRegionConfig(regionCfg *admin.CloudRegionConfig) AdvancedRegionConfi
 		Priority:             regionCfg.Priority,
 	}
 	if regionCfg.AnalyticsSpecs != nil {
-		advRegConfig.AnalyticsSpecs = flattenRegionConfigSpec(regionCfg.AnalyticsSpecs)
+		advRegConfig.AnalyticsSpecs = flattenRegionConfigSpec(ctx, regionCfg.AnalyticsSpecs)
 	}
 	if regionCfg.ElectableSpecs != nil {
-		advRegConfig.ElectableSpecs = flattenRegionConfigHardwareSpecSpec(regionCfg.ElectableSpecs)
+		advRegConfig.ElectableSpecs = flattenRegionConfigHardwareSpecSpec(ctx, regionCfg.ElectableSpecs)
 	}
 
 	if regionCfg.ReadOnlySpecs != nil {
-		advRegConfig.ReadOnlySpecs = flattenRegionConfigSpec(regionCfg.ReadOnlySpecs)
+		advRegConfig.ReadOnlySpecs = flattenRegionConfigSpec(ctx, regionCfg.ReadOnlySpecs)
 	}
 
 	return advRegConfig
 }
 
-func flattenRegionConfigHardwareSpecSpec(spec *admin.HardwareSpec) *Specs {
+func flattenRegionConfigHardwareSpecSpec(ctx context.Context, spec *admin.HardwareSpec) *Specs {
 	if spec == nil {
 		return nil
 	}
 	var diskIops string
 	if spec.DiskIOPS != nil {
 		diskIops = strconv.FormatInt(*cast64(spec.DiskIOPS), 10)
-		_, _ = logger.Debugf("get diskIops %s", diskIops)
+		util.Debugf(ctx, "get diskIops %s", diskIops)
 	}
 
 	return &Specs{
@@ -801,14 +799,14 @@ func flattenRegionConfigHardwareSpecSpec(spec *admin.HardwareSpec) *Specs {
 	}
 }
 
-func flattenRegionConfigSpec(spec *admin.DedicatedHardwareSpec) *Specs {
+func flattenRegionConfigSpec(ctx context.Context, spec *admin.DedicatedHardwareSpec) *Specs {
 	if spec == nil {
 		return nil
 	}
 	var diskIops string
 	if spec.DiskIOPS != nil {
 		diskIops = strconv.FormatInt(*cast64(spec.DiskIOPS), 10)
-		_, _ = logger.Debugf("get diskIops %s", diskIops)
+		util.Debugf(ctx, "get diskIops %s", diskIops)
 	}
 
 	return &Specs{
@@ -912,7 +910,7 @@ func readCluster(ctx context.Context, client *admin.APIClient, currentModel *Mod
 	if err != nil || res.StatusCode != 200 {
 		return currentModel, res, err
 	}
-	setClusterData(currentModel, cluster)
+	setClusterData(ctx, currentModel, cluster)
 
 	processArgs, resp, errr := client.ClustersApi.GetClusterAdvancedConfiguration(ctx, *currentModel.ProjectId, *currentModel.Name).Execute()
 
@@ -924,7 +922,7 @@ func readCluster(ctx context.Context, client *admin.APIClient, currentModel *Mod
 }
 
 // setClusterData This method sets the cluster details to Model
-func setClusterData(currentModel *Model, cluster *admin.AdvancedClusterDescription) {
+func setClusterData(ctx context.Context, currentModel *Model, cluster *admin.AdvancedClusterDescription) {
 	if cluster == nil {
 		return
 	}
@@ -972,7 +970,7 @@ func setClusterData(currentModel *Model, cluster *admin.AdvancedClusterDescripti
 		currentModel.RootCertType = cluster.RootCertType
 	}
 	if cluster.ReplicationSpecs != nil {
-		currentModel.ReplicationSpecs = flattenReplicationSpecs(cluster.ReplicationSpecs)
+		currentModel.ReplicationSpecs = flattenReplicationSpecs(ctx, cluster.ReplicationSpecs)
 	}
 	// Readonly
 	currentModel.StateName = cluster.StateName
@@ -984,11 +982,11 @@ func setClusterData(currentModel *Model, cluster *admin.AdvancedClusterDescripti
 }
 
 // createClusterRequest creates the ClusterRequest from the Model
-func createClusterRequest(currentModel *Model) (*admin.AdvancedClusterDescription, error) {
+func createClusterRequest(ctx context.Context, currentModel *Model) (*admin.AdvancedClusterDescription, error) {
 	// Atlas client
 	clusterRequest := &admin.AdvancedClusterDescription{
 		Name:             currentModel.Name,
-		ReplicationSpecs: expandReplicationSpecs(currentModel.ReplicationSpecs),
+		ReplicationSpecs: expandReplicationSpecs(ctx, currentModel.ReplicationSpecs),
 	}
 
 	if currentModel.EncryptionAtRestProvider != nil {

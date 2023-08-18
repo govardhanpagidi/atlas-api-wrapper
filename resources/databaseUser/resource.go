@@ -7,7 +7,6 @@ import (
 	"github.com/atlas-api-helper/util/atlasresponse"
 	"github.com/atlas-api-helper/util/configuration"
 	"github.com/atlas-api-helper/util/constants"
-	"github.com/atlas-api-helper/util/logger"
 	"github.com/atlas-api-helper/util/validator"
 	"go.mongodb.org/atlas-sdk/v20230201002/admin"
 )
@@ -27,10 +26,10 @@ func validateModel(fields []string, model *InputModel) error {
 }
 
 // Create handles the Create event from the Cloudformation service.
-func Create(inputModel *InputModel) atlasresponse.AtlasRespone {
+func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasRespone {
 	setup()
 	if errEvent := validateModel(CreateRequiredFields, inputModel); errEvent != nil {
-		_, _ = logger.Warnf(" create databaseuser is failing with invalid parameters: %#+v", errEvent.Error())
+		util.Warnf(ctx, " create databaseuser is failing with invalid parameters: %#+v", errEvent.Error())
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.InvalidInputParameter].Code,
@@ -41,7 +40,7 @@ func Create(inputModel *InputModel) atlasresponse.AtlasRespone {
 	client, peErr := util.NewMongoDBSDKClient(*inputModel.PublicKey, *inputModel.PrivateKey)
 
 	if peErr != nil {
-		_, _ = logger.Warnf(" Create Mongo client Error: %#+v", peErr.Error())
+		util.Warnf(ctx, " Create Mongo client Error: %#+v", peErr.Error())
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.MongoClientCreationError].Code,
@@ -50,7 +49,7 @@ func Create(inputModel *InputModel) atlasresponse.AtlasRespone {
 	}
 
 	groupID, dbUser := setModel(inputModel)
-	_, _ = logger.Debugf("Arguments: Project ID: %s, Request %#+v", groupID, dbUser)
+	util.Debugf(ctx, "Arguments: Project ID: %s, Request %#+v", groupID, dbUser)
 
 	request := client.DatabaseUsersApi.CreateDatabaseUser(context.Background(), groupID, dbUser)
 
@@ -64,7 +63,7 @@ func Create(inputModel *InputModel) atlasresponse.AtlasRespone {
 			HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.UserCreateError].Message, *inputModel.Username),
 		}
 	}
-	_, _ = logger.Debugf("newUser: %+v", databaseUser)
+	util.Debugf(ctx, "newUser: %+v", databaseUser)
 
 	return atlasresponse.AtlasRespone{
 		Response:       databaseUser,
@@ -74,10 +73,10 @@ func Create(inputModel *InputModel) atlasresponse.AtlasRespone {
 }
 
 // Read handles the Read event from the Cloudformation service.
-func Read(inputModel *InputModel) atlasresponse.AtlasRespone {
+func Read(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasRespone {
 	setup()
 	if errEvent := validateModel(ReadRequiredFields, inputModel); errEvent != nil {
-		_, _ = logger.Warnf(" read database user is failing with invalid parameters: %#+v", errEvent.Error())
+		util.Warnf(ctx, " read database user is failing with invalid parameters: %#+v", errEvent.Error())
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.InvalidInputParameter].Code,
@@ -88,7 +87,7 @@ func Read(inputModel *InputModel) atlasresponse.AtlasRespone {
 	client, peErr := util.NewMongoDBSDKClient(*inputModel.PublicKey, *inputModel.PrivateKey)
 
 	if peErr != nil {
-		_, _ = logger.Warnf(" Create Mongo client Error: %#+v", peErr.Error())
+		util.Warnf(ctx, " Create Mongo client Error: %#+v", peErr.Error())
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.MongoClientCreationError].Code,
@@ -103,7 +102,7 @@ func Read(inputModel *InputModel) atlasresponse.AtlasRespone {
 	databaseUser, _, err := client.DatabaseUsersApi.GetDatabaseUser(context.Background(), groupID, dbName, username).Execute()
 
 	if err != nil {
-		_, _ = logger.Warnf(" Get Database User Error: %#+v", err.Error())
+		util.Warnf(ctx, " Get Database User Error: %#+v", err.Error())
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.UserNotFound].Code,
@@ -111,6 +110,15 @@ func Read(inputModel *InputModel) atlasresponse.AtlasRespone {
 		}
 	}
 
+	currentModel := convertToModel(ctx, inputModel, databaseUser, groupID)
+	return atlasresponse.AtlasRespone{
+		Response:       currentModel,
+		HttpStatusCode: configuration.GetConfig()[constants.FetchUser].Code,
+		HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.FetchUser].Message, *inputModel.Username),
+	}
+}
+
+func convertToModel(ctx context.Context, inputModel *InputModel, databaseUser *admin.CloudDatabaseUser, groupID string) Model {
 	var currentModel Model
 	currentModel.Username = inputModel.Username
 	currentModel.DatabaseName = &databaseUser.DatabaseName
@@ -127,7 +135,7 @@ func Read(inputModel *InputModel) atlasresponse.AtlasRespone {
 		currentModel.X509Type = databaseUser.X509Type
 	}
 	currentModel.Username = &databaseUser.Username
-	_, _ = logger.Debugf("databaseUser:%+v", databaseUser)
+	util.Debugf(ctx, "databaseUser:%+v", databaseUser)
 
 	var roles []RoleDefinition
 
@@ -142,7 +150,7 @@ func Read(inputModel *InputModel) atlasresponse.AtlasRespone {
 		roles = append(roles, role)
 	}
 	currentModel.Roles = roles
-	_, _ = logger.Debugf("currentModel.Roles:%+v", roles)
+	util.Debugf(ctx, "currentModel.Roles:%+v", roles)
 	var labels []LabelDefinition
 
 	for i := range databaseUser.Labels {
@@ -158,18 +166,14 @@ func Read(inputModel *InputModel) atlasresponse.AtlasRespone {
 
 	cfnid := fmt.Sprintf("%s-%s", *currentModel.Username, groupID)
 	currentModel.UserCFNIdentifier = &cfnid
-	return atlasresponse.AtlasRespone{
-		Response:       currentModel,
-		HttpStatusCode: configuration.GetConfig()[constants.FetchUser].Code,
-		HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.FetchUser].Message, *inputModel.Username),
-	}
+	return currentModel
 }
 
 // Delete handles the Delete event from the Cloudformation service.
 func Delete(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasRespone {
 	setup()
 	if errEvent := validateModel(DeleteRequiredFields, inputModel); errEvent != nil {
-		_, _ = logger.Warnf("delete databaseUser is failing with invalid parameters: %#+v", errEvent.Error())
+		util.Warnf(ctx, "delete databaseUser is failing with invalid parameters: %#+v", errEvent.Error())
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.InvalidInputParameter].Code,
@@ -180,7 +184,7 @@ func Delete(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 	client, peErr := util.NewMongoDBSDKClient(*inputModel.PublicKey, *inputModel.PrivateKey)
 
 	if peErr != nil {
-		_, _ = logger.Warnf(" Create Mongo client Error: %#+v", peErr.Error())
+		util.Warnf(ctx, " Create Mongo client Error: %#+v", peErr.Error())
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.MongoClientCreationError].Code,
@@ -195,7 +199,7 @@ func Delete(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 	user, _, err := client.DatabaseUsersApi.DeleteDatabaseUser(ctx, groupID, dbName, username).Execute()
 
 	if err != nil {
-		_, _ = logger.Warnf(" Delete DatabaseUser Error: %#+v", err.Error())
+		util.Warnf(ctx, " Delete DatabaseUser Error: %#+v", err.Error())
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.DeleteDatabaseUserError].Code,
@@ -214,7 +218,7 @@ func Delete(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 func List(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasRespone {
 	setup()
 	if errEvent := validateModel(ListRequiredFields, inputModel); errEvent != nil {
-		_, _ = logger.Warnf("list databaseUsers is failing with invalid parameters: %#+v", errEvent.Error())
+		util.Warnf(ctx, "list databaseUsers is failing with invalid parameters: %#+v", errEvent.Error())
 
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
@@ -226,7 +230,7 @@ func List(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasRespon
 	client, peErr := util.NewMongoDBSDKClient(*inputModel.PublicKey, *inputModel.PrivateKey)
 
 	if peErr != nil {
-		_, _ = logger.Warnf(" Create Mongo client Error: %#+v", peErr.Error())
+		util.Warnf(ctx, " Create Mongo client Error: %#+v", peErr.Error())
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.MongoClientCreationError].Code,
@@ -241,7 +245,7 @@ func List(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasRespon
 	databaseUsers, _, err := client.DatabaseUsersApi.ListDatabaseUsers(ctx, groupID).Execute()
 
 	if err != nil {
-		_, _ = logger.Warnf(" list databaseUsers Error: %#+v", err.Error())
+		util.Warnf(ctx, " list databaseUsers Error: %#+v", err.Error())
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.UserListError].Code,

@@ -6,7 +6,6 @@ import (
 	"github.com/atlas-api-helper/util"
 	responseHandler "github.com/atlas-api-helper/util/Responsehandler"
 	"github.com/atlas-api-helper/util/constants"
-	"github.com/atlas-api-helper/util/logger"
 	"github.com/gorilla/mux"
 	"net/http"
 	"time"
@@ -19,6 +18,8 @@ func setupCollectionLog() {
 // CreateCollection handles POST requests to create a new collection using the credentials
 func CreateCollection(w http.ResponseWriter, r *http.Request) {
 	setupCollectionLog()
+
+	//fetch all input parameters and create input model
 	var model collection.InputModel
 	vars := mux.Vars(r)
 	databaseName := vars[constants.DatabaseNamePathParam]
@@ -27,19 +28,25 @@ func CreateCollection(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+
 	model.DatabaseName = &databaseName
-	_, _ = logger.Debugf("Create Collection Request : %+v", model.String())
+
+	util.Debugf(r.Context(), "Create Collection Request : %+v", model.String())
 	startTime := time.Now()
 
-	response := collection.Create(&model)
+	//make API call to create a collection
+	response := collection.Create(r.Context(), &model)
+
 	elapsedTime := time.Since(startTime)
-	logger.Debugf("Create collection REST API  response:%+v and execution time:%s", response.String(), elapsedTime.String())
+	util.Debugf(r.Context(), "Create collection REST API  response:%+v and execution time:%s", response.String(), elapsedTime.String())
 	responseHandler.Write(response, w, constants.ClusterHandler)
 }
 
 // DeleteCollection handles DELETE requests deletes the requested collection
 func DeleteCollection(w http.ResponseWriter, r *http.Request) {
 	setupCollectionLog()
+
+	//fetch all input parameters and create input model
 	vars := mux.Vars(r)
 	databaseName := vars[constants.DatabaseNamePathParam]
 	collectionName := vars[constants.CollectionNamePathParam]
@@ -54,12 +61,14 @@ func DeleteCollection(w http.ResponseWriter, r *http.Request) {
 		Password:       &password,
 		CollectionName: &collectionName,
 	}
-	_, _ = logger.Debugf("Delete Collection Request : %+v", model.String())
+
+	util.Debugf(r.Context(), "Delete Collection Request : %+v", model.String())
 	startTime := time.Now()
 
-	response := collection.Delete(&model)
-	elapsedTime := time.Since(startTime)
-	logger.Debugf("Delete collection REST API  response:%+v and execution time:%s", response.String(), elapsedTime.String())
+	//make API call to delete a collection
+	response := collection.Delete(r.Context(), &model)
 
+	elapsedTime := time.Since(startTime)
+	util.Debugf(r.Context(), "Delete collection REST API  response:%+v and execution time:%s", response.String(), elapsedTime.String())
 	responseHandler.Write(response, w, constants.ClusterHandler)
 }

@@ -6,7 +6,6 @@ import (
 	"github.com/atlas-api-helper/util"
 	responseHandler "github.com/atlas-api-helper/util/Responsehandler"
 	"github.com/atlas-api-helper/util/constants"
-	"github.com/atlas-api-helper/util/logger"
 	"github.com/gorilla/mux"
 	"net/http"
 	"time"
@@ -19,20 +18,23 @@ func setupDatabaseLog() {
 // CreateDatabase handles POST calls to create a new database using the provided parameters
 func CreateDatabase(w http.ResponseWriter, r *http.Request) {
 	setupDatabaseLog()
-	var model database.InputModel
 
+	//fetch all input parameters and create input model
+	var model database.InputModel
 	err := json.NewDecoder(r.Body).Decode(&model)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	_, _ = logger.Debugf("Create database Request : %+v", model.String())
+	util.Debugf(r.Context(), "Create database Request : %+v", model.String())
 	startTime := time.Now()
 
-	response := database.Create(&model)
+	//make API call to create a database
+	response := database.Create(r.Context(), &model)
+
 	elapsedTime := time.Since(startTime)
-	logger.Debugf("Create database REST API  response:%+v and execution time:%s", response.String(), elapsedTime.String())
+	util.Debugf(r.Context(), "Create database REST API  response:%+v and execution time:%s", response.String(), elapsedTime.String())
 
 	responseHandler.Write(response, w, constants.ClusterHandler)
 }
@@ -40,8 +42,9 @@ func CreateDatabase(w http.ResponseWriter, r *http.Request) {
 // DeleteDatabase handles the DELETE calls to delete the requested database
 func DeleteDatabase(w http.ResponseWriter, r *http.Request) {
 	setupDatabaseLog()
+
+	//fetch all input parameters and create input model
 	vars := mux.Vars(r)
-	// Read a specific parameter
 	databaseName := vars[constants.DatabaseNamePathParam]
 
 	hostname := r.URL.Query().Get(constants.HostNamePathParam)
@@ -54,11 +57,15 @@ func DeleteDatabase(w http.ResponseWriter, r *http.Request) {
 		Username:     &username,
 		Password:     &password,
 	}
-	_, _ = logger.Debugf("Delete database Request : %+v", model.String())
+
+	util.Debugf(r.Context(), "Delete database Request : %+v", model.String())
 	startTime := time.Now()
-	response := database.Delete(&model)
+
+	//make API call to delete a database
+	response := database.Delete(r.Context(), &model)
+
 	elapsedTime := time.Since(startTime)
-	logger.Debugf("Delete database REST API  response:%+v and execution time:%s", response.String(), elapsedTime.String())
+	util.Debugf(r.Context(), "Delete database REST API  response:%+v and execution time:%s", response.String(), elapsedTime.String())
 
 	responseHandler.Write(response, w, constants.ClusterHandler)
 }

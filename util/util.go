@@ -88,3 +88,15 @@ func ToString(s *string) string {
 	}
 	return ""
 }
+
+func Debugf(ctx context.Context, format string, args ...interface{}) {
+	traceId := ctx.Value("traceID").(string)
+	newArgs := append([]interface{}{traceId}, args...)
+	logger.Debugf("[%s]"+format, newArgs...)
+}
+
+func Warnf(ctx context.Context, format string, args ...interface{}) {
+	traceId := ctx.Value("traceID").(string)
+	newArgs := append([]interface{}{traceId}, args...)
+	logger.Warnf("[%s]"+format, newArgs...)
+}

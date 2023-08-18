@@ -15,7 +15,6 @@ jobs:
         go-version-file: 'go.mod'
     - name: Build
       run: | 
-        cd cfn-resources
         go build -v ./...
   lint:
     runs-on: ubuntu-latest

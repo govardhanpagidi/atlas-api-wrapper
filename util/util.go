@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/atlas-api-helper/util/logger"
+	"github.com/spf13/cast"
 	"go.mongodb.org/atlas-sdk/v20230201002/admin"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -99,4 +100,9 @@ func Warnf(ctx context.Context, format string, args ...interface{}) {
 	traceId := ctx.Value("traceID").(string)
 	newArgs := append([]interface{}{traceId}, args...)
 	logger.Warnf("[%s]"+format, newArgs...)
+}
+
+func Cast64(i *int) *int64 {
+	x := cast.ToInt64(&i)
+	return &x
 }

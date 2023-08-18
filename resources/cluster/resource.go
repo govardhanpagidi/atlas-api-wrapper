@@ -49,11 +49,6 @@ func setup() {
 	util.SetupLogger("mongodb-atlas-cluster")
 }
 
-func cast64(i *int) *int64 {
-	x := cast.ToInt64(&i)
-	return &x
-}
-
 // validateModel inputs based on the method
 func validateModel(fields []string, model *InputModel) error {
 	return validator.ValidateModel(fields, model)
@@ -800,7 +795,7 @@ func flattenRegionConfigHardwareSpecSpec(ctx context.Context, spec *admin.Hardwa
 	}
 	var diskIops string
 	if spec.DiskIOPS != nil {
-		diskIops = strconv.FormatInt(*cast64(spec.DiskIOPS), 10)
+		diskIops = strconv.FormatInt(*util.Cast64(spec.DiskIOPS), 10)
 		util.Debugf(ctx, "get diskIops %s", diskIops)
 	}
 
@@ -818,7 +813,7 @@ func flattenRegionConfigSpec(ctx context.Context, spec *admin.DedicatedHardwareS
 	}
 	var diskIops string
 	if spec.DiskIOPS != nil {
-		diskIops = strconv.FormatInt(*cast64(spec.DiskIOPS), 10)
+		diskIops = strconv.FormatInt(*util.Cast64(spec.DiskIOPS), 10)
 		util.Debugf(ctx, "get diskIops %s", diskIops)
 	}
 

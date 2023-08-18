@@ -5,7 +5,7 @@
   },
   "RESOURCE_NOT_EXIST": {
     "Code": 400,
-    "Message": "%s does not exist for  : %s"
+    "Message": "%s does not exist  : %s"
   },
   "CONFIGURATION_NOT_AVAILABLE": {
     "Code": 400,

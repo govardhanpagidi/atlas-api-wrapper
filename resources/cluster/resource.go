@@ -291,6 +291,18 @@ func Read(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasRespon
 		}
 	}
 
+	//check if project already exists
+	_, _, projectErr := client.ProjectsApi.GetProject(context.Background(), cast.ToString(inputModel.ProjectId)).Execute()
+
+	if projectErr != nil {
+		util.Warnf(ctx, "Get Project error: %v", projectErr.Error())
+		return atlasresponse.AtlasRespone{
+			Response:       nil,
+			HttpStatusCode: configuration.GetConfig()[constants.ResourceDoesNotExist].Code,
+			HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.ResourceDoesNotExist].Message, constants.Project, *inputModel.ProjectId),
+		}
+	}
+
 	// Read the cluster based on the provided params
 	model, resp, err := readCluster(context.Background(), client, &Model{ProjectId: inputModel.ProjectId, Name: inputModel.ClusterName})
 
@@ -332,6 +344,18 @@ func Delete(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.MongoClientCreationError].Code,
 			HttpError:      configuration.GetConfig()[constants.MongoClientCreationError].Message,
+		}
+	}
+
+	//check if project already exists
+	_, _, projectErr := client.ProjectsApi.GetProject(context.Background(), cast.ToString(inputModel.ProjectId)).Execute()
+
+	if projectErr != nil {
+		util.Warnf(ctx, "Get Project error: %v", projectErr.Error())
+		return atlasresponse.AtlasRespone{
+			Response:       nil,
+			HttpStatusCode: configuration.GetConfig()[constants.ResourceDoesNotExist].Code,
+			HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.ResourceDoesNotExist].Message, constants.Project, *inputModel.ProjectId),
 		}
 	}
 
@@ -385,6 +409,18 @@ func List(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasRespon
 			HttpError:      configuration.GetConfig()[constants.MongoClientCreationError].Message,
 		}
 	}
+
+	//check if project already exists
+	_, _, projectErr := client.ProjectsApi.GetProject(context.Background(), cast.ToString(inputModel.ProjectId)).Execute()
+
+	if projectErr != nil {
+		util.Warnf(ctx, "Get Project error: %v", projectErr.Error())
+		return atlasresponse.AtlasRespone{
+			Response:       nil,
+			HttpStatusCode: configuration.GetConfig()[constants.ResourceDoesNotExist].Code,
+			HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.ResourceDoesNotExist].Message, constants.Project, *inputModel.ProjectId),
+		}
+	}
 	// List call
 	args := admin.ListClustersApiParams{
 		GroupId: *inputModel.ProjectId,
@@ -401,7 +437,7 @@ func List(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasRespon
 		}
 	}
 
-	models := make([]*Model, *clustersResponse.TotalCount)
+	models := make([]*Model, 0)
 	for i := range clustersResponse.Results {
 		model := &Model{}
 		mapClusterToModel(ctx, model, &clustersResponse.Results[i])

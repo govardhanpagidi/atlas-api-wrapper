@@ -3,6 +3,7 @@ package util
 import (
 	"context"
 	"fmt"
+	"github.com/atlas-api-helper/util/constants"
 	"github.com/atlas-api-helper/util/logger"
 	"github.com/spf13/cast"
 	"go.mongodb.org/atlas-sdk/v20230201002/admin"
@@ -91,14 +92,14 @@ func ToString(s *string) string {
 }
 
 func Debugf(ctx context.Context, format string, args ...interface{}) {
-	traceId := ctx.Value("traceID").(string)
+	traceId := ctx.Value(constants.TraceID).(string)
 	newArgs := append([]interface{}{traceId}, args...)
 	_, _ = logger.Debugf("[%s]"+format, newArgs...)
 
 }
 
 func Warnf(ctx context.Context, format string, args ...interface{}) {
-	traceId := ctx.Value("traceID").(string)
+	traceId := ctx.Value(constants.TraceID).(string)
 	newArgs := append([]interface{}{traceId}, args...)
 	_, _ = logger.Warnf("[%s]"+format, newArgs...)
 }

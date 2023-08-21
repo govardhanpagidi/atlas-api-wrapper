@@ -17,10 +17,11 @@ package profile
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"log"
 	"net/http"
 	"os"
+
+	"github.com/aws/aws-sdk-go/aws/session"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/secretsmanager"
@@ -37,11 +38,14 @@ type Profile struct {
 	BaseURL    string `json:"BaseUrl,omitempty"`
 }
 
+// NewProfile creates a new Profile object from the given request and profile name
 func NewProfile(req *http.Request, profileName *string) (*Profile, error) {
+	// If the profileName is nil or empty, set it to the DefaultProfile constant
 	if profileName == nil || *profileName == "" {
 		profileName = aws.String(DefaultProfile)
 	}
 
+	// Create a new AWS session with the us-west-2 region
 	sess, err := session.NewSession(&aws.Config{
 		Region: aws.String("us-west-2"),
 	})
@@ -49,45 +53,68 @@ func NewProfile(req *http.Request, profileName *string) (*Profile, error) {
 		log.Fatalf("Error creating AWS session: %v", err)
 	}
 
+	// Create a new Secrets Manager client
 	secretsManagerClient := secretsmanager.New(sess)
+
+	// Get the secret value for the given profile name
 	resp, err := secretsManagerClient.GetSecretValue(&secretsmanager.GetSecretValueInput{SecretId: aws.String(fmt.Sprintf("%s/%s", profileNamePrefix, *profileName))})
 	if err != nil {
 		return nil, err
 	}
 
+	// Create a new Profile object
 	profile := new(Profile)
+
+	// Unmarshal the secret string into the Profile object
 	err = json.Unmarshal([]byte(*resp.SecretString), &profile)
 	if err != nil {
 		return nil, err
 	}
 
+	// Return the Profile object
 	return profile, nil
 }
 
+// NewBaseURL returns the MongoDB Atlas base URL from the environment variable or the Profile object
 func (p *Profile) NewBaseURL() string {
+	// If the MONGODB_ATLAS_BASE_URL environment variable is set, return its value
 	if baseURL := os.Getenv("MONGODB_ATLAS_BASE_URL"); baseURL != "" {
 		return baseURL
 	}
 
+	// Otherwise, return the BaseURL field of the Profile object
 	return p.BaseURL
 }
 
+// NewPublicKey returns the MongoDB Atlas public key from the environment variable or the Profile object
 func (p *Profile) NewPublicKey() string {
-	if k := os.Getenv("MONGODB_ATLAS_PUBLIC_KEY"); k != "" {
-		return k
+	// If the MONGODB_ATLAS_PUBLIC_KEY environment variable is set, return its value
+	if publicKey := os.Getenv("MONGODB_ATLAS_PUBLIC_KEY"); publicKey != "" {
+		return publicKey
 	}
 
+	// Otherwise, return the PublicKey field of the Profile object
 	return p.PublicKey
 }
 
+// NewPrivateKey returns the MongoDB Atlas private key from the environment variable or the Profile object
 func (p *Profile) NewPrivateKey() string {
-	if k := os.Getenv("MONGODB_ATLAS_PRIVATE_KEY"); k != "" {
-		return k
+	// If the MONGODB_ATLAS_PRIVATE_KEY environment variable is set, return its value
+	if privateKey := os.Getenv("MONGODB_ATLAS_PRIVATE_KEY"); privateKey != "" {
+		return privateKey
 	}
 
+	// Otherwise, return the PrivateKey field of the Profile object
 	return p.PrivateKey
 }
 
+// AreKeysAvailable returns true if the MongoDB Atlas public and private keys are available in the Profile object or environment variables
 func (p *Profile) AreKeysAvailable() bool {
-	return p.NewPublicKey() == "" || p.PrivateKey == ""
+	// If the MongoDB Atlas public key or private key is not available, return false
+	if p.NewPublicKey() == "" || p.PrivateKey == "" {
+		return false
+	}
+
+	// Otherwise, return true
+	return true
 }

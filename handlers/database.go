@@ -2,15 +2,17 @@ package handlers
 
 import (
 	"encoding/json"
+	"net/http"
+	"time"
+
 	"github.com/atlas-api-helper/resources/database"
 	"github.com/atlas-api-helper/util"
 	responseHandler "github.com/atlas-api-helper/util/Responsehandler"
 	"github.com/atlas-api-helper/util/constants"
 	"github.com/gorilla/mux"
-	"net/http"
-	"time"
 )
 
+// setupDatabaseLog sets up the logger for the database API handlers
 func setupDatabaseLog() {
 	util.SetupLogger("atlas-api-helper.handlers.database")
 }
@@ -27,15 +29,18 @@ func CreateDatabase(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	//log the input model
 	util.Debugf(r.Context(), "Create database Request : %+v", model.String())
 	startTime := time.Now()
 
 	//make API call to create a database
 	response := database.Create(r.Context(), &model)
 
+	//calculate the elapsed time and log the response
 	elapsedTime := time.Since(startTime)
 	util.Debugf(r.Context(), "Create database REST API  response:%+v and execution time:%s", response.String(), elapsedTime.String())
 
+	//write the response to the output
 	responseHandler.Write(response, w, constants.ClusterHandler)
 }
 
@@ -46,11 +51,11 @@ func DeleteDatabase(w http.ResponseWriter, r *http.Request) {
 	//fetch all input parameters and create input model
 	vars := mux.Vars(r)
 	databaseName := vars[constants.DatabaseNamePathParam]
-
 	hostname := r.URL.Query().Get(constants.HostNamePathParam)
 	username := r.URL.Query().Get(constants.UsernamePathParam)
 	password := r.URL.Query().Get(constants.PasswordPathParam)
 
+	//create input model for delete database API
 	model := database.InputModel{
 		DatabaseName: &databaseName,
 		HostName:     &hostname,
@@ -58,14 +63,17 @@ func DeleteDatabase(w http.ResponseWriter, r *http.Request) {
 		Password:     &password,
 	}
 
+	//log the input model
 	util.Debugf(r.Context(), "Delete database Request : %+v", model.String())
 	startTime := time.Now()
 
 	//make API call to delete a database
 	response := database.Delete(r.Context(), &model)
 
+	//calculate the elapsed time and log the response
 	elapsedTime := time.Since(startTime)
 	util.Debugf(r.Context(), "Delete database REST API  response:%+v and execution time:%s", response.String(), elapsedTime.String())
 
+	//write the response to the output
 	responseHandler.Write(response, w, constants.ClusterHandler)
 }

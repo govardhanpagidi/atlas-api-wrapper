@@ -1,0 +1,33 @@
+{
+	"id": "a9b70fad-6270-4591-b8ce-e1149591b16e",
+	"name": "MMC",
+	"values": [
+		{
+			"key": "projectId",
+			"value": "",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "publicKey",
+			"value": "",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "privateKey",
+			"value": "",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "clusterName",
+			"value": "",
+			"type": "default",
+			"enabled": true
+		}
+	],
+	"_postman_variable_scope": "environment",
+	"_postman_exported_at": "2023-08-21T18:14:03.804Z",
+	"_postman_exported_using": "Postman/10.17.2"
+}

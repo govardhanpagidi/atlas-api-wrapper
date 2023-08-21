@@ -51,7 +51,7 @@ func DeleteDatabase(w http.ResponseWriter, r *http.Request) {
 	username := r.URL.Query().Get(constants.UsernamePathParam)
 	password := r.URL.Query().Get(constants.PasswordPathParam)
 
-	model := database.DeleteInputModel{
+	model := database.InputModel{
 		DatabaseName: &databaseName,
 		HostName:     &hostname,
 		Username:     &username,

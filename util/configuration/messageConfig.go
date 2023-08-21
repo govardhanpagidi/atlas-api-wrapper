@@ -2,14 +2,15 @@ package configuration
 
 import (
 	"encoding/json"
+	"github.com/atlas-api-helper/util/constants"
 	"log"
 	"os"
 	"sync"
 )
 
-// ErrorMessageConfig Singleton represents the singleton instance.
+// MessageConfig Singleton represents the singleton instance.
 type MessageConfig struct {
-	errorConfig map[string]ErrorConfig
+	errorConfig map[string]Messages
 }
 
 var (
@@ -27,17 +28,17 @@ func GetInstance() *MessageConfig {
 }
 
 // GetData returns data from the singleton instance.
-func (s *MessageConfig) GetData() map[string]ErrorConfig {
+func (s *MessageConfig) GetData() map[string]Messages {
 	return s.errorConfig
 }
 
-func GetConfig() map[string]ErrorConfig {
+func GetConfig() map[string]Messages {
 	return GetInstance().errorConfig
 }
 
-func loadGlobalErrorConfig() map[string]ErrorConfig {
-	var errorConfig map[string]ErrorConfig
-	content, err := os.ReadFile("./messageConfig.json")
+func loadGlobalErrorConfig() map[string]Messages {
+	var errorConfig map[string]Messages
+	content, err := os.ReadFile(constants.MessageConfigLocation)
 	if err != nil {
 		log.Fatal("Error when opening file: ", err)
 	}

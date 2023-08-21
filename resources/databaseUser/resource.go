@@ -33,7 +33,7 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.InvalidInputParameter].Code,
-			HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.InvalidInputParameter].Message, errEvent.Error()),
+			Message:        fmt.Sprintf(configuration.GetConfig()[constants.InvalidInputParameter].Message, errEvent.Error()),
 		}
 	}
 
@@ -44,7 +44,7 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.MongoClientCreationError].Code,
-			HttpError:      configuration.GetConfig()[constants.MongoClientCreationError].Message,
+			Message:        configuration.GetConfig()[constants.MongoClientCreationError].Message,
 		}
 	}
 
@@ -60,7 +60,7 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.UserCreateError].Code,
-			HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.UserCreateError].Message, *inputModel.Username),
+			Message:        fmt.Sprintf(configuration.GetConfig()[constants.UserCreateError].Message, *inputModel.Username),
 		}
 	}
 	util.Debugf(ctx, "newUser: %+v", databaseUser)
@@ -68,7 +68,6 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 	return atlasresponse.AtlasRespone{
 		Response:       databaseUser,
 		HttpStatusCode: configuration.GetConfig()[constants.UserCreateSuccess].Code,
-		HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.UserCreateSuccess].Message, *inputModel.Username),
 	}
 }
 
@@ -80,7 +79,7 @@ func Read(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasRespon
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.InvalidInputParameter].Code,
-			HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.InvalidInputParameter].Message, errEvent.Error()),
+			Message:        fmt.Sprintf(configuration.GetConfig()[constants.InvalidInputParameter].Message, errEvent.Error()),
 		}
 	}
 
@@ -91,7 +90,7 @@ func Read(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasRespon
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.MongoClientCreationError].Code,
-			HttpError:      configuration.GetConfig()[constants.MongoClientCreationError].Message,
+			Message:        configuration.GetConfig()[constants.MongoClientCreationError].Message,
 		}
 	}
 
@@ -106,19 +105,18 @@ func Read(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasRespon
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.UserNotFound].Code,
-			HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.UserNotFound].Message, *inputModel.Username),
+			Message:        fmt.Sprintf(configuration.GetConfig()[constants.UserNotFound].Message, *inputModel.Username),
 		}
 	}
 
-	currentModel := convertToModel(ctx, inputModel, databaseUser, groupID)
+	currentModel := convertToModel(ctx, inputModel, databaseUser)
 	return atlasresponse.AtlasRespone{
 		Response:       currentModel,
 		HttpStatusCode: configuration.GetConfig()[constants.FetchUser].Code,
-		HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.FetchUser].Message, *inputModel.Username),
 	}
 }
 
-func convertToModel(ctx context.Context, inputModel *InputModel, databaseUser *admin.CloudDatabaseUser, groupID string) Model {
+func convertToModel(ctx context.Context, inputModel *InputModel, databaseUser *admin.CloudDatabaseUser) Model {
 	var currentModel Model
 	currentModel.Username = inputModel.Username
 	currentModel.DatabaseName = &databaseUser.DatabaseName
@@ -164,8 +162,6 @@ func convertToModel(ctx context.Context, inputModel *InputModel, databaseUser *a
 	}
 	currentModel.Labels = labels
 
-	cfnid := fmt.Sprintf("%s-%s", *currentModel.Username, groupID)
-	currentModel.UserCFNIdentifier = &cfnid
 	return currentModel
 }
 
@@ -177,7 +173,7 @@ func Delete(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.InvalidInputParameter].Code,
-			HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.InvalidInputParameter].Message, errEvent.Error()),
+			Message:        fmt.Sprintf(configuration.GetConfig()[constants.InvalidInputParameter].Message, errEvent.Error()),
 		}
 	}
 
@@ -188,7 +184,7 @@ func Delete(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.MongoClientCreationError].Code,
-			HttpError:      configuration.GetConfig()[constants.MongoClientCreationError].Message,
+			Message:        configuration.GetConfig()[constants.MongoClientCreationError].Message,
 		}
 	}
 
@@ -196,21 +192,21 @@ func Delete(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 	username := *inputModel.Username
 	dbName := constants.DbuserDbName
 
-	user, _, err := client.DatabaseUsersApi.DeleteDatabaseUser(ctx, groupID, dbName, username).Execute()
+	_, _, err := client.DatabaseUsersApi.DeleteDatabaseUser(ctx, groupID, dbName, username).Execute()
 
 	if err != nil {
 		util.Warnf(ctx, " Delete DatabaseUser Error: %#+v", err.Error())
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.DeleteDatabaseUserError].Code,
-			HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.DeleteDatabaseUserError].Message, *inputModel.Username),
+			Message:        fmt.Sprintf(configuration.GetConfig()[constants.DeleteDatabaseUserError].Message, *inputModel.Username),
 		}
 	}
 
 	return atlasresponse.AtlasRespone{
-		Response:       user,
+		Response:       nil,
 		HttpStatusCode: configuration.GetConfig()[constants.DeleteDatabaseUserSuccess].Code,
-		HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.DeleteDatabaseUserSuccess].Message, *inputModel.Username),
+		Message:        fmt.Sprintf(configuration.GetConfig()[constants.DeleteDatabaseUserSuccess].Message, *inputModel.Username),
 	}
 }
 
@@ -223,7 +219,7 @@ func List(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasRespon
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.InvalidInputParameter].Code,
-			HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.InvalidInputParameter].Message, errEvent.Error()),
+			Message:        fmt.Sprintf(configuration.GetConfig()[constants.InvalidInputParameter].Message, errEvent.Error()),
 		}
 	}
 
@@ -234,7 +230,7 @@ func List(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasRespon
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.MongoClientCreationError].Code,
-			HttpError:      configuration.GetConfig()[constants.MongoClientCreationError].Message,
+			Message:        configuration.GetConfig()[constants.MongoClientCreationError].Message,
 		}
 	}
 
@@ -249,7 +245,7 @@ func List(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasRespon
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.UserListError].Code,
-			HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.UserListError].Message, *inputModel.ProjectId),
+			Message:        fmt.Sprintf(configuration.GetConfig()[constants.UserListError].Message, *inputModel.ProjectId),
 		}
 	}
 
@@ -289,9 +285,6 @@ func List(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasRespon
 			}
 
 			model.Labels = labels
-			cfnid := fmt.Sprintf("%s-%s", databaseUser.Username, databaseUser.GroupId)
-
-			model.UserCFNIdentifier = &cfnid
 			dbUserModels = append(dbUserModels, model)
 		}
 	}
@@ -299,7 +292,6 @@ func List(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasRespon
 	return atlasresponse.AtlasRespone{
 		Response:       dbUserModels,
 		HttpStatusCode: configuration.GetConfig()[constants.UserListSuccess].Code,
-		HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.UserListSuccess].Message, *inputModel.ProjectId),
 	}
 }
 

@@ -14,7 +14,7 @@ const (
 	DatabaseNamePathParam   = "databaseName"
 	UsernamePathParam       = "username"
 	ClusterName             = "ClusterName"
-	CollectionName          = "CollectionName"
+	CollectionName          = "CollectionNames"
 	CollectionNamePathParam = "collectionName"
 	HostNamePathParam       = "hostName"
 	PasswordPathParam       = "password"
@@ -72,6 +72,11 @@ const (
 	TraceID               TraceIDKeyType = "traceID"
 	Project                              = "Project"
 	Cluster                              = "Cluster"
+
+	MongoBaseUrl = "https://cloud.mongodb.com/"
+	MongoDbURI   = "mongodb+srv://%s:%s@%s"
+
+	MessageConfigLocation = "./message_Config.json"
 )
 
 func (c TraceIDKeyType) String() string {

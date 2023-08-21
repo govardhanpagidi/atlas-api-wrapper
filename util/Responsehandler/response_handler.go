@@ -11,8 +11,8 @@ func Write(response atlasresponse.AtlasRespone, w http.ResponseWriter, handlerNa
 	w.Header().Set("Content-Type", "application/json")
 
 	res, err := json.Marshal(response)
-	if response.HttpError != "" && err != nil {
-		_, _ = logger.Debugf(handlerName+" error:%s", response.HttpError)
+	if response.Message != "" && err != nil {
+		_, _ = logger.Debugf(handlerName+" error:%s", response.Message)
 
 		_, _ = w.Write(res)
 		return

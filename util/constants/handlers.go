@@ -1,16 +1,16 @@
 package constants
 
 const (
-	DatabaseUserHandler    = "project/{projectId}/databaseUsers"
-	DatabaseUserGetHandler = "project/{projectId}/databaseUsers/{username}"
+	DatabaseUserReqURI             = "project/{projectId}/databaseUsers"
+	DatabaseUserWithUsernameReqURI = "project/{projectId}/databaseUsers/{username}"
 
-	ClusterWithProjectId      = "project/{projectId}/cluster"
-	ClusterWithGroupIdAndName = "project/{projectId}/cluster/{clusterName}"
-	ClusterStatus             = "project/{projectId}/cluster/{clusterName}/status"
+	ClusterReqURI                = "project/{projectId}/cluster"
+	ClusterWithClusterNameReqURI = "project/{projectId}/cluster/{clusterName}"
+	ClusterStatusReqURI          = "project/{projectId}/cluster/{clusterName}/status"
 
-	DatabaseHandler       = "database"
-	DatabaseDeleteHandler = "database/{databaseName}"
+	DatabaseReqURI       = "database"
+	DatabaseDeleteReqURI = "database/{databaseName}"
 
-	CollectionHandler       = "database/{databaseName}/collections"
-	CollectionDeleteHandler = "database/{databaseName}/collection/{collectionName}"
+	CollectionReqURI       = "database/{databaseName}/collections"
+	CollectionDeleteReqURI = "database/{databaseName}/collection/{collectionName}"
 )

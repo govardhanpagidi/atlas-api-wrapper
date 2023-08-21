@@ -54,7 +54,7 @@ func DeleteCollection(w http.ResponseWriter, r *http.Request) {
 	username := r.URL.Query().Get(constants.UsernamePathParam)
 	password := r.URL.Query().Get(constants.PasswordPathParam)
 
-	model := collection.InputModel{
+	model := collection.DeleteInputModel{
 		DatabaseName:   &databaseName,
 		HostName:       &hostname,
 		Username:       &username,

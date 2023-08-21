@@ -40,6 +40,25 @@ func fieldIsEmpty(model interface{}, field string) bool {
 	}
 	r := reflect.ValueOf(model)
 	f = reflect.Indirect(r).FieldByName(field)
-	print(f.Elem().String())
-	return f.IsNil() || (f.IsValid() && f.Elem().String() == "")
+	if f.Kind() == reflect.Ptr {
+		f = f.Elem()
+	}
+
+	if f.Kind() == reflect.Slice {
+		if f.Len() == 0 {
+			return true
+		}
+		for i := 0; i < f.Len(); i++ {
+			elemValue := f.Index(i)
+			if elemValue.Kind() == reflect.Ptr {
+				elemValue = elemValue.Elem()
+			}
+			if elemValue.Kind() != reflect.String || elemValue.String() != "" {
+				return false
+			}
+		}
+		return true
+	}
+
+	return f.Kind() == reflect.String && f.String() == ""
 }

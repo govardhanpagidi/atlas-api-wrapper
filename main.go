@@ -24,21 +24,21 @@ func main() {
 	r.Use(TraceIDMiddleware)
 	apiRouter := r.PathPrefix(api).Subrouter()
 
-	apiRouter.HandleFunc(uri(constants.ClusterStatus), handlers.GetCluster).Methods(http.MethodGet)
-	apiRouter.HandleFunc(uri(constants.ClusterWithProjectId), handlers.GetAllClusters).Methods(http.MethodGet)
-	apiRouter.HandleFunc(uri(constants.ClusterWithGroupIdAndName), handlers.DeleteCluster).Methods(http.MethodDelete)
-	apiRouter.HandleFunc(uri(constants.ClusterWithProjectId), handlers.CreateCluster).Methods(http.MethodPost)
+	apiRouter.HandleFunc(uri(constants.ClusterStatusReqURI), handlers.GetCluster).Methods(http.MethodGet)
+	apiRouter.HandleFunc(uri(constants.ClusterReqURI), handlers.GetAllClusters).Methods(http.MethodGet)
+	apiRouter.HandleFunc(uri(constants.ClusterWithClusterNameReqURI), handlers.DeleteCluster).Methods(http.MethodDelete)
+	apiRouter.HandleFunc(uri(constants.ClusterReqURI), handlers.CreateCluster).Methods(http.MethodPost)
 
-	apiRouter.HandleFunc(uri(constants.DatabaseUserGetHandler), handlers.GetDatabaseUser).Methods(http.MethodGet)
-	apiRouter.HandleFunc(uri(constants.DatabaseUserHandler), handlers.GetAllDatabaseUser).Methods(http.MethodGet)
-	apiRouter.HandleFunc(uri(constants.DatabaseUserGetHandler), handlers.DeleteDatabaseUser).Methods(http.MethodDelete)
-	apiRouter.HandleFunc(uri(constants.DatabaseUserHandler), handlers.CreateDatabaseUser).Methods(http.MethodPost)
+	apiRouter.HandleFunc(uri(constants.DatabaseUserWithUsernameReqURI), handlers.GetDatabaseUser).Methods(http.MethodGet)
+	apiRouter.HandleFunc(uri(constants.DatabaseUserReqURI), handlers.GetAllDatabaseUser).Methods(http.MethodGet)
+	apiRouter.HandleFunc(uri(constants.DatabaseUserWithUsernameReqURI), handlers.DeleteDatabaseUser).Methods(http.MethodDelete)
+	apiRouter.HandleFunc(uri(constants.DatabaseUserReqURI), handlers.CreateDatabaseUser).Methods(http.MethodPost)
 
-	apiRouter.HandleFunc(uri(constants.DatabaseHandler), handlers.CreateDatabase).Methods(http.MethodPost)
-	apiRouter.HandleFunc(uri(constants.DatabaseDeleteHandler), handlers.DeleteDatabase).Methods(http.MethodDelete)
+	apiRouter.HandleFunc(uri(constants.DatabaseReqURI), handlers.CreateDatabase).Methods(http.MethodPost)
+	apiRouter.HandleFunc(uri(constants.DatabaseDeleteReqURI), handlers.DeleteDatabase).Methods(http.MethodDelete)
 
-	apiRouter.HandleFunc(uri(constants.CollectionHandler), handlers.CreateCollection).Methods(http.MethodPost)
-	apiRouter.HandleFunc(uri(constants.CollectionDeleteHandler), handlers.DeleteCollection).Methods(http.MethodDelete)
+	apiRouter.HandleFunc(uri(constants.CollectionReqURI), handlers.CreateCollection).Methods(http.MethodPost)
+	apiRouter.HandleFunc(uri(constants.CollectionDeleteReqURI), handlers.DeleteCollection).Methods(http.MethodDelete)
 
 	// Start the server on a given port
 	log.Printf("Server listening on port %s", port)

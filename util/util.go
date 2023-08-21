@@ -11,6 +11,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
 	"os"
+	"strings"
 )
 
 const (
@@ -25,7 +26,7 @@ var (
 
 func NewMongoDBSDKClient(publicKey string, privateKey string) (*admin.APIClient, error) {
 
-	baseURL := admin.UseBaseURL("https://cloud.mongodb.com/")
+	baseURL := admin.UseBaseURL(constants.MongoBaseUrl)
 	if baseURLString := os.Getenv("MONGODB_ATLAS_BASE_URL"); baseURLString != "" {
 		baseURL = admin.UseBaseURL(baseURLString)
 	}
@@ -40,7 +41,7 @@ func NewMongoDBSDKClient(publicKey string, privateKey string) (*admin.APIClient,
 }
 
 func MongoDriverClient(userName string, password string, hostname string) (*mongo.Client, error) {
-	connectionString := "mongodb+srv://" + userName + ":" + password + "@" + hostname
+	connectionString := fmt.Sprintf(constants.MongoDbURI, userName, password, hostname)
 
 	// Set up a context and connect to the database
 	ctx := context.TODO()
@@ -89,6 +90,17 @@ func ToString(s *string) string {
 		return *s
 	}
 	return ""
+}
+
+// ToStringSlice converts a slice of *string values to a formatted string.
+func ToStringSlice(slice []*string) string {
+	var strSlice []string
+	for _, s := range slice {
+		if s != nil {
+			strSlice = append(strSlice, *s)
+		}
+	}
+	return "[" + strings.Join(strSlice, ", ") + "]"
 }
 
 func Debugf(ctx context.Context, format string, args ...interface{}) {

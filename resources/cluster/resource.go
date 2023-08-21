@@ -65,7 +65,7 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.InvalidInputParameter].Code,
-			HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.InvalidInputParameter].Message, modelValidation.Error()),
+			Message:        fmt.Sprintf(configuration.GetConfig()[constants.InvalidInputParameter].Message, modelValidation.Error()),
 		}
 	}
 
@@ -77,7 +77,7 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.MongoClientCreationError].Code,
-			HttpError:      configuration.GetConfig()[constants.MongoClientCreationError].Message,
+			Message:        configuration.GetConfig()[constants.MongoClientCreationError].Message,
 		}
 	}
 
@@ -89,7 +89,7 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.ResourceDoesNotExist].Code,
-			HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.ResourceDoesNotExist].Message, constants.Project, *inputModel.ProjectId),
+			Message:        fmt.Sprintf(configuration.GetConfig()[constants.ResourceDoesNotExist].Message, constants.Project, *inputModel.ProjectId),
 		}
 	}
 
@@ -101,7 +101,7 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.ClusterModelError].Code,
-			HttpError:      configuration.GetConfig()[constants.ClusterModelError].Message,
+			Message:        configuration.GetConfig()[constants.ClusterModelError].Message,
 		}
 	}
 	currentModel.validateDefaultLabel()
@@ -114,7 +114,7 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.ListEndpointError].Code,
-			HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.ListEndpointError].Message, *inputModel.ProjectId),
+			Message:        fmt.Sprintf(configuration.GetConfig()[constants.ListEndpointError].Message, *inputModel.ProjectId),
 		}
 	}
 
@@ -125,7 +125,7 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.NoEndpointConfigured].Code,
-			HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.NoEndpointConfigured].Message, *inputModel.ProjectId),
+			Message:        fmt.Sprintf(configuration.GetConfig()[constants.NoEndpointConfigured].Message, *inputModel.ProjectId),
 		}
 	}
 
@@ -146,14 +146,14 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 	}
 
 	//compare if the regions from json matches the regions from private endpoints
-	isEndPointConfigured := hasCommonValues(endpointRegions, clusterAdvancedConfigRegions)
+	isEndPointConfigured := checkIfEndpointRegionIsSameAsClusterRegion(endpointRegions, clusterAdvancedConfigRegions)
 
 	if !isEndPointConfigured {
 		util.Warnf(ctx, "PrivateEndpoint Not Configured for ProjectId %s error: %v", *inputModel.ProjectId, endpointerr.Error())
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.NoEndpointConfigured].Code,
-			HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.NoEndpointConfigured].Message, *inputModel.ProjectId),
+			Message:        fmt.Sprintf(configuration.GetConfig()[constants.NoEndpointConfigured].Message, *inputModel.ProjectId),
 		}
 	}
 
@@ -165,7 +165,7 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.ClusterRequestError].Code,
-			HttpError:      configuration.GetConfig()[constants.ClusterRequestError].Message,
+			Message:        configuration.GetConfig()[constants.ClusterRequestError].Message,
 		}
 	}
 
@@ -177,7 +177,7 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.ClusterCreateError].Code,
-			HttpError:      configuration.GetConfig()[constants.ClusterCreateError].Message,
+			Message:        configuration.GetConfig()[constants.ClusterCreateError].Message,
 		}
 	}
 
@@ -186,19 +186,18 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 	return atlasresponse.AtlasRespone{
 		Response:       cluster,
 		HttpStatusCode: configuration.GetConfig()[constants.ClusterCreateSuccess].Code,
-		HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.ClusterCreateSuccess].Message, *cluster.Name),
 	}
 }
 
-func hasCommonValues(slice1, slice2 []string) bool {
+func checkIfEndpointRegionIsSameAsClusterRegion(endpoints, advancedCluster []string) bool {
 	// Create a map to store values from the first slice
 	seen := make(map[string]bool)
-	for _, item := range slice1 {
+	for _, item := range endpoints {
 		seen[item] = true
 	}
 
 	// Check if any value from the second slice exists in the map
-	for _, item := range slice2 {
+	for _, item := range advancedCluster {
 		if seen[item] {
 			return true
 		}
@@ -275,7 +274,7 @@ func Read(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasRespon
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.InvalidInputParameter].Code,
-			HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.InvalidInputParameter].Message, modelValidation.Error()),
+			Message:        fmt.Sprintf(configuration.GetConfig()[constants.InvalidInputParameter].Message, modelValidation.Error()),
 		}
 	}
 
@@ -287,7 +286,7 @@ func Read(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasRespon
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.MongoClientCreationError].Code,
-			HttpError:      configuration.GetConfig()[constants.MongoClientCreationError].Message,
+			Message:        configuration.GetConfig()[constants.MongoClientCreationError].Message,
 		}
 	}
 
@@ -299,7 +298,7 @@ func Read(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasRespon
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.ResourceDoesNotExist].Code,
-			HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.ResourceDoesNotExist].Message, constants.Project, *inputModel.ProjectId),
+			Message:        fmt.Sprintf(configuration.GetConfig()[constants.ResourceDoesNotExist].Message, constants.Project, *inputModel.ProjectId),
 		}
 	}
 
@@ -311,14 +310,14 @@ func Read(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasRespon
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.ResourceDoesNotExist].Code,
-			HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.ResourceDoesNotExist].Message, constants.Cluster, *inputModel.ClusterName),
+			Message:        fmt.Sprintf(configuration.GetConfig()[constants.ResourceDoesNotExist].Message, constants.Cluster, *inputModel.ClusterName),
 		}
 	}
 
 	return atlasresponse.AtlasRespone{
 		Response:       nil,
 		HttpStatusCode: configuration.GetConfig()[constants.ClusterReadSuccess].Code,
-		HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.ClusterReadSuccess].Message, *model.StateName),
+		Message:        fmt.Sprintf(configuration.GetConfig()[constants.ClusterReadSuccess].Message, *model.StateName),
 	}
 }
 
@@ -331,7 +330,7 @@ func Delete(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.InvalidInputParameter].Code,
-			HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.InvalidInputParameter].Message, modelValidation.Error()),
+			Message:        fmt.Sprintf(configuration.GetConfig()[constants.InvalidInputParameter].Message, modelValidation.Error()),
 		}
 	}
 
@@ -343,7 +342,7 @@ func Delete(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.MongoClientCreationError].Code,
-			HttpError:      configuration.GetConfig()[constants.MongoClientCreationError].Message,
+			Message:        configuration.GetConfig()[constants.MongoClientCreationError].Message,
 		}
 	}
 
@@ -355,7 +354,7 @@ func Delete(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.ResourceDoesNotExist].Code,
-			HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.ResourceDoesNotExist].Message, constants.Project, *inputModel.ProjectId),
+			Message:        fmt.Sprintf(configuration.GetConfig()[constants.ResourceDoesNotExist].Message, constants.Project, *inputModel.ProjectId),
 		}
 	}
 
@@ -374,14 +373,14 @@ func Delete(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.ClusterDeleteError].Code,
-			HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.ClusterDeleteError].Message, *inputModel.ClusterName),
+			Message:        fmt.Sprintf(configuration.GetConfig()[constants.ClusterDeleteError].Message, *inputModel.ClusterName),
 		}
 	}
 
 	return atlasresponse.AtlasRespone{
 		Response:       nil,
 		HttpStatusCode: configuration.GetConfig()[constants.ClusterDeleteSuccess].Code,
-		HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.ClusterDeleteSuccess].Message, *inputModel.ClusterName),
+		Message:        fmt.Sprintf(configuration.GetConfig()[constants.ClusterDeleteSuccess].Message, *inputModel.ClusterName),
 	}
 }
 
@@ -394,7 +393,7 @@ func List(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasRespon
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.InvalidInputParameter].Code,
-			HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.InvalidInputParameter].Message, modelValidation.Error()),
+			Message:        fmt.Sprintf(configuration.GetConfig()[constants.InvalidInputParameter].Message, modelValidation.Error()),
 		}
 	}
 
@@ -406,7 +405,7 @@ func List(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasRespon
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.MongoClientCreationError].Code,
-			HttpError:      configuration.GetConfig()[constants.MongoClientCreationError].Message,
+			Message:        configuration.GetConfig()[constants.MongoClientCreationError].Message,
 		}
 	}
 
@@ -418,7 +417,7 @@ func List(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasRespon
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.ResourceDoesNotExist].Code,
-			HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.ResourceDoesNotExist].Message, constants.Project, *inputModel.ProjectId),
+			Message:        fmt.Sprintf(configuration.GetConfig()[constants.ResourceDoesNotExist].Message, constants.Project, *inputModel.ProjectId),
 		}
 	}
 	// List call
@@ -433,7 +432,7 @@ func List(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasRespon
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.ClusterListError].Code,
-			HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.ClusterListError].Message, *inputModel.ProjectId),
+			Message:        fmt.Sprintf(configuration.GetConfig()[constants.ClusterListError].Message, *inputModel.ProjectId),
 		}
 	}
 
@@ -447,7 +446,7 @@ func List(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasRespon
 			return atlasresponse.AtlasRespone{
 				Response:       nil,
 				HttpStatusCode: configuration.GetConfig()[constants.ClusterAdvancedListError].Code,
-				HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.ClusterAdvancedListError].Message, *inputModel.ProjectId),
+				Message:        fmt.Sprintf(configuration.GetConfig()[constants.ClusterAdvancedListError].Message, *inputModel.ProjectId),
 			}
 		}
 
@@ -458,7 +457,6 @@ func List(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasRespon
 	return atlasresponse.AtlasRespone{
 		Response:       models,
 		HttpStatusCode: configuration.GetConfig()[constants.ClusterListSuccess].Code,
-		HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.ClusterListSuccess].Message, *inputModel.ProjectId),
 	}
 }
 
@@ -768,10 +766,10 @@ func flattenAutoScaling(scaling *admin.AdvancedAutoScalingSettings) *AdvancedAut
 		if scaling.Compute.ScaleDownEnabled != nil {
 			compute.ScaleDownEnabled = scaling.Compute.ScaleDownEnabled
 		}
-		if *scaling.Compute.MinInstanceSize != "" {
+		if scaling.Compute.MinInstanceSize != nil {
 			compute.MinInstanceSize = scaling.Compute.MinInstanceSize
 		}
-		if *scaling.Compute.MaxInstanceSize != "" {
+		if scaling.Compute.MaxInstanceSize != nil {
 			compute.MaxInstanceSize = scaling.Compute.MaxInstanceSize
 		}
 

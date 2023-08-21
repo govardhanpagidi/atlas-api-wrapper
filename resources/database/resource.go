@@ -10,7 +10,7 @@ import (
 	"github.com/atlas-api-helper/util/validator"
 )
 
-var CreateRequiredFields = []string{constants.CollectionName, constants.DatabaseName, constants.HostName, constants.Username, constants.Password}
+var CreateRequiredFields = []string{constants.DatabaseName, constants.HostName, constants.Username, constants.Password}
 var DeleteRequiredFields = []string{constants.DatabaseName, constants.HostName, constants.Username, constants.Password}
 
 // validateModel This method is used for validation of InputModel
@@ -32,7 +32,7 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.InvalidInputParameter].Code,
-			HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.InvalidInputParameter].Message, errEvent.Error()),
+			Message:        fmt.Sprintf(configuration.GetConfig()[constants.InvalidInputParameter].Message, errEvent.Error()),
 		}
 	}
 
@@ -43,18 +43,22 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.MongoClientCreationError].Code,
-			HttpError:      configuration.GetConfig()[constants.MongoClientCreationError].Message,
+			Message:        configuration.GetConfig()[constants.MongoClientCreationError].Message,
 		}
 	}
+	collectionName := "default"
+	if inputModel.CollectionName != nil {
+		collectionName = *inputModel.CollectionName
+	}
 
-	dbCreateErr := client.Database(*inputModel.DatabaseName).CreateCollection(context.Background(), *inputModel.CollectionName, nil)
+	dbCreateErr := client.Database(*inputModel.DatabaseName).CreateCollection(context.Background(), collectionName, nil)
 
 	if dbCreateErr != nil {
 		util.Warnf(ctx, " database Create database Error: %#+v", dbCreateErr.Error())
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.DatabaseError].Code,
-			HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.DatabaseError].Message, *inputModel.DatabaseName),
+			Message:        fmt.Sprintf(configuration.GetConfig()[constants.DatabaseError].Message, *inputModel.DatabaseName),
 		}
 	}
 
@@ -63,12 +67,12 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 	return atlasresponse.AtlasRespone{
 		Response:       nil,
 		HttpStatusCode: configuration.GetConfig()[constants.DatabaseSuccess].Code,
-		HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.DatabaseSuccess].Message, dbName),
+		Message:        fmt.Sprintf(configuration.GetConfig()[constants.DatabaseSuccess].Message, dbName),
 	}
 }
 
 // Delete method drops the database from the cluster
-func Delete(ctx context.Context, inputModel *DeleteInputModel) atlasresponse.AtlasRespone {
+func Delete(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasRespone {
 	setup()
 
 	if errEvent := validateModel(DeleteRequiredFields, inputModel); errEvent != nil {
@@ -76,7 +80,7 @@ func Delete(ctx context.Context, inputModel *DeleteInputModel) atlasresponse.Atl
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.InvalidInputParameter].Code,
-			HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.InvalidInputParameter].Message, errEvent.Error()),
+			Message:        fmt.Sprintf(configuration.GetConfig()[constants.InvalidInputParameter].Message, errEvent.Error()),
 		}
 	}
 
@@ -87,7 +91,7 @@ func Delete(ctx context.Context, inputModel *DeleteInputModel) atlasresponse.Atl
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.MongoClientCreationError].Code,
-			HttpError:      configuration.GetConfig()[constants.MongoClientCreationError].Message,
+			Message:        configuration.GetConfig()[constants.MongoClientCreationError].Message,
 		}
 	}
 
@@ -98,7 +102,7 @@ func Delete(ctx context.Context, inputModel *DeleteInputModel) atlasresponse.Atl
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.DatabaseDeleteError].Code,
-			HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.DatabaseDeleteError].Message, *inputModel.DatabaseName),
+			Message:        fmt.Sprintf(configuration.GetConfig()[constants.DatabaseDeleteError].Message, *inputModel.DatabaseName),
 		}
 	}
 
@@ -107,6 +111,6 @@ func Delete(ctx context.Context, inputModel *DeleteInputModel) atlasresponse.Atl
 	return atlasresponse.AtlasRespone{
 		Response:       nil,
 		HttpStatusCode: configuration.GetConfig()[constants.DatabaseDeleteSuccess].Code,
-		HttpError:      fmt.Sprintf(configuration.GetConfig()[constants.DatabaseDeleteSuccess].Message, dbName),
+		Message:        fmt.Sprintf(configuration.GetConfig()[constants.DatabaseDeleteSuccess].Message, dbName),
 	}
 }

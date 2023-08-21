@@ -249,7 +249,7 @@ func loadClusterConfiguration(ctx context.Context, model InputModel) (Model, err
 		currentModel = clusterConfig
 	} else {
 		// If the cluster configuration is not found, return an error
-		return currentModel, errors.New(fmt.Sprintf("provided Cluster Size:%s and cloudProvider:%s is Invalid: ", *model.TshirtSize, *model.CloudProvider))
+		return currentModel, fmt.Errorf("provided Cluster Size:%s and cloudProvider:%s is Invalid: ", *model.TshirtSize, *model.CloudProvider)
 	}
 
 	// If the cluster name is provided, set it as the current model's name

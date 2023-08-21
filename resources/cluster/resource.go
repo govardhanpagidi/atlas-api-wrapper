@@ -303,7 +303,7 @@ func Read(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasRespon
 	}
 
 	// Read the cluster based on the provided params
-	model, resp, err := readCluster(context.Background(), client, &Model{ProjectId: inputModel.ProjectId, Name: inputModel.ClusterName})
+	model, resp, err := readCluster(ctx, client, &Model{ProjectId: inputModel.ProjectId, Name: inputModel.ClusterName})
 
 	if err != nil {
 		util.Warnf(ctx, "error cluster get- err:%+v resp:%+v", err, resp)

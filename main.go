@@ -1,15 +1,14 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"github.com/atlas-api-helper/handlers"
+	"github.com/atlas-api-helper/util"
 	"github.com/atlas-api-helper/util/configuration"
 	"github.com/atlas-api-helper/util/constants"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
-	"time"
 )
 
 const (
@@ -21,7 +20,7 @@ func main() {
 	configuration.GetInstance()
 	// A router using gorilla/mux
 	r := mux.NewRouter()
-	r.Use(TraceIDMiddleware)
+	r.Use(util.TraceIDMiddleware)
 	apiRouter := r.PathPrefix(api).Subrouter()
 
 	apiRouter.HandleFunc(uri(constants.ClusterStatusReqURI), handlers.GetCluster).Methods(http.MethodGet)
@@ -47,19 +46,4 @@ func main() {
 
 func uri(handlerName string) string {
 	return fmt.Sprintf("/%s", handlerName)
-}
-
-func TraceIDMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Generate a trace ID
-		traceID := fmt.Sprintf("TraceID-%d", time.Now().UnixNano())
-
-		// Add the trace ID to the request context
-		ctx := r.Context()
-		ctx = context.WithValue(ctx, constants.TraceID, traceID)
-		r = r.WithContext(ctx)
-
-		// Call the next handler
-		next.ServeHTTP(w, r)
-	})
 }

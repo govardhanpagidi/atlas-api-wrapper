@@ -10,8 +10,10 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
+	"net/http"
 	"os"
 	"strings"
+	"time"
 )
 
 const (
@@ -119,4 +121,19 @@ func Warnf(ctx context.Context, format string, args ...interface{}) {
 func Cast64(i *int) *int64 {
 	x := cast.ToInt64(&i)
 	return &x
+}
+
+func TraceIDMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Generate a trace ID
+		traceID := fmt.Sprintf("TraceID-%d", time.Now().UnixNano())
+
+		// Add the trace ID to the request context
+		ctx := r.Context()
+		ctx = context.WithValue(ctx, constants.TraceID, traceID)
+		r = r.WithContext(ctx)
+
+		// Call the next handler
+		next.ServeHTTP(w, r)
+	})
 }

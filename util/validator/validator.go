@@ -52,11 +52,6 @@ func fieldIsEmpty(model interface{}, field string) bool {
 	r := reflect.ValueOf(model)
 	f = reflect.Indirect(r).FieldByName(field)
 
-	// If the field is a pointer, dereference it
-	if f.Kind() == reflect.Ptr {
-		f = f.Elem()
-	}
-
 	// If the field is a slice, check if it is empty or if all its elements are empty strings
 	if f.Kind() == reflect.Slice {
 		if f.Len() == 0 {
@@ -75,5 +70,5 @@ func fieldIsEmpty(model interface{}, field string) bool {
 	}
 
 	// Otherwise, check if the field is an empty string
-	return f.Kind() == reflect.String && f.String() == ""
+	return f.IsNil() || (f.IsValid() && f.Elem().String() == "")
 }

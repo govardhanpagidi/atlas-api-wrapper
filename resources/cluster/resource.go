@@ -242,7 +242,7 @@ func loadClusterConfiguration(ctx context.Context, model InputModel) (Model, err
 	clusterConfig, ok := ClusterConfig[key]
 
 	// Log the selected cluster configuration
-	util.Debugf(ctx, "Selected Cluster Configuration : %+v  for the T-shirt Size :%s", clusterConfig, *model.TshirtSize)
+	util.Debugf(ctx, "Selected Cluster Configuration : %+v  for the T-shirt Size :%s", clusterConfig.ToString(), *model.TshirtSize)
 
 	// If the cluster configuration is found, set it as the current model
 	if ok {

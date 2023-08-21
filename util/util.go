@@ -170,3 +170,10 @@ func TraceIDMiddleware(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	})
 }
+
+func ConvertToString(value interface{}) (string, error) {
+	if str, ok := value.(string); ok {
+		return str, nil
+	}
+	return "", fmt.Errorf("value is not a string")
+}

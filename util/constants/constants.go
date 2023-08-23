@@ -14,7 +14,8 @@ const (
 	DatabaseNamePathParam   = "databaseName"
 	UsernamePathParam       = "username"
 	ClusterName             = "ClusterName"
-	CollectionName          = "CollectionNames"
+	CollectionName          = "CollectionName"
+	CollectionNames         = "CollectionNames"
 	CollectionNamePathParam = "collectionName"
 	HostNamePathParam       = "hostName"
 	PasswordPathParam       = "password"
@@ -68,7 +69,7 @@ const (
 	DbAdminRoleName = "dbAdmin"
 	AtlasAdminRole  = "atlasAdmin"
 
-	ClusterConfigLocation                = "./config.json"
+	ClusterConfigLocation                = "config.json"
 	TraceID               TraceIDKeyType = "traceID"
 	Project                              = "Project"
 	Cluster                              = "Cluster"
@@ -76,7 +77,21 @@ const (
 	MongoBaseUrl = "https://cloud.mongodb.com/"
 	MongoDbURI   = "mongodb+srv://%s:%s@%s"
 
-	MessageConfigLocation = "./message_Config.json"
+	MessageConfigLocation = "message_Config.json"
+	EmptyString           = ""
+
+	CreateOrGetDatabaseUserReqURI = "project/{projectId}/databaseUsers"
+	DeleteOrGetDatabaseUserReqURI = "project/{projectId}/databaseUsers/{username}"
+
+	CreateOrGetClusterReqURI = "project/{projectId}/cluster"
+	DeleteClusterReqURI      = "project/{projectId}/cluster/{clusterName}"
+	GetClusterReqURI         = "project/{projectId}/cluster/{clusterName}/status"
+
+	CreateDatabaseReqURI = "database"
+	DeleteDatabaseReqURI = "database/{databaseName}"
+
+	CreateCollectionReqURI = "database/{databaseName}/collections"
+	DeleteCollectionReqURI = "database/{databaseName}/collection/{collectionName}"
 )
 
 func (c TraceIDKeyType) String() string {

@@ -1,17 +1,15 @@
 package configuration
 
 import (
-	"encoding/json"
-	"log"
-	"os"
-	"sync"
-
+	"github.com/atlas-api-helper/util"
 	"github.com/atlas-api-helper/util/constants"
+	"log"
+	"sync"
 )
 
 // MessageConfig Singleton represents the singleton instance.
 type MessageConfig struct {
-	errorConfig map[string]Messages
+	msgConfig map[string]Messages
 }
 
 var (
@@ -23,39 +21,28 @@ var (
 func GetInstance() *MessageConfig {
 	once.Do(func() {
 		instance = &MessageConfig{}
-		instance.errorConfig = loadGlobalErrorConfig()
+		instance.msgConfig = loadGlobalMessageConfig()
 	})
 	return instance
 }
 
 // GetData returns data from the singleton instance.
 func (s *MessageConfig) GetData() map[string]Messages {
-	return s.errorConfig
+	return s.msgConfig
 }
 
 // GetConfig returns the global error configuration
 func GetConfig() map[string]Messages {
-	// Return the errorConfig field of the global instance of the MessageConfig struct
-	return GetInstance().errorConfig
+	// Return the msgConfig field of the global instance of the MessageConfig struct
+	return GetInstance().msgConfig
 }
 
-// loadGlobalErrorConfig loads the global error configuration from the constants.MessageConfigLocation file
-func loadGlobalErrorConfig() map[string]Messages {
-	// Declare the errorConfig variable as a map[string]Messages
+func loadGlobalMessageConfig() map[string]Messages {
 	var errorConfig map[string]Messages
 
-	// Read the contents of the constants.MessageConfigLocation file
-	content, err := os.ReadFile(constants.MessageConfigLocation)
+	err := util.LoadConfigFromFile(constants.MessageConfigLocation, &errorConfig)
 	if err != nil {
-		log.Fatal("Error when opening file: ", err)
+		log.Fatalf("Failed to load Message Config.")
 	}
-
-	// Unmarshal the contents of the file into the errorConfig variable
-	err = json.Unmarshal(content, &errorConfig)
-	if err != nil {
-		log.Fatal("Error during Unmarshal(): ", err)
-	}
-
-	// Return the errorConfig variable
 	return errorConfig
 }

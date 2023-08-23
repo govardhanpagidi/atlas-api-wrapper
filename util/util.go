@@ -2,10 +2,12 @@ package util
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -112,7 +114,7 @@ func ToString(s *string) string {
 	if s != nil {
 		return *s
 	}
-	return ""
+	return constants.EmptyString
 }
 
 // ToStringSlice converts a slice of *string values to a formatted string.
@@ -148,6 +150,15 @@ func Warnf(ctx context.Context, format string, args ...interface{}) {
 	_, _ = logger.Warnf("[%s]"+format, newArgs...)
 }
 
+// Fatalf logs a fatal message with the given format and arguments, including the trace ID from the context
+func Fatalf(ctx context.Context, format string, args ...interface{}) {
+	traceId := ctx.Value(constants.TraceID).(string)
+
+	// Append the trace ID to the beginning of the arguments slice and log the warning message with the new arguments
+	newArgs := append([]interface{}{traceId}, args...)
+	_, _ = logger.Warnf("[%s]"+format, newArgs...)
+}
+
 // Cast64 converts a pointer to an int to a pointer to an int64
 func Cast64(i *int) *int64 {
 	// Use the `cast.ToInt64` function from the `github.com/spf13/cast` package to convert the pointer to an int64 pointer
@@ -171,9 +182,55 @@ func TraceIDMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-func ConvertToString(value interface{}) (string, error) {
-	if str, ok := value.(string); ok {
-		return str, nil
+func LoadConfigFromFile(targetFileName string, obj interface{}) error {
+	// Start searching from the current working directory
+	currentDir, err := os.Getwd()
+	if err != nil {
+		return err
 	}
-	return "", fmt.Errorf("value is not a string")
+
+	// Try to find the file in the current directory
+	foundFilePath, err := findFile(currentDir, targetFileName)
+	if err != nil {
+		return err
+	}
+
+	// If not found, try to find the file in the parent directory
+	if foundFilePath == "" {
+		parentDir := filepath.Dir(currentDir)
+		foundFilePath, err = findFile(parentDir, targetFileName)
+		if err != nil {
+			return err
+		}
+	}
+
+	if foundFilePath != "" {
+		// Read the content of the file
+		content, err := os.ReadFile(foundFilePath)
+		if err != nil {
+			return err
+		}
+
+		// Unmarshal the data into the provided object
+		err = json.Unmarshal(content, obj)
+		if err != nil {
+			return err
+		}
+	} else {
+		return nil // File not found
+	}
+
+	return nil
+}
+
+func findFile(dirPath, targetFileName string) (string, error) {
+	filePath := filepath.Join(dirPath, targetFileName)
+	_, err := os.Stat(filePath)
+	if err == nil {
+		return filePath, nil
+	} else if os.IsNotExist(err) {
+		return "", nil
+	} else {
+		return "", err
+	}
 }

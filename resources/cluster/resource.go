@@ -17,12 +17,8 @@ package cluster
 import (
 	"bytes"
 	"context"
-	"encoding/json"
-	"errors"
 	"fmt"
-	"log"
 	"net/http"
-	"os"
 	"reflect"
 	"strconv"
 	"strings"
@@ -115,7 +111,7 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 	}
 	currentModel.validateDefaultLabel()
 
-	//list all private endpoints for the specific project
+	/*//list all private endpoints for the specific project
 	endPoints, _, endpointerr := client.PrivateEndpointServicesApi.ListPrivateEndpointServices(ctx, *inputModel.ProjectId, *inputModel.CloudProvider).Execute()
 
 	if endpointerr != nil {
@@ -165,7 +161,7 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 			Message:        fmt.Sprintf(configuration.GetConfig()[constants.NoEndpointConfigured].Message, *inputModel.ProjectId),
 		}
 	}
-
+	*/
 	// Prepare cluster request
 	clusterRequest, err := createClusterRequest(ctx, &currentModel)
 
@@ -180,7 +176,6 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 
 	// Create Cluster
 	cluster, _, err := client.MultiCloudClustersApi.CreateCluster(ctx, cast.ToString(currentModel.ProjectId), clusterRequest).Execute()
-
 	if err != nil {
 		util.Warnf(ctx, "Create - Cluster.Create() - error: %+v", err)
 		return atlasresponse.AtlasRespone{
@@ -221,18 +216,9 @@ func loadClusterConfiguration(ctx context.Context, model InputModel) (Model, err
 	var currentModel Model
 	var ClusterConfig map[string]Model
 
-	// Read the content of the config.json file
-	content, err := os.ReadFile(constants.ClusterConfigLocation)
+	err := util.LoadConfigFromFile(constants.ClusterConfigLocation, &ClusterConfig)
 	if err != nil {
-		log.Fatal("Error when loading cluster configuration file: ", err)
-		return currentModel, err
-	}
-
-	// Unmarshal the content of the config.json file into `ClusterConfig`
-	err = json.Unmarshal(content, &ClusterConfig)
-	if err != nil {
-		log.Fatal("Error during Unmarshal(): ", err)
-		return currentModel, err
+		util.Fatalf(ctx, "Failed to load cluster configuration")
 	}
 
 	// Extract the key for the current cluster configuration

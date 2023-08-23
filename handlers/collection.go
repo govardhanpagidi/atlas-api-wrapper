@@ -7,8 +7,8 @@ import (
 
 	"github.com/atlas-api-helper/resources/collection"
 	"github.com/atlas-api-helper/util"
-	responseHandler "github.com/atlas-api-helper/util/Responsehandler"
 	"github.com/atlas-api-helper/util/constants"
+	responseHandler "github.com/atlas-api-helper/util/responsehandler"
 	"github.com/gorilla/mux"
 )
 

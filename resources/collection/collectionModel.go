@@ -6,7 +6,7 @@ import (
 )
 
 type InputModel struct {
-	CollectionNames []*string `json:"CollectionName,omitempty"`
+	CollectionNames []*string `json:"collectionNames,omitempty"`
 	DatabaseName    *string   `json:"databaseName,omitempty"`
 	HostName        *string   `json:"hostName,omitempty"`
 	Username        *string   `json:"userName,omitempty"`

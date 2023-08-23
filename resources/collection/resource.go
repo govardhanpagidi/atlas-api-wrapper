@@ -12,7 +12,7 @@ import (
 )
 
 // CreateRequiredFields is a slice of strings that contains the required fields for creating a resource
-var CreateRequiredFields = []string{constants.CollectionName, constants.DatabaseName, constants.HostName, constants.Username, constants.Password}
+var CreateRequiredFields = []string{constants.CollectionNames, constants.DatabaseName, constants.HostName, constants.Username, constants.Password}
 
 // DeleteRequiredFields is a slice of strings that contains the required fields for deleting a resource
 var DeleteRequiredFields = []string{constants.CollectionName, constants.DatabaseName, constants.HostName, constants.Username, constants.Password}

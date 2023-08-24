@@ -1,3 +1,5 @@
+//go:build !coverage
+
 package constants
 
 type TraceIDKeyType string
@@ -77,8 +79,9 @@ const (
 	MongoBaseUrl = "https://cloud.mongodb.com/"
 	MongoDbURI   = "mongodb+srv://%s:%s@%s"
 
-	MessageConfigLocation = "message_Config.json"
-	EmptyString           = ""
+	MessageConfigLocation   = "message_Config.json"
+	EmptyString             = ""
+	DefaultCollectionString = "default"
 
 	CreateOrGetDatabaseUserReqURI = "project/{projectId}/databaseUsers"
 	DeleteOrGetDatabaseUserReqURI = "project/{projectId}/databaseUsers/{username}"

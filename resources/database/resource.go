@@ -57,7 +57,7 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 	}
 
 	// Set the collection name to "default" if it is not provided in the inputModel
-	collectionName := "default"
+	collectionName := constants.DefaultCollectionString
 	if inputModel.CollectionName != nil {
 		collectionName = *inputModel.CollectionName
 	}

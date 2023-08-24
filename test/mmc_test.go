@@ -6,6 +6,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/atlas-api-helper/handlers"
+	"github.com/atlas-api-helper/resources/cluster"
+	"github.com/atlas-api-helper/resources/collection"
+	"github.com/atlas-api-helper/resources/database"
 	database_user "github.com/atlas-api-helper/resources/databaseUser"
 	"github.com/atlas-api-helper/util"
 	"github.com/atlas-api-helper/util/atlasresponse"
@@ -33,7 +36,7 @@ func TestCreateCluster(t *testing.T) {
 	// Set up mock input values
 	requestBody := []byte(`{"publicKey": "nlbcisuz","privateKey": "b37ea498-3950-4b8c-bfed-7779987d6195", "tshirtSize": "S","CloudProvider":"AWS"}`)
 	// Create a new request with the mock input values
-	uri := "/project/" + projectId + "/cluster"
+	uri := "/project/" + projectId + "/clusterObj"
 	println("*************************************************************************************************")
 
 	println(uri)
@@ -49,7 +52,7 @@ func TestCreateCluster(t *testing.T) {
 	// Create a new router and register the CreateCluster handler
 	router := mux.NewRouter()
 	router.Use(util.TraceIDMiddleware)
-	router.HandleFunc("/project/{projectId}/cluster", handlers.CreateCluster).Methods(http.MethodPost)
+	router.HandleFunc("/project/{projectId}/clusterObj", handlers.CreateCluster).Methods(http.MethodPost)
 
 	// Serve the request using the router
 	router.ServeHTTP(rr, req)
@@ -95,13 +98,13 @@ func TestCreateCluster(t *testing.T) {
 	if err != nil {
 		t.FailNow()
 	}
-	cluster, _, err := client.MultiCloudClustersApi.GetCluster(context.Background(), projectId, clusterName).Execute()
+	clusterObj, _, err := client.MultiCloudClustersApi.GetCluster(context.Background(), projectId, clusterName).Execute()
 	if err != nil {
 		return
 	}
 	time.Sleep(5 * time.Second)
-	if cluster.ConnectionStrings.StandardSrv != nil {
-		parts := strings.SplitN(*cluster.ConnectionStrings.StandardSrv, "//", 2)
+	if clusterObj.ConnectionStrings.StandardSrv != nil {
+		parts := strings.SplitN(*clusterObj.ConnectionStrings.StandardSrv, "//", 2)
 		connectionString = parts[1]
 		println(connectionString)
 	} else {
@@ -604,4 +607,669 @@ func TestDeleteCluster(t *testing.T) {
 		t.Errorf("Unexpected status code: got %v want %v", status, http.StatusOK)
 		t.FailNow()
 	}
+}
+
+//unit tests
+
+var tshirtSize string = "s"
+var cloudProvider string = "test"
+var mongodbVersion string = "6.0.8"
+
+func TestClusterCreateInputValidationUnit(t *testing.T) {
+
+	// Create the input model for testing
+	inputModel := cluster.InputModel{
+		ProjectId:      nil,
+		ClusterName:    nil,
+		PrivateKey:     nil,
+		PublicKey:      nil,
+		TshirtSize:     nil,
+		CloudProvider:  nil,
+		MongoDBVersion: nil,
+	}
+
+	// Call the Read method with the mock client
+	response := cluster.Create(
+		getContextWithTraceId(),
+		&inputModel,
+	)
+
+	if response.HttpStatusCode != 400 {
+		t.Error("Input validation passed instead of failing")
+		t.FailNow()
+	}
+}
+
+func TestClusterCreateInputGetInvalidproject(t *testing.T) {
+
+	// Create the input model for testing
+	inputModel := cluster.InputModel{
+		ProjectId:      &projectId,
+		ClusterName:    &clusterName,
+		PrivateKey:     &privateKey,
+		PublicKey:      &privateKey,
+		TshirtSize:     &tshirtSize,
+		CloudProvider:  &cloudProvider,
+		MongoDBVersion: &mongodbVersion,
+	}
+
+	// Call the Read method with the mock client
+	response := cluster.Create(
+		getContextWithTraceId(),
+		&inputModel,
+	)
+
+	if response.HttpStatusCode != 400 {
+		t.Error("get non existing project passed instead of failing")
+		t.FailNow()
+	}
+}
+
+func TestClusterCreateInputClusterCreateError(t *testing.T) {
+
+	validCloudProvider := "aws"
+	invalidClusterName := "@312321#21"
+	// Create the input model for testing
+	inputModel := cluster.InputModel{
+		ProjectId:      &projectId,
+		ClusterName:    &invalidClusterName,
+		PrivateKey:     &privateKey,
+		PublicKey:      &publicKey,
+		TshirtSize:     &tshirtSize,
+		CloudProvider:  &validCloudProvider,
+		MongoDBVersion: &mongodbVersion,
+	}
+
+	// Call the Read method with the mock client
+	response := cluster.Create(
+		getContextWithTraceId(),
+		&inputModel,
+	)
+
+	if response.HttpStatusCode != 500 {
+		t.Error("get non existing project passed instead of failing")
+		t.FailNow()
+	}
+}
+
+func TestClusterCreateInputGetLoadConfig(t *testing.T) {
+
+	// Create the input model for testing
+	inputModel := cluster.InputModel{
+		ProjectId:      &projectId,
+		ClusterName:    &clusterName,
+		PrivateKey:     &privateKey,
+		PublicKey:      &publicKey,
+		TshirtSize:     &tshirtSize,
+		CloudProvider:  &cloudProvider,
+		MongoDBVersion: &mongodbVersion,
+	}
+
+	// Call the Read method with the mock client
+	response := cluster.Create(
+		getContextWithTraceId(),
+		&inputModel,
+	)
+
+	if response.HttpStatusCode != 400 {
+		t.Error("get non existing project passed instead of failing")
+		t.FailNow()
+	}
+}
+
+func TestClusterReadInputValidationUnit(t *testing.T) {
+
+	// Create the input model for testing
+	inputModel := cluster.InputModel{
+		ProjectId:      nil,
+		ClusterName:    nil,
+		PrivateKey:     nil,
+		PublicKey:      nil,
+		TshirtSize:     nil,
+		CloudProvider:  nil,
+		MongoDBVersion: nil,
+	}
+
+	// Call the Read method with the mock client
+	response := cluster.Read(
+		getContextWithTraceId(),
+		&inputModel,
+	)
+
+	if response.HttpStatusCode != 400 {
+		t.Error("Input validation passed instead of failing")
+		t.FailNow()
+	}
+}
+
+func TestClusterReadInputGetInvalidproject(t *testing.T) {
+
+	// Create the input model for testing
+	inputModel := cluster.InputModel{
+		ProjectId:      &projectId,
+		ClusterName:    &clusterName,
+		PrivateKey:     &privateKey,
+		PublicKey:      &privateKey,
+		TshirtSize:     &tshirtSize,
+		CloudProvider:  &cloudProvider,
+		MongoDBVersion: &mongodbVersion,
+	}
+
+	// Call the Read method with the mock client
+	response := cluster.Read(
+		getContextWithTraceId(),
+		&inputModel,
+	)
+
+	if response.HttpStatusCode != 400 {
+		t.Error("get non existing project passed instead of failing")
+		t.FailNow()
+	}
+}
+
+func TestClusterReadInputClusterCreateError(t *testing.T) {
+
+	validCloudProvider := "aws"
+	invalidClusterName := "@312321#21"
+	// Create the input model for testing
+	inputModel := cluster.InputModel{
+		ProjectId:      &projectId,
+		ClusterName:    &invalidClusterName,
+		PrivateKey:     &privateKey,
+		PublicKey:      &publicKey,
+		TshirtSize:     &tshirtSize,
+		CloudProvider:  &validCloudProvider,
+		MongoDBVersion: &mongodbVersion,
+	}
+
+	// Call the Read method with the mock client
+	response := cluster.Read(
+		getContextWithTraceId(),
+		&inputModel,
+	)
+
+	if response.HttpStatusCode != 400 {
+		t.Error("get non existing project passed instead of failing")
+		t.FailNow()
+	}
+}
+
+func TestClusterDeleteInputValidationUnit(t *testing.T) {
+
+	// Create the input model for testing
+	inputModel := cluster.InputModel{
+		ProjectId:      nil,
+		ClusterName:    nil,
+		PrivateKey:     nil,
+		PublicKey:      nil,
+		TshirtSize:     nil,
+		CloudProvider:  nil,
+		MongoDBVersion: nil,
+	}
+
+	// Call the Read method with the mock client
+	response := cluster.Delete(
+		getContextWithTraceId(),
+		&inputModel,
+	)
+
+	if response.HttpStatusCode != 400 {
+		t.Error("Input validation passed instead of failing")
+		t.FailNow()
+	}
+}
+
+func TestClusterDeleteInputGetInvalidproject(t *testing.T) {
+
+	// Create the input model for testing
+	inputModel := cluster.InputModel{
+		ProjectId:      &projectId,
+		ClusterName:    &clusterName,
+		PrivateKey:     &privateKey,
+		PublicKey:      &privateKey,
+		TshirtSize:     &tshirtSize,
+		CloudProvider:  &cloudProvider,
+		MongoDBVersion: &mongodbVersion,
+	}
+
+	// Call the Read method with the mock client
+	response := cluster.Delete(
+		getContextWithTraceId(),
+		&inputModel,
+	)
+
+	if response.HttpStatusCode != 400 {
+		t.Error("get non existing project passed instead of failing")
+		t.FailNow()
+	}
+}
+
+func TestClusterDeleteInputClusterCreateError(t *testing.T) {
+
+	validCloudProvider := "aws"
+	invalidClusterName := "@312321#21"
+	// Create the input model for testing
+	inputModel := cluster.InputModel{
+		ProjectId:      &projectId,
+		ClusterName:    &invalidClusterName,
+		PrivateKey:     &privateKey,
+		PublicKey:      &publicKey,
+		TshirtSize:     &tshirtSize,
+		CloudProvider:  &validCloudProvider,
+		MongoDBVersion: &mongodbVersion,
+	}
+
+	// Call the Read method with the mock client
+	response := cluster.Delete(
+		getContextWithTraceId(),
+		&inputModel,
+	)
+
+	if response.HttpStatusCode != 500 {
+		t.Error("get non existing project passed instead of failing")
+		t.FailNow()
+	}
+}
+
+func TestClusterListInputValidationUnit(t *testing.T) {
+
+	// Create the input model for testing
+	inputModel := cluster.InputModel{
+		ProjectId:      nil,
+		ClusterName:    nil,
+		PrivateKey:     nil,
+		PublicKey:      nil,
+		TshirtSize:     nil,
+		CloudProvider:  nil,
+		MongoDBVersion: nil,
+	}
+
+	// Call the Read method with the mock client
+	response := cluster.List(
+		getContextWithTraceId(),
+		&inputModel,
+	)
+
+	if response.HttpStatusCode != 400 {
+		t.Error("Input validation passed instead of failing")
+		t.FailNow()
+	}
+}
+
+func TestClusterListInputGetInvalidproject(t *testing.T) {
+
+	// Create the input model for testing
+	inputModel := cluster.InputModel{
+		ProjectId:      &projectId,
+		ClusterName:    &clusterName,
+		PrivateKey:     &privateKey,
+		PublicKey:      &privateKey,
+		TshirtSize:     &tshirtSize,
+		CloudProvider:  &cloudProvider,
+		MongoDBVersion: &mongodbVersion,
+	}
+
+	// Call the Read method with the mock client
+	response := cluster.List(
+		getContextWithTraceId(),
+		&inputModel,
+	)
+
+	if response.HttpStatusCode != 400 {
+		t.Error("get non existing project passed instead of failing")
+		t.FailNow()
+	}
+}
+
+func TestDatabaseUserInputValidationUnit(t *testing.T) {
+
+	// Create the input model for testing
+	inputModel := database_user.InputModel{
+		Username:   nil,
+		Password:   nil,
+		PublicKey:  nil,
+		PrivateKey: nil,
+		ProjectId:  nil,
+	}
+
+	// Call the Read method with the mock client
+	response := database_user.Create(
+		getContextWithTraceId(),
+		&inputModel,
+	)
+
+	if response.HttpStatusCode != 400 {
+		t.Error("Input validation passed instead of failing")
+		t.FailNow()
+	}
+}
+
+func TestDatabaseUserInvalidUserNameUnit(t *testing.T) {
+
+	invalidUser := "012ej21@3213"
+	// Create the input model for testing
+	inputModel := database_user.InputModel{
+		Username:   &invalidUser,
+		Password:   &password,
+		PublicKey:  &publicKey,
+		PrivateKey: &privateKey,
+		ProjectId:  &projectId,
+	}
+
+	// Call the Read method with the mock client
+	response := database_user.Create(
+		getContextWithTraceId(),
+		&inputModel,
+	)
+
+	if response.HttpStatusCode != 500 {
+		t.Error("Input validation passed instead of failing")
+		t.FailNow()
+	}
+}
+
+func TestDatabaseUserReadInputValidationUnit(t *testing.T) {
+
+	// Create the input model for testing
+	inputModel := database_user.InputModel{
+		Username:   nil,
+		Password:   nil,
+		PublicKey:  nil,
+		PrivateKey: nil,
+		ProjectId:  nil,
+	}
+
+	// Call the Read method with the mock client
+	response := database_user.Read(
+		getContextWithTraceId(),
+		&inputModel,
+	)
+
+	if response.HttpStatusCode != 400 {
+		t.Error("Input validation passed instead of failing")
+		t.FailNow()
+	}
+}
+
+func TestDatabaseUserReadInvalidUserNameUnit(t *testing.T) {
+
+	invalidUser := "012ej21@3213"
+	// Create the input model for testing
+	inputModel := database_user.InputModel{
+		Username:   &invalidUser,
+		Password:   &password,
+		PublicKey:  &publicKey,
+		PrivateKey: &privateKey,
+		ProjectId:  &projectId,
+	}
+
+	// Call the Read method with the mock client
+	response := database_user.Read(
+		getContextWithTraceId(),
+		&inputModel,
+	)
+
+	if response.HttpStatusCode != 404 {
+		t.Error("Input validation passed instead of failing")
+		t.FailNow()
+	}
+}
+
+func TestDatabaseUserDeleteInputValidationUnit(t *testing.T) {
+
+	// Create the input model for testing
+	inputModel := database_user.InputModel{
+		Username:   nil,
+		Password:   nil,
+		PublicKey:  nil,
+		PrivateKey: nil,
+		ProjectId:  nil,
+	}
+
+	// Call the Read method with the mock client
+	response := database_user.Delete(
+		getContextWithTraceId(),
+		&inputModel,
+	)
+
+	if response.HttpStatusCode != 400 {
+		t.Error("Input validation passed instead of failing")
+		t.FailNow()
+	}
+}
+
+func TestDatabaseUserDeleteInvalidUserNameUnit(t *testing.T) {
+
+	invalidUser := "012ej21@3213"
+	// Create the input model for testing
+	inputModel := database_user.InputModel{
+		Username:   &invalidUser,
+		Password:   &password,
+		PublicKey:  &publicKey,
+		PrivateKey: &privateKey,
+		ProjectId:  &projectId,
+	}
+
+	// Call the Read method with the mock client
+	response := database_user.Delete(
+		getContextWithTraceId(),
+		&inputModel,
+	)
+
+	if response.HttpStatusCode != 500 {
+		t.Error("Input validation passed instead of failing")
+		t.FailNow()
+	}
+}
+
+func TestCollectionCreateWithInvalidInput(t *testing.T) {
+
+	// Call the Read method with the mock client
+	inputModel := collection.InputModel{
+		CollectionNames: nil,
+		DatabaseName:    nil,
+		HostName:        nil,
+		Username:        nil,
+		Password:        nil,
+	}
+
+	response := collection.Create(
+		getContextWithTraceId(),
+		&inputModel,
+	)
+
+	if response.HttpStatusCode != 400 {
+		t.Error("Input validation passed instead of failing")
+		t.FailNow()
+	}
+}
+
+func TestCollectionCreateWithInvalidUserNameAndPass(t *testing.T) {
+
+	collectionNames := []*string{
+		// Pointer to string values
+		stringPtr("collection1"),
+		stringPtr("collection2"),
+		stringPtr("collection3"),
+	}
+	invalidHostName := "123@mongo.com"
+	invalidUserName := "userName"
+	invalidPass := "pass"
+
+	// Call the Read method with the mock client
+	inputModel := collection.InputModel{
+		CollectionNames: collectionNames,
+		DatabaseName:    &databaseName,
+		HostName:        &invalidHostName,
+		Username:        &invalidUserName,
+		Password:        &invalidPass,
+	}
+
+	response := collection.Create(
+		getContextWithTraceId(),
+		&inputModel,
+	)
+
+	if response.HttpStatusCode != 400 {
+		t.Error("Input validation passed instead of failing")
+		t.FailNow()
+	}
+}
+
+func TestCollectionDeleteWithInvalidInput(t *testing.T) {
+
+	// Call the Read method with the mock client
+	inputModel := collection.DeleteInputModel{
+		CollectionName: nil,
+		DatabaseName:   nil,
+		HostName:       nil,
+		Username:       nil,
+		Password:       nil,
+	}
+
+	response := collection.Delete(
+		getContextWithTraceId(),
+		&inputModel,
+	)
+
+	if response.HttpStatusCode != 400 {
+		t.Error("Input validation passed instead of failing")
+		t.FailNow()
+	}
+}
+
+func TestCollectionDeleteWithInvalidUserNameAndPass(t *testing.T) {
+
+	collectionName := "test"
+	invalidHostName := "123@mongo.com"
+	invalidUserName := "userName"
+	invalidPass := "pass"
+
+	// Call the Read method with the mock client
+	inputModel := collection.DeleteInputModel{
+		CollectionName: &collectionName,
+		DatabaseName:   &databaseName,
+		HostName:       &invalidHostName,
+		Username:       &invalidUserName,
+		Password:       &invalidPass,
+	}
+
+	response := collection.Delete(
+		getContextWithTraceId(),
+		&inputModel,
+	)
+
+	if response.HttpStatusCode != 400 {
+		t.Error("Input validation passed instead of failing")
+		t.FailNow()
+	}
+}
+
+func TestDatabaseDeleteWithInvalidInput(t *testing.T) {
+
+	// Call the Read method with the mock client
+	inputModel := database.InputModel{
+		CollectionName: nil,
+		DatabaseName:   nil,
+		HostName:       nil,
+		Username:       nil,
+		Password:       nil,
+	}
+
+	response := database.Delete(
+		getContextWithTraceId(),
+		&inputModel,
+	)
+
+	if response.HttpStatusCode != 400 {
+		t.Error("Input validation passed instead of failing")
+		t.FailNow()
+	}
+}
+
+func TestDatabaseDeleteWithInvalidUserNameAndPass(t *testing.T) {
+
+	collectionName := "test"
+	invalidHostName := "123@mongo.com"
+	invalidUserName := "userName"
+	invalidPass := "pass"
+
+	// Call the Read method with the mock client
+	inputModel := database.InputModel{
+		CollectionName: &collectionName,
+		DatabaseName:   &databaseName,
+		HostName:       &invalidHostName,
+		Username:       &invalidUserName,
+		Password:       &invalidPass,
+	}
+
+	response := database.Delete(
+		getContextWithTraceId(),
+		&inputModel,
+	)
+
+	if response.HttpStatusCode != 400 {
+		t.Error("Input validation passed instead of failing")
+		t.FailNow()
+	}
+}
+
+func TestDatabaseCreateWithInvalidInput(t *testing.T) {
+
+	// Call the Read method with the mock client
+	inputModel := database.InputModel{
+		CollectionName: nil,
+		DatabaseName:   nil,
+		HostName:       nil,
+		Username:       nil,
+		Password:       nil,
+	}
+
+	response := database.Create(
+		getContextWithTraceId(),
+		&inputModel,
+	)
+
+	if response.HttpStatusCode != 400 {
+		t.Error("Input validation passed instead of failing")
+		t.FailNow()
+	}
+}
+
+func TestDatabaseCreateWithInvalidUserNameAndPass(t *testing.T) {
+
+	collectionName := "test"
+	invalidHostName := "123@mongo.com"
+	invalidUserName := "userName"
+	invalidPass := "pass"
+
+	// Call the Read method with the mock client
+	inputModel := database.InputModel{
+		CollectionName: &collectionName,
+		DatabaseName:   &databaseName,
+		HostName:       &invalidHostName,
+		Username:       &invalidUserName,
+		Password:       &invalidPass,
+	}
+
+	response := database.Create(
+		getContextWithTraceId(),
+		&inputModel,
+	)
+
+	if response.HttpStatusCode != 400 {
+		t.Error("Input validation passed instead of failing")
+		t.FailNow()
+	}
+}
+
+func getContextWithTraceId() context.Context {
+	traceID := fmt.Sprintf("TraceID-%d", time.Now().UnixNano())
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, constants.TraceID, traceID)
+	return ctx
+}
+
+func stringPtr(s string) *string {
+	return &s
 }

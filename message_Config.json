@@ -112,7 +112,7 @@
     "Message": "Database User with name: %s is created."
   },
   "USER_NOT_FOUND": {
-    "Code": 401,
+    "Code": 404,
     "Message": "Database User with name: %s is not found."
   },
   "FETCH_USER": {

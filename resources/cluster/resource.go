@@ -175,7 +175,7 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 	}
 
 	// Create Cluster
-	cluster, _, err := client.MultiCloudClustersApi.CreateCluster(ctx, cast.ToString(currentModel.ProjectId), clusterRequest).Execute()
+	cluster, _, err := client.MultiCloudClustersApi.CreateCluster(ctx, cast.ToString(inputModel.ProjectId), clusterRequest).Execute()
 	if err != nil {
 		util.Warnf(ctx, "Create - Cluster.Create() - error: %+v", err)
 		return atlasresponse.AtlasRespone{
@@ -288,7 +288,7 @@ func generateClusterName(model InputModel) *string {
 	toRet = strings.ReplaceAll(toRet, "-", "-")
 
 	// Concatenate the cloud provider, project ID, T-shirt size, and current time to generate the cluster name
-	toRet = *model.CloudProvider + "-" + *model.ProjectId + "-" + *model.TshirtSize + "-" + toRet
+	toRet = *model.TshirtSize + "-" + *model.CloudProvider + "-" + toRet + "-" + *model.ProjectId
 
 	// Return the cluster name as a pointer to a string
 	return &toRet

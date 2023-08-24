@@ -48,6 +48,13 @@ func NewMongoDBSDKClient(publicKey string, privateKey string) (*admin.APIClient,
 		return nil, err
 	}
 
+	// Check the connection to the MongoDB Atlas API client
+	ctx := context.TODO()
+	_, _, err = client.RootApi.GetSystemStatus(ctx).Execute()
+	if err != nil {
+		return nil, err
+	}
+
 	// Return the new MongoDB Atlas API client and any error
 	return client, err
 }

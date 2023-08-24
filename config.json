@@ -6,8 +6,6 @@
       "NoTableScan": false
     },
     "ClusterType": "REPLICASET",
-    "Profile": "default",
-    "ProjectId": "64b6db1fe471e8514b8a59a6",
     "MongoDBVersion": "6.0.8",
     "Name": "Cluster0",
     "Paused": false,
@@ -34,5 +32,55 @@
     "StateName": "IDLE",
     "VersionReleaseSystem": "LTS",
     "TerminationProtectionEnabled": false
+  },
+  "m-aws": {
+    "ClusterType":"REPLICASET",
+    "ReplicationSpecs":[
+      {
+        "NumShards": 1,
+        "AdvancedRegionConfigs":[
+          {
+            "ElectableSpecs":{
+              "EbsVolumeType": "STANDARD",
+              "DiskIOPS": "",
+              "InstanceSize":"M10",
+              "NodeCount":3
+            },
+            "Priority":7,
+            "ProviderName":"AWS",
+            "RegionName":"US_EAST_1"
+          },
+          {
+            "ElectableSpecs":{
+              "EbsVolumeType": "STANDARD",
+              "DiskIOPS": "",
+              "InstanceSize":"M10",
+              "NodeCount":2
+            },
+            "Priority":6,
+            "ProviderName":"AWS",
+            "RegionName":"US_EAST_2"
+          },
+          {
+            "ElectableSpecs":{
+              "EbsVolumeType": "STANDARD",
+              "DiskIOPS": "",
+              "InstanceSize":"M10",
+              "NodeCount":2
+            },
+  
+            "ReadOnlySpecs":{
+              "EbsVolumeType": "STANDARD",
+              "DiskIOPS": "",
+              "InstanceSize":"M10",
+              "NodeCount":2
+            },
+            "Priority":5,
+            "ProviderName":"AWS",
+            "RegionName":"US_WEST_1"
+          }
+        ]
+      }
+    ]
   }
 }

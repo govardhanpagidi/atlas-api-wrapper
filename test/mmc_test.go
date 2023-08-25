@@ -17,13 +17,13 @@ import (
 	"github.com/gorilla/mux"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"strings"
 	"testing"
 	"time"
 )
 
 var clusterName string = ""
-
 var publicKey string = "nlbcisuz"
 var privateKey string = "b37ea498-3950-4b8c-bfed-7779987d6195"
 var projectId string = "64b6db1fe471e8514b8a59a6"
@@ -31,6 +31,94 @@ var connectionString string = ""
 var databaseName string = "test"
 var username string = "testUser"
 var password string = "testPass"
+
+type Config struct {
+	ClusterName      string `json:"clusterName,omitempty"`
+	PublicKey        string `json:"publicKey,omitempty"`
+	PrivateKey       string `json:"privateKey,omitempty"`
+	ProjectId        string `json:"projectId,omitempty"`
+	ConnectionString string `json:"connectionString,omitempty"`
+	DatabaseName     string `json:"databaseName,omitempty"`
+	Username         string `json:"username,omitempty"`
+	Password         string `json:"password,omitempty"`
+}
+
+func TestMain(m *testing.M) {
+	var config Config
+
+	// Read values from environment variables
+	config.ClusterName = os.Getenv("CLUSTER_NAME")
+	config.PublicKey = os.Getenv("PUBLIC_KEY")
+	config.PrivateKey = os.Getenv("PRIVATE_KEY")
+	config.ProjectId = os.Getenv("PROJECT_ID")
+	config.ConnectionString = os.Getenv("CONNECTION_STRING")
+	config.DatabaseName = os.Getenv("DATABASE_NAME")
+	config.Username = os.Getenv("USERNAME")
+	config.Password = os.Getenv("PASSWORD")
+
+	// Load values from JSON file into tempConfig
+	var tempConfig Config
+	loadValuesFromFile("test_config.json", &tempConfig)
+
+	// Assign values from tempConfig to config if they are empty
+	if config.ClusterName == "" {
+		config.ClusterName = tempConfig.ClusterName
+	}
+	if config.PublicKey == "" {
+		config.PublicKey = tempConfig.PublicKey
+	}
+	if config.PrivateKey == "" {
+		config.PrivateKey = tempConfig.PrivateKey
+	}
+	if config.ProjectId == "" {
+		config.ProjectId = tempConfig.ProjectId
+	}
+	if config.ConnectionString == "" {
+		config.ConnectionString = tempConfig.ConnectionString
+	}
+	if config.DatabaseName == "" {
+		config.DatabaseName = tempConfig.DatabaseName
+	}
+	if config.Username == "" {
+		config.Username = tempConfig.Username
+	}
+	if config.Password == "" {
+		config.Password = tempConfig.Password
+	}
+
+	clusterName = config.ClusterName
+	publicKey = config.PublicKey
+	privateKey = config.PrivateKey
+	projectId = config.ProjectId
+	connectionString = config.ConnectionString
+	databaseName = config.DatabaseName
+	username = config.Username
+	password = config.Password
+
+	// Run the tests
+	exitCode := m.Run()
+
+	// Clean up your resources here if needed
+
+	// Exit with the test exit code
+	os.Exit(exitCode)
+}
+
+func loadValuesFromFile(filename string, config *Config) {
+	file, err := os.Open(filename)
+	if err != nil {
+		fmt.Printf("Error opening file %s: %v\n", filename, err)
+		return
+	}
+	defer file.Close()
+
+	decoder := json.NewDecoder(file)
+	err = decoder.Decode(&config)
+	if err != nil {
+		fmt.Printf("Error decoding JSON from file %s: %v\n", filename, err)
+		return
+	}
+}
 
 func TestCreateCluster(t *testing.T) {
 	// Set up mock input values

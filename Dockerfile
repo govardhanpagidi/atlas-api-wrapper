@@ -18,8 +18,8 @@ RUN apk --no-cache add ca-certificates
 WORKDIR /root/
 
 COPY --from=builder /app/main .
-COPY --from=builder /app/.env .
-
+COPY config.json .
+COPY message_Config.json .
 EXPOSE 8080
 
 CMD ["./main"]

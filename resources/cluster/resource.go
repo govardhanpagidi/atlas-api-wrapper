@@ -217,8 +217,8 @@ func loadClusterConfiguration(ctx context.Context, model InputModel) (Model, err
 	var ClusterConfig map[string]Model
 
 	err := util.LoadConfigFromFile(constants.ClusterConfigLocation, &ClusterConfig)
-	if err != nil {
-		util.Fatalf(ctx, "Failed to load cluster configuration")
+	if ClusterConfig == nil || err != nil {
+		return currentModel, fmt.Errorf("failed to load cluster configuration from file: %s", constants.ClusterConfigLocation)
 	}
 
 	// Extract the key for the current cluster configuration

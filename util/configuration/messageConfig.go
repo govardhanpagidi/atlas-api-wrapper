@@ -44,5 +44,8 @@ func loadGlobalMessageConfig() map[string]Messages {
 	if err != nil {
 		log.Fatalf("Failed to load Message Config.")
 	}
+	if errorConfig == nil {
+		log.Fatalf("Unable to load ConfigurationFile : %s", constants.MessageConfigLocation)
+	}
 	return errorConfig
 }

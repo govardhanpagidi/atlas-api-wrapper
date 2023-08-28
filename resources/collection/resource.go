@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/atlas-api-helper/util/logger"
+
 	"github.com/atlas-api-helper/util"
 	"github.com/atlas-api-helper/util/atlasresponse"
 	"github.com/atlas-api-helper/util/configuration"
@@ -38,11 +40,7 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 	if errEvent := validateModel(CreateRequiredFields, inputModel); errEvent != nil {
 		// If the inputModel is invalid, log a warning and return an error response
 		util.Warnf(ctx, "create collection is failing with invalid parameters : %+v", errEvent.Error())
-		return atlasresponse.AtlasRespone{
-			Response:       nil,
-			HttpStatusCode: configuration.GetConfig()[constants.InvalidInputParameter].Code,
-			Message:        fmt.Sprintf(configuration.GetConfig()[constants.InvalidInputParameter].Message, errEvent.Error()),
-		}
+		return handleError(constants.InvalidInputParameter, "", errEvent)
 	}
 
 	// Create a new MongoDB client using the inputModel's username, password, and hostname
@@ -50,11 +48,7 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 	if err != nil {
 		// If there is an error creating the MongoDB client, log a warning and return an error response
 		util.Warnf(ctx, "Create MongoDriver Error : %+v", err.Error())
-		return atlasresponse.AtlasRespone{
-			Response:       nil,
-			HttpStatusCode: configuration.GetConfig()[constants.MongoClientCreationError].Code,
-			Message:        configuration.GetConfig()[constants.MongoClientCreationError].Message,
-		}
+		return handleError(constants.MongoClientCreationError, "", err)
 	}
 
 	// Get the database from the client using the inputModel's database name
@@ -84,11 +78,7 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 	// If there are any failed collections, return an error response
 	if len(failedCollections) > 0 {
 		errorMessage := fmt.Sprintf("Failed to create collections: %s", util.ToStringSlice(failedCollections))
-		return atlasresponse.AtlasRespone{
-			Response:       nil,
-			HttpStatusCode: configuration.GetConfig()[constants.CollectionError].Code,
-			Message:        errorMessage,
-		}
+		return handleError(constants.MongoClientCreationError, errorMessage, err)
 	}
 
 	// If all collections are created successfully, return a success response
@@ -108,11 +98,7 @@ func Delete(ctx context.Context, inputModel *DeleteInputModel) atlasresponse.Atl
 	if errEvent := validateModel(DeleteRequiredFields, inputModel); errEvent != nil {
 		// If the inputModel is invalid, log a warning and return an error response
 		util.Warnf(ctx, "delete collection is failing with invalid parameters : %+v", errEvent.Error())
-		return atlasresponse.AtlasRespone{
-			Response:       nil,
-			HttpStatusCode: configuration.GetConfig()[constants.InvalidInputParameter].Code,
-			Message:        fmt.Sprintf(configuration.GetConfig()[constants.InvalidInputParameter].Message, errEvent.Error()),
-		}
+		return handleError(constants.InvalidInputParameter, "", errEvent)
 	}
 
 	// Create a new MongoDB client using the inputModel's username, password, and hostname
@@ -120,11 +106,7 @@ func Delete(ctx context.Context, inputModel *DeleteInputModel) atlasresponse.Atl
 	if err != nil {
 		// If there is an error creating the MongoDB client, log a warning and return an error response
 		util.Warnf(ctx, "Create Mongo Driver Client Error : %+v", err.Error())
-		return atlasresponse.AtlasRespone{
-			Response:       nil,
-			HttpStatusCode: configuration.GetConfig()[constants.MongoClientCreationError].Code,
-			Message:        configuration.GetConfig()[constants.MongoClientCreationError].Message,
-		}
+		return handleError(constants.MongoClientCreationError, "", err)
 	}
 
 	// Get the database from the client using the inputModel's database name
@@ -136,11 +118,7 @@ func Delete(ctx context.Context, inputModel *DeleteInputModel) atlasresponse.Atl
 	if dbCreateErr != nil {
 		// If there is an error dropping the collection, log a warning and return an error response
 		util.Warnf(ctx, "Drop Collection Error : %+v", dbCreateErr.Error())
-		return atlasresponse.AtlasRespone{
-			Response:       nil,
-			HttpStatusCode: configuration.GetConfig()[constants.CollectionDeleteError].Code,
-			Message:        fmt.Sprintf(configuration.GetConfig()[constants.CollectionDeleteError].Message, *inputModel.CollectionName),
-		}
+		return handleError(constants.CollectionDeleteError, "", dbCreateErr)
 	}
 
 	// If the collection is dropped successfully, return a success response
@@ -148,5 +126,20 @@ func Delete(ctx context.Context, inputModel *DeleteInputModel) atlasresponse.Atl
 		Response:       nil,
 		HttpStatusCode: configuration.GetConfig()[constants.CollectionDeleteSuccess].Code,
 		Message:        fmt.Sprintf(configuration.GetConfig()[constants.CollectionDeleteSuccess].Message, *inputModel.CollectionName),
+	}
+}
+
+func handleError(code string, message string, err error) atlasresponse.AtlasRespone {
+	if err != nil {
+		errMsg := fmt.Sprintf("%s error:%s", code, err.Error())
+		_, _ = logger.Warn(errMsg)
+	}
+	if message == constants.EmptyString {
+		message = configuration.GetConfig()[code].Message
+	}
+	return atlasresponse.AtlasRespone{
+		Response:       nil,
+		HttpStatusCode: configuration.GetConfig()[code].Code,
+		Message:        message,
 	}
 }

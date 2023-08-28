@@ -150,6 +150,14 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 		}
 
 	}
+	if len(clusterAdvancedConfigRegions) == 0 {
+		util.Warnf(ctx, "No advancedCluster configuration is provided for the cluster")
+		return atlasresponse.AtlasRespone{
+			Response:       nil,
+			HttpStatusCode: configuration.GetConfig()[constants.NoAdvancedClusterConfiguration].Code,
+			Message:        fmt.Sprintf(configuration.GetConfig()[constants.NoAdvancedClusterConfiguration].Message),
+		}
+	}
 
 	//compare if the regions from json matches the regions from private endpoints
 	isEndPointConfigured := checkIfEndpointRegionIsSameAsClusterRegion(endpointRegions, clusterAdvancedConfigRegions)
@@ -158,8 +166,8 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 		util.Warnf(ctx, "PrivateEndpoint Not Configured for ProjectId %s .", *inputModel.ProjectId)
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
-			HttpStatusCode: configuration.GetConfig()[constants.NoEndpointConfigured].Code,
-			Message:        fmt.Sprintf(configuration.GetConfig()[constants.NoEndpointConfigured].Message, *inputModel.ProjectId),
+			HttpStatusCode: configuration.GetConfig()[constants.NoEndpointConfiguredForRegion].Code,
+			Message:        fmt.Sprintf(configuration.GetConfig()[constants.NoEndpointConfiguredForRegion].Message, *inputModel.ProjectId, []string{strings.Join(clusterAdvancedConfigRegions, ", ")}),
 		}
 	}
 	// Prepare cluster request

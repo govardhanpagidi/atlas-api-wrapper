@@ -142,5 +142,13 @@
   "NO_ENDPOINT_ERROR": {
     "Code": 500,
     "Message": "No private endpoints configured for ProjectId: %s ."
+  },
+  "NO_ENDPOINT_REGION_ERROR": {
+    "Code": 500,
+    "Message": "No private endpoints configured for ProjectId: %s for the region(s) :%s ."
+  },
+  "NO_ADVANCED_CLUSTER_CONFIG": {
+    "Code": 500,
+    "Message": "No Advanced Cluster Configuration with Region is provided"
   }
 }

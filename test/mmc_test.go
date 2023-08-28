@@ -122,14 +122,29 @@ func loadValuesFromFile(filename string, config *Config) {
 
 func TestCreateCluster(t *testing.T) {
 	// Set up mock input values
-	requestBody := []byte(`{"publicKey": "nlbcisuz","privateKey": "b37ea498-3950-4b8c-bfed-7779987d6195", "tshirtSize": "S","CloudProvider":"AWS"}`)
+	awsCloudProvider := "AWS"
+	tshirtSizeTemp := "m"
+	model := cluster.InputModel{
+		ProjectId:     &projectId,
+		ClusterName:   &clusterName,
+		PrivateKey:    &privateKey,
+		PublicKey:     &publicKey,
+		TshirtSize:    &tshirtSizeTemp,
+		CloudProvider: &awsCloudProvider,
+	}
+	body, err := json.Marshal(model)
+	if err != nil {
+		fmt.Println("Error:", err)
+		return
+	}
+	requestBody := string(body)
 	// Create a new request with the mock input values
 	uri := "/project/" + projectId + "/clusterObj"
 	println("*************************************************************************************************")
 
 	println(uri)
 	println("*************************************************************************************************")
-	req, err := http.NewRequest("POST", uri, bytes.NewBuffer(requestBody))
+	req, err := http.NewRequest("POST", uri, bytes.NewBuffer([]byte(requestBody)))
 	if err != nil {
 		t.Fatal(err)
 	}

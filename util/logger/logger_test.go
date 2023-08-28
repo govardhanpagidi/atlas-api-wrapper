@@ -14,42 +14,42 @@ func TestLogger(t *testing.T) {
 	logger := New(&buf, DebugLevel)
 
 	// Test Debug
-	logger.Debug("Debug message")
+	_, _ = logger.Debug("Debug message")
 	if buf.String() != "Debug message" {
 		t.Errorf("Expected 'Debug message', got '%s'", buf.String())
 	}
 	buf.Reset()
 
 	// Test Debugln
-	logger.Debugln("Debug line")
+	_, _ = logger.Debugln("Debug line")
 	if buf.String() != "Debug line\n" {
 		t.Errorf("Expected 'Debug line\n', got '%s'", buf.String())
 	}
 	buf.Reset()
 
 	// Test Debugf
-	logger.Debugf("Debug formatted %s", "message")
+	_, _ = logger.Debugf("Debug formatted %s", "message")
 	if buf.String() != "Debug formatted message" {
 		t.Errorf("Expected 'Debug formatted message', got '%s'", buf.String())
 	}
 	buf.Reset()
 
 	// Test Warning
-	logger.Warning("Warning message")
+	_, _ = logger.Warning("Warning message")
 	if buf.String() != "Warning message" {
 		t.Errorf("Expected 'Warning message', got '%s'", buf.String())
 	}
 	buf.Reset()
 
 	// Test Warningln
-	logger.Warningln("Warning line")
+	_, _ = logger.Warningln("Warning line")
 	if buf.String() != "Warning line\n" {
 		t.Errorf("Expected 'Warning line\n', got '%s'", buf.String())
 	}
 	buf.Reset()
 
 	// Test Warningf
-	logger.Warningf("Warning formatted %s", "message")
+	_, _ = logger.Warningf("Warning formatted %s", "message")
 	if buf.String() != "Warning formatted message" {
 		t.Errorf("Expected 'Warning formatted message', got '%s'", buf.String())
 	}
@@ -66,7 +66,7 @@ func TestLoggerHelpers(t *testing.T) {
 	// Test SetOutput
 	newBuf := bytes.Buffer{}
 	logger.SetOutput(&newBuf)
-	logger.Debug("Debug message with new output")
+	_, _ = logger.Debug("Debug message with new output")
 	if newBuf.String() != "Debug message with new output" {
 		t.Errorf("Expected 'Debug message with new output', got '%s'", newBuf.String())
 	}
@@ -165,7 +165,7 @@ func TestLoggerGlobalMethods(t *testing.T) {
 		}
 	})
 	// Test Warn
-	Warn("Global warning message")
+	_, _ = Warn("Global warning message")
 	expected := "Global warning message"
 	if buf.String() != expected {
 		t.Errorf("Expected '%s', got '%s'", expected, buf.String())
@@ -173,7 +173,7 @@ func TestLoggerGlobalMethods(t *testing.T) {
 	buf.Reset()
 
 	// Test Warnln
-	Warnln("Global warning line")
+	_, _ = Warnln("Global warning line")
 	expected = "Global warning line\n"
 	if buf.String() != expected {
 		t.Errorf("Expected '%s', got '%s'", expected, buf.String())
@@ -181,7 +181,7 @@ func TestLoggerGlobalMethods(t *testing.T) {
 	buf.Reset()
 
 	// Test Warnf
-	Warnf("Global warning formatted %s", "message")
+	_, _ = Warnf("Global warning formatted %s", "message")
 	expected = "Global warning formatted message"
 	if buf.String() != expected {
 		t.Errorf("Expected '%s', got '%s'", expected, buf.String())

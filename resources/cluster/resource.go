@@ -17,6 +17,7 @@ package cluster
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"reflect"
@@ -38,7 +39,7 @@ import (
 var defaultLabel = Labels{Key: aws.String("Infrastructure Tool"), Value: aws.String("MongoDB Atlas CloudFormation Provider")}
 
 // CreateRequiredFields is a list of required fields for creating a MongoDB Atlas cluster
-var CreateRequiredFields = []string{constants.ProjectID, constants.PrivateKey, constants.PublicKey, constants.TshirtSize}
+var CreateRequiredFields = []string{constants.ProjectID, constants.PrivateKey, constants.PublicKey, constants.TshirtSize, constants.CloudProvider}
 
 // ReadRequiredFields is a list of required fields for reading a MongoDB Atlas cluster
 var ReadRequiredFields = []string{constants.ProjectID, constants.ClusterName, constants.PublicKey, constants.PrivateKey}
@@ -111,7 +112,7 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 	}
 	currentModel.validateDefaultLabel()
 
-	/*//list all private endpoints for the specific project
+	//list all private endpoints for the specific project
 	endPoints, _, endpointerr := client.PrivateEndpointServicesApi.ListPrivateEndpointServices(ctx, *inputModel.ProjectId, *inputModel.CloudProvider).Execute()
 
 	if endpointerr != nil {
@@ -135,7 +136,7 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 	}
 
 	//load all region names from the private endpoints
-	util.Debugf(ctx, "Cluster create projectId: %s, clusterName: %s", *inputModel.ProjectId, *inputModel.ClusterName)
+	util.Debugf(ctx, "Cluster create projectId: %s, clusterName: %s", *inputModel.ProjectId, *currentModel.Name)
 	var endpointRegions []string
 	for _, endPoint := range endPoints {
 		endpointRegions = append(endpointRegions, *endPoint.RegionName)
@@ -154,14 +155,13 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 	isEndPointConfigured := checkIfEndpointRegionIsSameAsClusterRegion(endpointRegions, clusterAdvancedConfigRegions)
 
 	if !isEndPointConfigured {
-		util.Warnf(ctx, "PrivateEndpoint Not Configured for ProjectId %s error: %v", *inputModel.ProjectId, endpointerr.Error())
+		util.Warnf(ctx, "PrivateEndpoint Not Configured for ProjectId %s .", *inputModel.ProjectId)
 		return atlasresponse.AtlasRespone{
 			Response:       nil,
 			HttpStatusCode: configuration.GetConfig()[constants.NoEndpointConfigured].Code,
 			Message:        fmt.Sprintf(configuration.GetConfig()[constants.NoEndpointConfigured].Message, *inputModel.ProjectId),
 		}
 	}
-	*/
 	// Prepare cluster request
 	clusterRequest, err := createClusterRequest(ctx, &currentModel)
 

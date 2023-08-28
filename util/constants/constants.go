@@ -28,6 +28,7 @@ const (
 	PrivateKey     = "PrivateKey"
 	PublicKey      = "PublicKey"
 	TshirtSize     = "TshirtSize"
+	CloudProvider  = "CloudProvider"
 
 	PrivateKeyQueryParam = "privateKey"
 	PublicKeyQueryParam  = "publicKey"

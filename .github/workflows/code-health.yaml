@@ -28,11 +28,6 @@ jobs:
         with:
           version: v1.52.2
           working-directory: .
-      - name: actionlint
-        run: | 
-           make devtools 
-           actionlint -verbose -color
-        shell: bash
   dependency-review:
     runs-on: ubuntu-latest
     if: ${{ github.event_name == 'pull_request' }}

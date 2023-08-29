@@ -80,7 +80,8 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 	modelValidation := validateModel(CreateRequiredFields, inputModel)
 	if modelValidation != nil {
 		util.Warnf(ctx, "create cluster is failing with invalid parameters : %+v", modelValidation.Error())
-		return handleError(constants.InvalidInputParameter, nil)
+		message := fmt.Sprintf(configuration.GetConfig()[constants.InvalidInputParameter].Message, modelValidation.Error())
+		return handleError(constants.InvalidInputParameter, message, modelValidation)
 	}
 
 	//Create a mongo client using public key and private key
@@ -88,15 +89,23 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 
 	if peErr != nil {
 		util.Warnf(ctx, "CreateMongoDBClient error: %v", peErr.Error())
-		return handleError(constants.MongoClientCreationError, peErr)
+		return handleError(constants.MongoClientCreationError, constants.EmptyString, peErr)
 	}
+	projectIpList, _, ipListError := client.ProjectIPAccessListApi.ListProjectIpAccessLists(context.Background(), *inputModel.ProjectId).Execute()
+	if ipListError != nil {
+		util.Warnf(ctx, "Error When fetching Project IP AccessList :%v", ipListError.Error())
+		return handleError(constants.ProjectIpAccessListError, constants.EmptyString, ipListError)
+	}
+
+	hasPublicAccess := checkIfProjectHasPublicAccess(projectIpList.Results)
 
 	//check if project already exists
 	_, _, projectErr := client.ProjectsApi.GetProject(context.Background(), cast.ToString(inputModel.ProjectId)).Execute()
 
 	if projectErr != nil {
 		util.Warnf(ctx, "Get Project error: %v", projectErr.Error())
-		return handleError(constants.ResourceDoesNotExist, nil)
+		message := fmt.Sprintf(configuration.GetConfig()[constants.ResourceDoesNotExist].Message, constants.Project, *inputModel.ProjectId)
+		return handleError(constants.ResourceDoesNotExist, message, nil)
 	}
 
 	//load cluster configuration based on TshirtSize from config.json
@@ -104,7 +113,7 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 
 	if err != nil {
 		util.Warnf(ctx, "Create Current Model error: %v", err.Error())
-		return handleError(constants.ClusterModelError, err)
+		return handleError(constants.ClusterModelError, constants.EmptyString, err)
 	}
 	currentModel.validateDefaultLabel()
 
@@ -113,14 +122,16 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 
 	if endPointErr != nil {
 		util.Warnf(ctx, "Get PrivateEndpoint error: %v", endPointErr.Error())
-		return handleError(constants.ListEndpointError, err)
+		message := fmt.Sprintf(configuration.GetConfig()[constants.ListEndpointError].Message, *inputModel.ProjectId)
+		return handleError(constants.ListEndpointError, message, err)
 	}
 
 	//check if at least one private endpoint is attached to the project
 	count := len(endPoints)
 	if count == 0 {
 		util.Warnf(ctx, "PrivateEndpoint Not Configured for ProjectId %s error: %v", *inputModel.ProjectId, errors.New(configuration.GetConfig()[constants.NoEndpointConfigured].Message))
-		return handleError(constants.NoEndpointConfigured, err)
+		message := fmt.Sprintf(configuration.GetConfig()[constants.NoEndpointConfigured].Message, *inputModel.ProjectId)
+		return handleError(constants.NoEndpointConfigured, message, err)
 	}
 
 	//load all region names from the private endpoints
@@ -140,48 +151,78 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 	}
 	if len(clusterAdvancedConfigRegions) == 0 {
 		util.Warnf(ctx, "No advancedCluster configuration is provided for the cluster")
-		return handleError(constants.NoAdvancedClusterConfiguration, err)
+		return handleError(constants.NoAdvancedClusterConfiguration, constants.EmptyString, err)
 	}
 
 	//compare if the regions from json matches the regions from private endpoints
 	isEndPointConfigured := checkIfEndpointRegionIsSameAsClusterRegion(endpointRegions, clusterAdvancedConfigRegions)
 
 	if !isEndPointConfigured {
-		return handleError(constants.NoEndpointConfiguredForRegion, err)
+		message := fmt.Sprintf(configuration.GetConfig()[constants.NoEndpointConfigured].Message, *inputModel.ProjectId)
+		return handleError(constants.NoEndpointConfiguredForRegion, message, err)
 	}
 	// Prepare cluster request
 	clusterRequest, err := createClusterRequest(ctx, &currentModel)
 
 	if err != nil {
-		return handleError(constants.ClusterRequestError, err)
+		message := fmt.Sprintf(configuration.GetConfig()[constants.NoAdvancedClusterConfiguration].Message)
+		return handleError(constants.ClusterRequestError, message, err)
 	}
 
 	// Create Cluster
 	cluster, _, err := client.MultiCloudClustersApi.CreateCluster(ctx, cast.ToString(inputModel.ProjectId), clusterRequest).Execute()
 	if err != nil {
-		return handleError(constants.ClusterCreateError, err)
+		return handleError(constants.ClusterCreateError, constants.EmptyString, err)
 	}
+
+	model := &Model{}
+	mapClusterToModel(ctx, model, cluster)
+	model.PublicAccessEnabled = &hasPublicAccess
+	// Fetch advanced cluster config
+	processArgs, _, clusterErr := client.ClustersApi.GetClusterAdvancedConfiguration(context.Background(), *model.ProjectId, *model.Name).Execute()
+
+	if clusterErr != nil {
+		return handleError(constants.ClusterAdvancedListError, constants.EmptyString, err)
+	}
+
+	model.AdvancedSettings = flattenProcessArgs(processArgs)
 
 	currentModel.StateName = cluster.StateName
 
 	return atlasresponse.AtlasRespone{
-		Response:       cluster,
+		Response:       model,
 		HttpStatusCode: configuration.GetConfig()[constants.ClusterCreateSuccess].Code,
 	}
 }
 
+func checkIfProjectHasPublicAccess(results []admin.NetworkPermissionEntry) bool {
+	for _, result := range results {
+		if result.IpAddress != nil && *result.IpAddress == constants.PublicIp {
+			return true
+		}
+		if result.CidrBlock != nil && *result.CidrBlock == constants.PublicIp {
+			return true
+		}
+	}
+	return false
+}
+
 // handleError is a helper method that logs an error and returns an error response
-func handleError(code string, err error) atlasresponse.AtlasRespone {
+func handleError(code string, message string, err error) atlasresponse.AtlasRespone {
 	// If there is an error, log a warning
 	if err != nil {
 		errMsg := fmt.Sprintf("%s error:%s", code, err.Error())
 		_, _ = logger.Warn(errMsg)
 	}
+	// If the message is empty, use the message from the configuration
+	if message == constants.EmptyString {
+		message = configuration.GetConfig()[code].Message
+	}
 	// Return an error response
 	return atlasresponse.AtlasRespone{
 		Response:       nil,
 		HttpStatusCode: configuration.GetConfig()[code].Code,
-		Message:        configuration.GetConfig()[code].Message,
+		Message:        message,
 	}
 }
 
@@ -295,7 +336,8 @@ func Read(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasRespon
 	modelValidation := validateModel(ReadRequiredFields, inputModel)
 	if modelValidation != nil {
 		util.Warnf(ctx, "read cluster is failing with invalid parameters : %+v", modelValidation.Error())
-		return handleError(constants.InvalidInputParameter, nil)
+		message := fmt.Sprintf(configuration.GetConfig()[constants.InvalidInputParameter].Message, modelValidation.Error())
+		return handleError(constants.InvalidInputParameter, message, modelValidation)
 	}
 
 	// Create a MongoDB client using the public key and private key
@@ -303,7 +345,7 @@ func Read(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasRespon
 
 	if peErr != nil {
 		util.Warnf(ctx, "CreateMongoDBClient error: %v", peErr.Error())
-		return handleError(constants.MongoClientCreationError, peErr)
+		return handleError(constants.MongoClientCreationError, constants.EmptyString, peErr)
 	}
 
 	// Check if the project already exists
@@ -311,7 +353,8 @@ func Read(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasRespon
 
 	if projectErr != nil {
 		util.Warnf(ctx, "Get Project error: %v", projectErr.Error())
-		return handleError(constants.ResourceDoesNotExist, projectErr)
+		message := fmt.Sprintf(configuration.GetConfig()[constants.ResourceDoesNotExist].Message, constants.Project, *inputModel.ProjectId)
+		return handleError(constants.ResourceDoesNotExist, message, projectErr)
 	}
 
 	// Read the cluster based on the provided params
@@ -319,7 +362,8 @@ func Read(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasRespon
 
 	if err != nil {
 		util.Warnf(ctx, "error cluster get- err:%+v resp:%+v", err, resp)
-		return handleError(constants.ResourceDoesNotExist, err)
+		message := fmt.Sprintf(configuration.GetConfig()[constants.ResourceDoesNotExist].Message, constants.Cluster, *inputModel.ClusterName)
+		return handleError(constants.ResourceDoesNotExist, message, err)
 	}
 
 	return atlasresponse.AtlasRespone{
@@ -338,7 +382,8 @@ func Delete(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 	modelValidation := validateModel(DeleteRequiredFields, inputModel)
 	if modelValidation != nil {
 		util.Warnf(ctx, "delete cluster is failing with invalid parameters : %+v", modelValidation.Error())
-		return handleError(constants.InvalidInputParameter, nil)
+		message := fmt.Sprintf(configuration.GetConfig()[constants.InvalidInputParameter].Message, modelValidation.Error())
+		return handleError(constants.InvalidInputParameter, message, modelValidation)
 
 	}
 
@@ -347,7 +392,7 @@ func Delete(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 
 	if peErr != nil {
 		util.Warnf(ctx, "CreateMongoDBClient error: %v", peErr.Error())
-		return handleError(constants.MongoClientCreationError, peErr)
+		return handleError(constants.MongoClientCreationError, constants.EmptyString, peErr)
 	}
 
 	// Check if the project already exists
@@ -355,7 +400,8 @@ func Delete(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 
 	if projectErr != nil {
 		util.Warnf(ctx, "Get Project error: %v", projectErr.Error())
-		return handleError(constants.ResourceDoesNotExist, projectErr)
+		message := fmt.Sprintf(configuration.GetConfig()[constants.ResourceDoesNotExist].Message, constants.Project, *inputModel.ProjectId)
+		return handleError(constants.ResourceDoesNotExist, message, projectErr)
 	}
 
 	// Set retainBackup to false
@@ -373,7 +419,8 @@ func Delete(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 
 	if err != nil {
 		util.Warnf(ctx, "Delete cluster error: %v", err.Error())
-		return handleError(constants.ClusterDeleteError, err)
+		message := fmt.Sprintf(configuration.GetConfig()[constants.ClusterDeleteError].Message, *inputModel.ClusterName)
+		return handleError(constants.ClusterDeleteError, message, err)
 	}
 
 	return atlasresponse.AtlasRespone{
@@ -392,7 +439,8 @@ func List(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasRespon
 	modelValidation := validateModel(ListRequiredFields, inputModel)
 	if modelValidation != nil {
 		util.Warnf(ctx, "list clusters is failing with invalid parameters : %+v", modelValidation.Error())
-		return handleError(constants.InvalidInputParameter, nil)
+		message := fmt.Sprintf(configuration.GetConfig()[constants.InvalidInputParameter].Message, modelValidation.Error())
+		return handleError(constants.InvalidInputParameter, message, modelValidation)
 	}
 
 	// Create a MongoDB client using the public key and private key
@@ -400,7 +448,7 @@ func List(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasRespon
 
 	if peErr != nil {
 		util.Warnf(ctx, "CreateMongoDBClient error: %v", peErr.Error())
-		return handleError(constants.MongoClientCreationError, peErr)
+		return handleError(constants.MongoClientCreationError, constants.EmptyString, peErr)
 	}
 
 	// Check if the project already exists
@@ -408,7 +456,8 @@ func List(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasRespon
 
 	if projectErr != nil {
 		util.Warnf(ctx, "Get Project error: %v", projectErr.Error())
-		return handleError(constants.ResourceDoesNotExist, projectErr)
+		message := fmt.Sprintf(configuration.GetConfig()[constants.ResourceDoesNotExist].Message, constants.Project, *inputModel.ProjectId)
+		return handleError(constants.ResourceDoesNotExist, message, projectErr)
 	}
 
 	// Create args for the API call to list all clusters associated with the project
@@ -421,9 +470,17 @@ func List(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasRespon
 
 	if err != nil {
 		util.Warnf(ctx, "List clusters error: %v", err.Error())
-		return handleError(constants.ClusterListError, err)
+		message := fmt.Sprintf(configuration.GetConfig()[constants.ClusterListError].Message, *inputModel.ProjectId)
+		return handleError(constants.ClusterListError, message, err)
 	}
 
+	projectIpList, _, ipListError := client.ProjectIPAccessListApi.ListProjectIpAccessLists(context.Background(), *inputModel.ProjectId).Execute()
+	if ipListError != nil {
+		util.Warnf(ctx, "Error When fetching Project IP AccessList :%v", ipListError.Error())
+		return handleError(constants.ProjectIpAccessListError, constants.EmptyString, ipListError)
+	}
+
+	hasPublicAccess := checkIfProjectHasPublicAccess(projectIpList.Results)
 	// Create an empty slice of models
 	models := make([]*Model, 0)
 
@@ -436,10 +493,12 @@ func List(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasRespon
 		processArgs, _, clusterErr := client.ClustersApi.GetClusterAdvancedConfiguration(context.Background(), *model.ProjectId, *model.Name).Execute()
 
 		if clusterErr != nil {
-			return handleError(constants.ClusterAdvancedListError, err)
+			message := fmt.Sprintf(configuration.GetConfig()[constants.ClusterListError].Message, *inputModel.ProjectId)
+			return handleError(constants.ClusterAdvancedListError, message, err)
 		}
 
 		model.AdvancedSettings = flattenProcessArgs(processArgs)
+		model.PublicAccessEnabled = &hasPublicAccess
 		models = append(models, model)
 	}
 

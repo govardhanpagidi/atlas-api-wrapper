@@ -50,6 +50,7 @@ const (
 	NoEndpointConfigured           = "NO_ENDPOINT_ERROR"
 	NoEndpointConfiguredForRegion  = "NO_ENDPOINT_REGION_ERROR"
 	NoAdvancedClusterConfiguration = "NO_ADVANCED_CLUSTER_CONFIG"
+	ProjectIpAccessListError       = "PROJECT_IP_ACCESS_LIST_ERROR"
 
 	CollectionError         = "COLLECTION_ERROR"
 	CollectionSuccess       = "COLLECTION_SUCCESS"
@@ -73,6 +74,8 @@ const (
 	DbuserDbName    = "admin"
 	DbAdminRoleName = "dbAdmin"
 	AtlasAdminRole  = "atlasAdmin"
+
+	PublicIp = "0.0.0.0/0"
 
 	ClusterConfigLocation                = "config.json"
 	TraceID               TraceIDKeyType = "traceID"

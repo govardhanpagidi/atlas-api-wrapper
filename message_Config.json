@@ -33,7 +33,7 @@
   },
   "CLUSTER_MODEL_ERROR": {
     "Code": 400,
-    "Message": "Error occurred when creating the cluster Input Model"
+    "Message": "Invalid cluster configuration."
   },
   "CLUSTER_REQUEST_ERROR": {
     "Code": 500,
@@ -150,5 +150,9 @@
   "NO_ADVANCED_CLUSTER_CONFIG": {
     "Code": 500,
     "Message": "No Advanced Cluster Configuration with Region is provided"
+  },
+  "PROJECT_IP_ACCESS_LIST_ERROR": {
+    "Code": 500,
+    "Message": "Error When fetching Project IP AccessList"
   }
 }

@@ -2,6 +2,7 @@ package validator
 
 import (
 	"fmt"
+	"github.com/atlas-api-helper/util/constants"
 	"reflect"
 	"strings"
 )
@@ -62,7 +63,7 @@ func fieldIsEmpty(model interface{}, field string) bool {
 			if elemValue.Kind() == reflect.Ptr {
 				elemValue = elemValue.Elem()
 			}
-			if elemValue.Kind() != reflect.String || elemValue.String() != "" {
+			if elemValue.Kind() != reflect.String || elemValue.String() != constants.EmptyString {
 				return false
 			}
 		}
@@ -70,5 +71,5 @@ func fieldIsEmpty(model interface{}, field string) bool {
 	}
 
 	// Otherwise, check if the field is an empty string
-	return f.IsNil() || (f.IsValid() && f.Elem().String() == "")
+	return f.IsNil() || (f.IsValid() && f.Elem().String() == constants.EmptyString)
 }

@@ -38,7 +38,8 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 	if errEvent := validateModel(CreateRequiredFields, inputModel); errEvent != nil {
 		// If the inputModel is invalid, log a warning and return an error response
 		util.Warnf(ctx, " create database is failing with invalid parameters: %#+v", errEvent.Error())
-		return handleError(constants.InvalidInputParameter, "", errEvent)
+		message := fmt.Sprintf(configuration.GetConfig()[constants.InvalidInputParameter].Message, errEvent.Error())
+		return handleError(constants.InvalidInputParameter, message, errEvent)
 	}
 
 	// Create a new MongoDB client using the inputModel's username, password, and hostname
@@ -47,7 +48,7 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 	if err != nil {
 		// If there is an error creating the MongoDB client, log a warning and return an error response
 		util.Warnf(ctx, " Create Mongo client Error: %#+v", err.Error())
-		return handleError(constants.MongoClientCreationError, "", err)
+		return handleError(constants.MongoClientCreationError, constants.EmptyString, err)
 	}
 
 	// Set the collection name to "default" if it is not provided in the inputModel
@@ -86,7 +87,8 @@ func Delete(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 	if errEvent := validateModel(DeleteRequiredFields, inputModel); errEvent != nil {
 		// If the inputModel is invalid, log a warning and return an error response
 		util.Warnf(ctx, " delete database is failing with invalid parameters: %#+v", errEvent.Error())
-		return handleError(constants.InvalidInputParameter, "", errEvent)
+		message := fmt.Sprintf(configuration.GetConfig()[constants.InvalidInputParameter].Message, errEvent.Error())
+		return handleError(constants.InvalidInputParameter, message, errEvent)
 	}
 
 	// Create a new MongoDB client using the inputModel's username, password, and hostname
@@ -95,7 +97,7 @@ func Delete(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 	if err != nil {
 		// If there is an error creating the MongoDB client, log a warning and return an error response
 		util.Warnf(ctx, " Create Mongo client Error: %#+v", err.Error())
-		return handleError(constants.MongoClientCreationError, "", err)
+		return handleError(constants.MongoClientCreationError, constants.EmptyString, err)
 	}
 
 	// Drop the database from the cluster using the inputModel's database name

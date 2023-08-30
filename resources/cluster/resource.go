@@ -17,6 +17,7 @@ package cluster
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"reflect"
@@ -116,52 +117,50 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 	}
 	currentModel.validateDefaultLabel()
 
-	/*
-		//list all private endpoints for the specific project
-		endPoints, _, endPointErr := client.PrivateEndpointServicesApi.ListPrivateEndpointServices(ctx, *inputModel.ProjectId, *inputModel.CloudProvider).Execute()
+	//list all private endpoints for the specific project
+	endPoints, _, endPointErr := client.PrivateEndpointServicesApi.ListPrivateEndpointServices(ctx, *inputModel.ProjectId, *inputModel.CloudProvider).Execute()
 
-		if endPointErr != nil {
-			util.Warnf(ctx, "Get PrivateEndpoint error: %v", endPointErr.Error())
-			message := fmt.Sprintf(configuration.GetConfig()[constants.ListEndpointError].Message, *inputModel.ProjectId)
-			return handleError(constants.ListEndpointError, message, err)
+	if endPointErr != nil {
+		util.Warnf(ctx, "Get PrivateEndpoint error: %v", endPointErr.Error())
+		message := fmt.Sprintf(configuration.GetConfig()[constants.ListEndpointError].Message, *inputModel.ProjectId)
+		return handleError(constants.ListEndpointError, message, err)
+	}
+
+	//check if at least one private endpoint is attached to the project
+	count := len(endPoints)
+	if count == 0 {
+		util.Warnf(ctx, "PrivateEndpoint Not Configured for ProjectId %s error: %v", *inputModel.ProjectId, errors.New(configuration.GetConfig()[constants.NoEndpointConfigured].Message))
+		message := fmt.Sprintf(configuration.GetConfig()[constants.NoEndpointConfigured].Message, *inputModel.ProjectId)
+		return handleError(constants.NoEndpointConfigured, message, err)
+	}
+
+	//load all region names from the private endpoints
+	util.Debugf(ctx, "Cluster create projectId: %s, clusterName: %s", *inputModel.ProjectId, *currentModel.Name)
+	var endpointRegions []string
+	for _, endPoint := range endPoints {
+		endpointRegions = append(endpointRegions, *endPoint.RegionName)
+	}
+
+	//load all region names from config.json
+	var clusterAdvancedConfigRegions []string
+	for _, specs := range currentModel.ReplicationSpecs {
+		for _, advancedConfig := range specs.AdvancedRegionConfigs {
+			clusterAdvancedConfigRegions = append(clusterAdvancedConfigRegions, *advancedConfig.RegionName)
 		}
 
-		//check if at least one private endpoint is attached to the project
-		count := len(endPoints)
-		if count == 0 {
-			util.Warnf(ctx, "PrivateEndpoint Not Configured for ProjectId %s error: %v", *inputModel.ProjectId, errors.New(configuration.GetConfig()[constants.NoEndpointConfigured].Message))
-			message := fmt.Sprintf(configuration.GetConfig()[constants.NoEndpointConfigured].Message, *inputModel.ProjectId)
-			return handleError(constants.NoEndpointConfigured, message, err)
-		}
+	}
+	if len(clusterAdvancedConfigRegions) == 0 {
+		util.Warnf(ctx, "No advancedCluster configuration is provided for the cluster")
+		return handleError(constants.NoAdvancedClusterConfiguration, constants.EmptyString, err)
+	}
 
-		//load all region names from the private endpoints
-		util.Debugf(ctx, "Cluster create projectId: %s, clusterName: %s", *inputModel.ProjectId, *currentModel.Name)
-		var endpointRegions []string
-		for _, endPoint := range endPoints {
-			endpointRegions = append(endpointRegions, *endPoint.RegionName)
-		}
+	//compare if the regions from json matches the regions from private endpoints
+	isEndPointConfigured := checkIfEndpointRegionIsSameAsClusterRegion(endpointRegions, clusterAdvancedConfigRegions)
 
-		//load all region names from config.json
-		var clusterAdvancedConfigRegions []string
-		for _, specs := range currentModel.ReplicationSpecs {
-			for _, advancedConfig := range specs.AdvancedRegionConfigs {
-				clusterAdvancedConfigRegions = append(clusterAdvancedConfigRegions, *advancedConfig.RegionName)
-			}
-
-		}
-		if len(clusterAdvancedConfigRegions) == 0 {
-			util.Warnf(ctx, "No advancedCluster configuration is provided for the cluster")
-			return handleError(constants.NoAdvancedClusterConfiguration, constants.EmptyString, err)
-		}
-
-		//compare if the regions from json matches the regions from private endpoints
-		isEndPointConfigured := checkIfEndpointRegionIsSameAsClusterRegion(endpointRegions, clusterAdvancedConfigRegions)
-
-		if !isEndPointConfigured {
-			message := fmt.Sprintf(configuration.GetConfig()[constants.NoEndpointConfigured].Message, *inputModel.ProjectId)
-			return handleError(constants.NoEndpointConfiguredForRegion, message, err)
-		}
-	*/
+	if !isEndPointConfigured {
+		message := fmt.Sprintf(configuration.GetConfig()[constants.NoEndpointConfigured].Message, *inputModel.ProjectId)
+		return handleError(constants.NoEndpointConfiguredForRegion, message, err)
+	}
 	// Prepare cluster request
 	clusterRequest, err := createClusterRequest(ctx, &currentModel)
 

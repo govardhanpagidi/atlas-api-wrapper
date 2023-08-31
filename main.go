@@ -2,13 +2,16 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"net/http"
+
+	_ "github.com/atlas-api-helper/docs" // Import the generated Swagger docs
 	"github.com/atlas-api-helper/handlers"
 	"github.com/atlas-api-helper/util"
 	"github.com/atlas-api-helper/util/configuration"
 	"github.com/atlas-api-helper/util/constants"
 	"github.com/gorilla/mux"
-	"log"
-	"net/http"
+	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 const (
@@ -18,11 +21,18 @@ const (
 
 func main() {
 	configuration.GetInstance()
-	// A router using gorilla/mux
-	r := mux.NewRouter()
-	r.Use(util.TraceIDMiddleware)
-	apiRouter := r.PathPrefix(api).Subrouter()
 
+	// Create a new router using gorilla/mux
+	r := mux.NewRouter()
+
+	// Serve the Swagger documentation at /docs/swagger.json
+	r.PathPrefix("/docs/").Handler(httpSwagger.Handler(
+		httpSwagger.URL("/docs/doc.json"), // The URL pointing to API definition
+	))
+
+	// Define your API routes
+	apiRouter := r.PathPrefix(api).Subrouter()
+	r.Use(util.TraceIDMiddleware)
 	apiRouter.HandleFunc(uri(constants.GetClusterReqURI), handlers.GetCluster).Methods(http.MethodGet)
 	apiRouter.HandleFunc(uri(constants.CreateOrGetClusterReqURI), handlers.GetAllClusters).Methods(http.MethodGet)
 	apiRouter.HandleFunc(uri(constants.DeleteClusterReqURI), handlers.DeleteCluster).Methods(http.MethodDelete)

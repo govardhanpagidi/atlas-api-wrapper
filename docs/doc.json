@@ -1,0 +1,1236 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "contact": {}
+    },
+    "paths": {
+        "/collections": {
+            "post": {
+                "description": "Create a new collection with the specified name and description",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Collection"
+                ],
+                "summary": "Create a new collection",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Collection name",
+                        "name": "name",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Collection description",
+                        "name": "description",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasRespone"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasRespone"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasRespone"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasRespone"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasRespone"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasRespone"
+                        }
+                    }
+                }
+            }
+        },
+        "/collections/{id}": {
+            "delete": {
+                "description": "Delete a collection with the specified ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Collection"
+                ],
+                "summary": "Delete a collection",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Collection ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasRespone"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasRespone"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasRespone"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasRespone"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasRespone"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasRespone"
+                        }
+                    }
+                }
+            }
+        },
+        "/database-users": {
+            "get": {
+                "description": "Get all database users",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Database User"
+                ],
+                "summary": "Get all database users",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/database_user.Model"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasRespone"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasRespone"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasRespone"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasRespone"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasRespone"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a new database user with the specified name and email",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Database User"
+                ],
+                "summary": "Create a database user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Database user name",
+                        "name": "name",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Database user email",
+                        "name": "email",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/database_user.Model"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasRespone"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasRespone"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasRespone"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasRespone"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasRespone"
+                        }
+                    }
+                }
+            }
+        },
+        "/database-users/{id}": {
+            "get": {
+                "description": "Get a database user with the specified ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Database User"
+                ],
+                "summary": "Get a database user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Database user ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/database_user.Model"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasRespone"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasRespone"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasRespone"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasRespone"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasRespone"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete a database user with the specified ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Database User"
+                ],
+                "summary": "Delete a database user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Database user ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasRespone"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasRespone"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasRespone"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasRespone"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasRespone"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasRespone"
+                        }
+                    }
+                }
+            }
+        },
+        "/databases": {
+            "post": {
+                "description": "Create a new database with the specified name and owner",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Database"
+                ],
+                "summary": "Create a new database",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Database name",
+                        "name": "name",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Database owner",
+                        "name": "owner",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasRespone"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasRespone"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasRespone"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasRespone"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasRespone"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasRespone"
+                        }
+                    }
+                }
+            }
+        },
+        "/databases/{id}": {
+            "delete": {
+                "description": "Delete a database with the specified ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Database"
+                ],
+                "summary": "Delete a database",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Database ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasRespone"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasRespone"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasRespone"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasRespone"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasRespone"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasRespone"
+                        }
+                    }
+                }
+            }
+        },
+        "/{projectId}/clusters": {
+            "get": {
+                "description": "Get all clusters along with their advanced configuration by project ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Cluster"
+                ],
+                "summary": "Get all clusters",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Project ID",
+                        "name": "projectId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Public key",
+                        "name": "publicKey",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Private key",
+                        "name": "privateKey",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/cluster.Model"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasRespone"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasRespone"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasRespone"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasRespone"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasRespone"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "create the cluster with the provided TshirtSize",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Cluster"
+                ],
+                "summary": "CreateCluster handles the POST requests to create the cluster with the provided TshirtSize",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Project ID",
+                        "name": "projectId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Public key",
+                        "name": "publicKey",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Private key",
+                        "name": "privateKey",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/cluster.Model"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasRespone"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasRespone"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasRespone"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasRespone"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasRespone"
+                        }
+                    }
+                }
+            }
+        },
+        "/{projectId}/clusters/{clusterName}": {
+            "get": {
+                "description": "Get the state of a cluster by project ID and cluster name",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Cluster"
+                ],
+                "summary": "Get the state of a cluster",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Project ID",
+                        "name": "projectId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Cluster name",
+                        "name": "clusterName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Public key",
+                        "name": "publicKey",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Private key",
+                        "name": "privateKey",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/cluster.Model"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasRespone"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasRespone"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasRespone"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasRespone"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasRespone"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete a cluster by project ID and cluster name",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Cluster"
+                ],
+                "summary": "Delete a cluster",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Project ID",
+                        "name": "projectId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Cluster name",
+                        "name": "clusterName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Public key",
+                        "name": "publicKey",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Private key",
+                        "name": "privateKey",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasRespone"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasRespone"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasRespone"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasRespone"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasRespone"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasRespone"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "atlasresponse.AtlasRespone": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "response": {}
+            }
+        },
+        "cluster.AdvancedAutoScaling": {
+            "type": "object",
+            "properties": {
+                "compute": {
+                    "$ref": "#/definitions/cluster.Compute"
+                },
+                "diskGB": {
+                    "$ref": "#/definitions/cluster.DiskGB"
+                }
+            }
+        },
+        "cluster.AdvancedRegionConfig": {
+            "type": "object",
+            "properties": {
+                "BackingProviderName": {
+                    "type": "string"
+                },
+                "analyticsAutoScaling": {
+                    "$ref": "#/definitions/cluster.AdvancedAutoScaling"
+                },
+                "analyticsSpecs": {
+                    "$ref": "#/definitions/cluster.Specs"
+                },
+                "autoScaling": {
+                    "$ref": "#/definitions/cluster.AdvancedAutoScaling"
+                },
+                "electableSpecs": {
+                    "$ref": "#/definitions/cluster.Specs"
+                },
+                "priority": {
+                    "type": "integer"
+                },
+                "providerName": {
+                    "type": "string"
+                },
+                "readOnlySpecs": {
+                    "$ref": "#/definitions/cluster.Specs"
+                },
+                "regionName": {
+                    "type": "string"
+                }
+            }
+        },
+        "cluster.AdvancedReplicationSpec": {
+            "type": "object",
+            "properties": {
+                "advancedRegionConfigs": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/cluster.AdvancedRegionConfig"
+                    }
+                },
+                "id": {
+                    "type": "string"
+                },
+                "numShards": {
+                    "type": "integer"
+                },
+                "zoneName": {
+                    "type": "string"
+                }
+            }
+        },
+        "cluster.BiConnector": {
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "type": "boolean"
+                },
+                "readPreference": {
+                    "type": "string"
+                }
+            }
+        },
+        "cluster.Compute": {
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "type": "boolean"
+                },
+                "maxInstanceSize": {
+                    "type": "string"
+                },
+                "minInstanceSize": {
+                    "type": "string"
+                },
+                "scaleDownEnabled": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "cluster.ConnectionStrings": {
+            "type": "object",
+            "properties": {
+                "awsPrivateLink": {
+                    "type": "string"
+                },
+                "awsPrivateLinkSrv": {
+                    "type": "string"
+                },
+                "private": {
+                    "type": "string"
+                },
+                "privateEndpoint": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/cluster.PrivateEndpoint"
+                    }
+                },
+                "privateSrv": {
+                    "type": "string"
+                },
+                "standard": {
+                    "type": "string"
+                },
+                "standardSrv": {
+                    "type": "string"
+                }
+            }
+        },
+        "cluster.DiskGB": {
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "cluster.Endpoint": {
+            "type": "object",
+            "properties": {
+                "endpointID": {
+                    "type": "string"
+                },
+                "providerName": {
+                    "type": "string"
+                },
+                "region": {
+                    "type": "string"
+                }
+            }
+        },
+        "cluster.Labels": {
+            "type": "object",
+            "properties": {
+                "key": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "string"
+                }
+            }
+        },
+        "cluster.Model": {
+            "type": "object",
+            "properties": {
+                "advancedSettings": {
+                    "$ref": "#/definitions/cluster.ProcessArgs"
+                },
+                "backupEnabled": {
+                    "type": "boolean"
+                },
+                "biConnector": {
+                    "$ref": "#/definitions/cluster.BiConnector"
+                },
+                "clusterType": {
+                    "type": "string"
+                },
+                "connectionStrings": {
+                    "$ref": "#/definitions/cluster.ConnectionStrings"
+                },
+                "createdDate": {
+                    "type": "string"
+                },
+                "diskSizeGB": {
+                    "type": "number"
+                },
+                "encryptionAtRestProvider": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "labels": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/cluster.Labels"
+                    }
+                },
+                "mongoDBMajorVersion": {
+                    "type": "string"
+                },
+                "mongoDBVersion": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "paused": {
+                    "type": "boolean"
+                },
+                "pitEnabled": {
+                    "type": "boolean"
+                },
+                "profile": {
+                    "type": "string"
+                },
+                "projectId": {
+                    "type": "string"
+                },
+                "publicAccessEnabled": {
+                    "type": "boolean"
+                },
+                "replicationSpecs": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/cluster.AdvancedReplicationSpec"
+                    }
+                },
+                "rootCertType": {
+                    "type": "string"
+                },
+                "stateName": {
+                    "type": "string"
+                },
+                "terminationProtectionEnabled": {
+                    "type": "boolean"
+                },
+                "versionReleaseSystem": {
+                    "type": "string"
+                }
+            }
+        },
+        "cluster.PrivateEndpoint": {
+            "type": "object",
+            "properties": {
+                "connectionString": {
+                    "type": "string"
+                },
+                "endpoints": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/cluster.Endpoint"
+                    }
+                },
+                "srvConnectionString": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "cluster.ProcessArgs": {
+            "type": "object",
+            "properties": {
+                "defaultReadConcern": {
+                    "type": "string"
+                },
+                "defaultWriteConcern": {
+                    "type": "string"
+                },
+                "failIndexKeyTooLong": {
+                    "type": "boolean"
+                },
+                "javascriptEnabled": {
+                    "type": "boolean"
+                },
+                "minimumEnabledTLSProtocol": {
+                    "type": "string"
+                },
+                "noTableScan": {
+                    "type": "boolean"
+                },
+                "oplogMinRetentionHours": {
+                    "type": "number"
+                },
+                "oplogSizeMB": {
+                    "type": "integer"
+                },
+                "sampleRefreshIntervalBIConnector": {
+                    "type": "integer"
+                },
+                "sampleSizeBIConnector": {
+                    "type": "integer"
+                }
+            }
+        },
+        "cluster.Specs": {
+            "type": "object",
+            "properties": {
+                "InstanceSize": {
+                    "type": "string"
+                },
+                "diskIOPS": {
+                    "type": "string"
+                },
+                "ebsVolumeType": {
+                    "type": "string"
+                },
+                "nodeCount": {
+                    "type": "integer"
+                }
+            }
+        },
+        "database_user.LabelDefinition": {
+            "type": "object",
+            "properties": {
+                "key": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "string"
+                }
+            }
+        },
+        "database_user.Model": {
+            "type": "object",
+            "properties": {
+                "awsIAMType": {
+                    "type": "string"
+                },
+                "databaseName": {
+                    "type": "string"
+                },
+                "deleteAfterDate": {
+                    "type": "string"
+                },
+                "labels": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/database_user.LabelDefinition"
+                    }
+                },
+                "ldapAuthType": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "profile": {
+                    "type": "string"
+                },
+                "projectId": {
+                    "type": "string"
+                },
+                "roles": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/database_user.RoleDefinition"
+                    }
+                },
+                "scopes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/database_user.ScopeDefinition"
+                    }
+                },
+                "username": {
+                    "type": "string"
+                },
+                "x509Type": {
+                    "type": "string"
+                }
+            }
+        },
+        "database_user.RoleDefinition": {
+            "type": "object",
+            "properties": {
+                "collectionName": {
+                    "type": "string"
+                },
+                "databaseName": {
+                    "type": "string"
+                },
+                "roleName": {
+                    "type": "string"
+                }
+            }
+        },
+        "database_user.ScopeDefinition": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}

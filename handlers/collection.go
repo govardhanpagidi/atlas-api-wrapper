@@ -18,6 +18,20 @@ func setupCollectionLog() {
 }
 
 // CreateCollection handles POST requests to create a new collection
+// @Summary Create a new collection
+// @Description Create a new collection with the specified name and description
+// @Tags Collection
+// @Accept json
+// @Produce json
+// @Param name formData string true "Collection name"
+// @Param description formData string false "Collection description"
+// @Success 200 {object} atlasresponse.AtlasRespone
+// @Failure 400 {object} atlasresponse.AtlasRespone
+// @Failure 401 {object} atlasresponse.AtlasRespone
+// @Failure 403 {object} atlasresponse.AtlasRespone
+// @Failure 404 {object} atlasresponse.AtlasRespone
+// @Failure 500 {object} atlasresponse.AtlasRespone
+// @Router /collections [post]
 func CreateCollection(w http.ResponseWriter, r *http.Request) {
 	setupCollectionLog()
 
@@ -50,6 +64,19 @@ func CreateCollection(w http.ResponseWriter, r *http.Request) {
 }
 
 // DeleteCollection handles DELETE requests deletes the requested collection
+// @Summary Delete a collection
+// @Description Delete a collection with the specified ID
+// @Tags Collection
+// @Accept json
+// @Produce json
+// @Param id path string true "Collection ID"
+// @Success 200 {object} atlasresponse.AtlasRespone
+// @Failure 400 {object} atlasresponse.AtlasRespone
+// @Failure 401 {object} atlasresponse.AtlasRespone
+// @Failure 403 {object} atlasresponse.AtlasRespone
+// @Failure 404 {object} atlasresponse.AtlasRespone
+// @Failure 500 {object} atlasresponse.AtlasRespone
+// @Router /collections/{id} [delete]
 func DeleteCollection(w http.ResponseWriter, r *http.Request) {
 	setupCollectionLog()
 

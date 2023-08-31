@@ -18,6 +18,20 @@ func setupDatabaseLog() {
 }
 
 // CreateDatabase handles POST calls to create a new database using the provided parameters
+// @Summary Create a new database
+// @Description Create a new database with the specified name and owner
+// @Tags Database
+// @Accept json
+// @Produce json
+// @Param name formData string true "Database name"
+// @Param owner formData string true "Database owner"
+// @Success 200 {object} atlasresponse.AtlasRespone
+// @Failure 400 {object} atlasresponse.AtlasRespone
+// @Failure 401 {object} atlasresponse.AtlasRespone
+// @Failure 403 {object} atlasresponse.AtlasRespone
+// @Failure 404 {object} atlasresponse.AtlasRespone
+// @Failure 500 {object} atlasresponse.AtlasRespone
+// @Router /databases [post]
 func CreateDatabase(w http.ResponseWriter, r *http.Request) {
 	setupDatabaseLog()
 
@@ -45,6 +59,19 @@ func CreateDatabase(w http.ResponseWriter, r *http.Request) {
 }
 
 // DeleteDatabase handles the DELETE calls to delete the requested database
+// @Summary Delete a database
+// @Description Delete a database with the specified ID
+// @Tags Database
+// @Accept json
+// @Produce json
+// @Param id path string true "Database ID"
+// @Success 200 {object} atlasresponse.AtlasRespone
+// @Failure 400 {object} atlasresponse.AtlasRespone
+// @Failure 401 {object} atlasresponse.AtlasRespone
+// @Failure 403 {object} atlasresponse.AtlasRespone
+// @Failure 404 {object} atlasresponse.AtlasRespone
+// @Failure 500 {object} atlasresponse.AtlasRespone
+// @Router /databases/{id} [delete]
 func DeleteDatabase(w http.ResponseWriter, r *http.Request) {
 	setupDatabaseLog()
 

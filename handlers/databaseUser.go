@@ -18,6 +18,19 @@ func setupDatabaseUserLog() {
 }
 
 // GetDatabaseUser handles GET requests to retrieve one database user
+// @Summary Get a database user
+// @Description Get a database user with the specified ID
+// @Tags Database User
+// @Accept json
+// @Produce json
+// @Param id path string true "Database user ID"
+// @Success 200 {object} database_user.Model
+// @Failure 400 {object} atlasresponse.AtlasRespone
+// @Failure 401 {object} atlasresponse.AtlasRespone
+// @Failure 403 {object} atlasresponse.AtlasRespone
+// @Failure 404 {object} atlasresponse.AtlasRespone
+// @Failure 500 {object} atlasresponse.AtlasRespone
+// @Router /database-users/{id} [get]
 func GetDatabaseUser(w http.ResponseWriter, r *http.Request) {
 	setupDatabaseUserLog()
 
@@ -52,6 +65,18 @@ func GetDatabaseUser(w http.ResponseWriter, r *http.Request) {
 }
 
 // GetAllDatabaseUser handles GET requests to retrieve all database users
+// @Summary Get all database users
+// @Description Get all database users
+// @Tags Database User
+// @Accept json
+// @Produce json
+// @Success 200 {object} []database_user.Model
+// @Failure 400 {object} atlasresponse.AtlasRespone
+// @Failure 401 {object} atlasresponse.AtlasRespone
+// @Failure 403 {object} atlasresponse.AtlasRespone
+// @Failure 404 {object} atlasresponse.AtlasRespone
+// @Failure 500 {object} atlasresponse.AtlasRespone
+// @Router /database-users [get]
 func GetAllDatabaseUser(w http.ResponseWriter, r *http.Request) {
 	setupDatabaseUserLog()
 
@@ -84,6 +109,19 @@ func GetAllDatabaseUser(w http.ResponseWriter, r *http.Request) {
 }
 
 // DeleteDatabaseUser handles DELETE requests to delete one database user
+// @Summary Delete a database user
+// @Description Delete a database user with the specified ID
+// @Tags Database User
+// @Accept json
+// @Produce json
+// @Param id path string true "Database user ID"
+// @Success 200 {object} atlasresponse.AtlasRespone
+// @Failure 400 {object} atlasresponse.AtlasRespone
+// @Failure 401 {object} atlasresponse.AtlasRespone
+// @Failure 403 {object} atlasresponse.AtlasRespone
+// @Failure 404 {object} atlasresponse.AtlasRespone
+// @Failure 500 {object} atlasresponse.AtlasRespone
+// @Router /database-users/{id} [delete]
 func DeleteDatabaseUser(w http.ResponseWriter, r *http.Request) {
 	setupDatabaseUserLog()
 
@@ -118,6 +156,20 @@ func DeleteDatabaseUser(w http.ResponseWriter, r *http.Request) {
 }
 
 // CreateDatabaseUser handles POST requests to create one database user
+// @Summary Create a database user
+// @Description Create a new database user with the specified name and email
+// @Tags Database User
+// @Accept json
+// @Produce json
+// @Param name formData string true "Database user name"
+// @Param email formData string true "Database user email"
+// @Success 200 {object} database_user.Model
+// @Failure 400 {object} atlasresponse.AtlasRespone
+// @Failure 401 {object} atlasresponse.AtlasRespone
+// @Failure 403 {object} atlasresponse.AtlasRespone
+// @Failure 404 {object} atlasresponse.AtlasRespone
+// @Failure 500 {object} atlasresponse.AtlasRespone
+// @Router /database-users [post]
 func CreateDatabaseUser(w http.ResponseWriter, r *http.Request) {
 	setupDatabaseUserLog()
 

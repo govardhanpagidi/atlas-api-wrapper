@@ -18,6 +18,22 @@ func setupClusterLog() {
 }
 
 // GetCluster handles GET requests to return the state of the cluster
+// @Summary Get the state of a cluster
+// @Description Get the state of a cluster by project ID and cluster name
+// @Tags Cluster
+// @Accept json
+// @Produce json
+// @Param projectId path string true "Project ID"
+// @Param clusterName path string true "Cluster name"
+// @Param publicKey query string true "Public key"
+// @Param privateKey query string true "Private key"
+// @Success 200 {object} cluster.Model
+// @Failure 400 {object} atlasresponse.AtlasRespone
+// @Failure 401 {object} atlasresponse.AtlasRespone
+// @Failure 403 {object} atlasresponse.AtlasRespone
+// @Failure 404 {object} atlasresponse.AtlasRespone
+// @Failure 500 {object} atlasresponse.AtlasRespone
+// @Router /{projectId}/clusters/{clusterName} [get]
 func GetCluster(w http.ResponseWriter, r *http.Request) {
 	setupClusterLog()
 
@@ -45,6 +61,21 @@ func GetCluster(w http.ResponseWriter, r *http.Request) {
 }
 
 // GetAllClusters handles GET requests to return all the clusters along with cluster's advanced configuration
+// @Summary Get all clusters
+// @Description Get all clusters along with their advanced configuration by project ID
+// @Tags Cluster
+// @Accept json
+// @Produce json
+// @Param projectId path string true "Project ID"
+// @Param publicKey query string true "Public key"
+// @Param privateKey query string true "Private key"
+// @Success 200 {object} []cluster.Model
+// @Failure 400 {object} atlasresponse.AtlasRespone
+// @Failure 401 {object} atlasresponse.AtlasRespone
+// @Failure 403 {object} atlasresponse.AtlasRespone
+// @Failure 404 {object} atlasresponse.AtlasRespone
+// @Failure 500 {object} atlasresponse.AtlasRespone
+// @Router /{projectId}/clusters [get]
 func GetAllClusters(w http.ResponseWriter, r *http.Request) {
 	setupClusterLog()
 
@@ -70,7 +101,23 @@ func GetAllClusters(w http.ResponseWriter, r *http.Request) {
 	responseHandler.Write(response, w, constants.ClusterHandler)
 }
 
-// DeleteCluster handles the DELETE requests to terminate the cluster
+// DeleteCluster handles DELETE requests to delete a cluster
+// @Summary Delete a cluster
+// @Description Delete a cluster by project ID and cluster name
+// @Tags Cluster
+// @Accept json
+// @Produce json
+// @Param projectId path string true "Project ID"
+// @Param clusterName path string true "Cluster name"
+// @Param publicKey query string true "Public key"
+// @Param privateKey query string true "Private key"
+// @Success 200 {object} atlasresponse.AtlasRespone
+// @Failure 400 {object} atlasresponse.AtlasRespone
+// @Failure 401 {object} atlasresponse.AtlasRespone
+// @Failure 403 {object} atlasresponse.AtlasRespone
+// @Failure 404 {object} atlasresponse.AtlasRespone
+// @Failure 500 {object} atlasresponse.AtlasRespone
+// @Router /{projectId}/clusters/{clusterName} [delete]
 func DeleteCluster(w http.ResponseWriter, r *http.Request) {
 	setupClusterLog()
 
@@ -98,6 +145,21 @@ func DeleteCluster(w http.ResponseWriter, r *http.Request) {
 }
 
 // CreateCluster handles the POST requests to create the cluster with the provided TshirtSize
+// @Summary CreateCluster handles the POST requests to create the cluster with the provided TshirtSize
+// @Description create the cluster with the provided TshirtSize
+// @Tags Cluster
+// @Accept json
+// @Produce json
+// @Param projectId path string true "Project ID"
+// @Param publicKey query string true "Public key"
+// @Param privateKey query string true "Private key"
+// @Success 200 {object} cluster.Model
+// @Failure 400 {object} atlasresponse.AtlasRespone
+// @Failure 401 {object} atlasresponse.AtlasRespone
+// @Failure 403 {object} atlasresponse.AtlasRespone
+// @Failure 404 {object} atlasresponse.AtlasRespone
+// @Failure 500 {object} atlasresponse.AtlasRespone
+// @Router /{projectId}/clusters [post]
 func CreateCluster(w http.ResponseWriter, r *http.Request) {
 	//fetch all input parameters and create input model
 	var model cluster.InputModel

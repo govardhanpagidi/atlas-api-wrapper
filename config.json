@@ -1,0 +1,86 @@
+{
+  "s-aws": {
+    "AdvancedSettings": {
+      "JavascriptEnabled": true,
+      "MinimumEnabledTLSProtocol": "TLS1_2",
+      "NoTableScan": false
+    },
+    "ClusterType": "REPLICASET",
+    "MongoDBVersion": "6.0.8",
+    "Name": "Cluster0",
+    "Paused": false,
+    "ReplicationSpecs": [
+      {
+        "NumShards": 1,
+        "AdvancedRegionConfigs": [
+          {
+            "ProviderName":"TENANT",
+            "BackingProviderName":"AWS",
+            "RegionName": "US_EAST_1",
+            "ElectableSpecs": {
+              "DiskIOPS": "",
+              "InstanceSize": "M0"
+            },
+            "Priority": 7
+
+          }
+        ],
+        "ZoneName": "Zone 1"
+      }
+    ],
+    "RootCertType": "ISRGROOTX1",
+    "StateName": "IDLE",
+    "VersionReleaseSystem": "LTS",
+    "TerminationProtectionEnabled": false
+  },
+  "m-aws": {
+    "ClusterType":"REPLICASET",
+    "ReplicationSpecs":[
+      {
+        "NumShards": 1,
+        "AdvancedRegionConfigs":[
+          {
+            "ElectableSpecs":{
+              "EbsVolumeType": "STANDARD",
+              "DiskIOPS": "",
+              "InstanceSize":"M10",
+              "NodeCount":3
+            },
+            "Priority":7,
+            "ProviderName":"AWS",
+            "RegionName":"US_EAST_1"
+          },
+          {
+            "ElectableSpecs":{
+              "EbsVolumeType": "STANDARD",
+              "DiskIOPS": "",
+              "InstanceSize":"M10",
+              "NodeCount":2
+            },
+            "Priority":6,
+            "ProviderName":"AWS",
+            "RegionName":"US_EAST_2"
+          },
+          {
+            "ElectableSpecs":{
+              "EbsVolumeType": "STANDARD",
+              "DiskIOPS": "",
+              "InstanceSize":"M10",
+              "NodeCount":2
+            },
+  
+            "ReadOnlySpecs":{
+              "EbsVolumeType": "STANDARD",
+              "DiskIOPS": "",
+              "InstanceSize":"M10",
+              "NodeCount":2
+            },
+            "Priority":5,
+            "ProviderName":"AWS",
+            "RegionName":"US_WEST_1"
+          }
+        ]
+      }
+    ]
+  }
+}

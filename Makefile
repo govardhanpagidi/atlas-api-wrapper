@@ -1,3 +1,5 @@
+include Makefile.defs
+
 .PHONY: build test clean
 tags=logging callback metrics scheduler
 cgo=0
@@ -19,7 +21,9 @@ debug:
 	@echo "==> Building handler binary for debugging"
 	cfn generate
 	env GOOS=$(goos) CGO_ENABLED=$(cgo) GOARCH=$(goarch) go build -gcflags="$(DEBUG_FLAGS)" -ldflags="$(LINKER_FLAGS)" -tags="$(tags)" -o bin/handler cmd/main.go
-
+swagger-gen:
+	swag init
+	mv ./docs/swagger.json ./docs/doc.json
 
 clean:
 	rm -rf bin

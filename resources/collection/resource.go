@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/atlas-api-helper/resources/cluster"
 	"github.com/spf13/cast"
-	"log"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"strings"
 
 	"github.com/atlas-api-helper/util/logger"
@@ -138,13 +138,13 @@ func ReadAll(ctx context.Context, inputModel *DeleteInputModel) atlasresponse.At
 	// Get the database from the client using the inputModel's database name
 	database := client.Database(*inputModel.DatabaseName)
 
-	//collectionsOptions := options.ListCollectionsOptions{}
+	collectionsOptions := options.ListCollectionsOptions{}
 
 	// Drop the collection from the database
-	//collectionNames, dbCreateErr := database.ListCollectionNames(ctx, collectionsOptions)
-	collections, dbCreateErr := database.ListCollections(ctx, nil)
+	collectionNames, dbCreateErr := database.ListCollectionNames(ctx, collectionsOptions)
+	//collections, dbCreateErr := database.ListCollections(ctx, nil)
 
-	var collectionNames []string
+	/*var collectionNames []string
 
 	for collections.Next(context.Background()) {
 		var collectionName string
@@ -155,7 +155,9 @@ func ReadAll(ctx context.Context, inputModel *DeleteInputModel) atlasresponse.At
 
 		// Append the collection name to the list
 		collectionNames = append(collectionNames, collectionName)
-	}
+	}*/
+
+	formattedCollectionNames := []string{strings.Join(collectionNames, ", ")}
 
 	if dbCreateErr != nil {
 		// If there is an error dropping the collection, log a warning and return an error response
@@ -164,9 +166,7 @@ func ReadAll(ctx context.Context, inputModel *DeleteInputModel) atlasresponse.At
 	}
 
 	// If the collection is dropped successfully, return a success response
-	return atlasresponse.AtlasResponse{
-		Response: collections,
-	}
+	return atlasresponse.AtlasResponse{Status: fmt.Sprintf(configuration.GetConfig()[constants.CollectionListSuccess].Message, formattedCollectionNames)}
 }
 
 // Delete method drops the collection from the database

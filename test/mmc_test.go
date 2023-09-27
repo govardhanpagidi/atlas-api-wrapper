@@ -3,16 +3,17 @@ package test
 import (
 	"bytes"
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"github.com/atlas-api-helper/handlers"
+	"github.com/atlas-api-helper/resources/cloudBackupSchedule"
+	"github.com/atlas-api-helper/resources/cloudBackupSnapshot"
 	"github.com/atlas-api-helper/resources/cluster"
 	"github.com/atlas-api-helper/resources/collection"
 	"github.com/atlas-api-helper/resources/database"
 	database_user "github.com/atlas-api-helper/resources/databaseUser"
 	"github.com/atlas-api-helper/util"
-	"github.com/atlas-api-helper/util/atlasresponse"
-	"github.com/atlas-api-helper/util/configuration"
 	"github.com/atlas-api-helper/util/constants"
 	"github.com/gorilla/mux"
 	"net/http"
@@ -23,14 +24,17 @@ import (
 	"time"
 )
 
-var clusterName string = ""
-var publicKey string = "nlbcisuz"
-var privateKey string = "b37ea498-3950-4b8c-bfed-7779987d6195"
-var projectId string = "64b6db1fe471e8514b8a59a6"
+var clusterName string = "s-AWS-20-09-23-10-35-51-5e8de3e1042f5b33ab81f33a"
+var publicKey string = "hlmhviho"
+var privateKey string = "437ac971-163e-445b-998b-0cfcb30e3bf8"
+var projectId string = "5e8de3e1042f5b33ab81f33a"
 var connectionString string = ""
 var databaseName string = "test"
 var username string = "testUser"
 var password string = "testPass"
+var authorization string = ""
+var allowAll = "*/*"
+var requestBodyForPutBackupSchedule = ""
 
 type Config struct {
 	ClusterName      string `json:"clusterName,omitempty"`
@@ -95,6 +99,8 @@ func TestMain(m *testing.M) {
 	username = config.Username
 	password = config.Password
 
+	authorization = "Basic " + getBase64Encoded(username+":"+password)
+
 	// Run the tests
 	exitCode := m.Run()
 
@@ -102,6 +108,15 @@ func TestMain(m *testing.M) {
 
 	// Exit with the test exit code
 	os.Exit(exitCode)
+}
+
+func getBase64Encoded(inputString string) string {
+	// Convert the string to a byte slice
+	inputBytes := []byte(inputString)
+
+	// Encode the byte slice to base64
+	encodedString := base64.StdEncoding.EncodeToString(inputBytes)
+	return encodedString
 }
 
 func loadValuesFromFile(filename string, config *Config) {
@@ -123,12 +138,9 @@ func loadValuesFromFile(filename string, config *Config) {
 func TestCreateCluster(t *testing.T) {
 	// Set up mock input values
 	awsCloudProvider := "AWS"
-	tshirtSizeTemp := "m"
+	tshirtSizeTemp := "s"
 	model := cluster.InputModel{
 		ProjectId:     &projectId,
-		ClusterName:   &clusterName,
-		PrivateKey:    &privateKey,
-		PublicKey:     &publicKey,
 		TshirtSize:    &tshirtSizeTemp,
 		CloudProvider: &awsCloudProvider,
 	}
@@ -145,6 +157,8 @@ func TestCreateCluster(t *testing.T) {
 	println(uri)
 	println("*************************************************************************************************")
 	req, err := http.NewRequest("POST", uri, bytes.NewBuffer([]byte(requestBody)))
+	req.Header.Set(constants.PublicKeyHeader, publicKey)
+	req.Header.Set(constants.PrivateKeyHeader, privateKey)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -155,7 +169,7 @@ func TestCreateCluster(t *testing.T) {
 	// Create a new router and register the CreateCluster handler
 	router := mux.NewRouter()
 	router.Use(util.TraceIDMiddleware)
-	router.HandleFunc("/project/{projectId}/clusterObj", handlers.CreateCluster).Methods(http.MethodPost)
+	router.HandleFunc("/project/{ProjectId}/clusterObj", handlers.CreateCluster).Methods(http.MethodPost)
 
 	// Serve the request using the router
 	router.ServeHTTP(rr, req)
@@ -166,32 +180,16 @@ func TestCreateCluster(t *testing.T) {
 		t.FailNow()
 	}
 
-	responseBody := rr.Body.String()
-
-	var msg atlasresponse.AtlasRespone
-
-	// Unmarshal the response body into the map
-	jsonErr := json.Unmarshal([]byte(responseBody), &msg)
-	if jsonErr != nil {
-		t.Errorf("Error unmarshaling JSON: %v", jsonErr)
-		t.FailNow()
-	}
-
-	if msg.HttpStatusCode != 200 {
-		t.Errorf("Output dosent match expectation:%s", msg.Message)
-		t.FailNow()
-	}
-
-	var jsonObject map[string]interface{}
+	var cluster cluster.Model
 
 	// Unmarshal the JSON string into the jsonObject variable
-	err = json.Unmarshal([]byte(responseBody), &jsonObject)
+	err = json.Unmarshal([]byte(rr.Body.String()), &cluster)
 	if err != nil {
 		fmt.Println("Error:", err)
 		return
 	}
 
-	clusterName = jsonObject["response"].(map[string]interface{})["name"].(string)
+	clusterName = *cluster.Name
 
 	println(clusterName)
 
@@ -218,7 +216,9 @@ func TestCreateCluster(t *testing.T) {
 func TestGetCluster(t *testing.T) {
 	time.Sleep(30 * time.Second)
 	// Create a new request with the mock input values
-	req, err := http.NewRequest(http.MethodGet, "/project/"+projectId+"/cluster/"+clusterName+"/status?publicKey="+publicKey+"&privateKey="+privateKey, nil)
+	req, err := http.NewRequest(http.MethodGet, "/project/"+projectId+"/cluster/"+clusterName+"/status", nil)
+	req.Header.Set(constants.PublicKeyHeader, publicKey)
+	req.Header.Set(constants.PrivateKeyHeader, privateKey)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -228,7 +228,7 @@ func TestGetCluster(t *testing.T) {
 	// Create a new router and register the GetCluster handler
 	router := mux.NewRouter()
 	router.Use(util.TraceIDMiddleware)
-	router.HandleFunc("/project/{projectId}/cluster/{clusterName}/status", handlers.GetCluster).Methods(http.MethodGet)
+	router.HandleFunc("/project/{ProjectId}/cluster/{ClusterName}/status", handlers.GetCluster).Methods(http.MethodGet)
 
 	// Serve the request using the router
 	router.ServeHTTP(rr, req)
@@ -239,29 +239,15 @@ func TestGetCluster(t *testing.T) {
 		t.FailNow()
 	}
 
-	responseBody := rr.Body.String()
-
-	var response atlasresponse.AtlasRespone
-
-	// Unmarshal the response body into the map
-	jsonErr := json.Unmarshal([]byte(responseBody), &response)
-	if jsonErr != nil {
-		t.Errorf("Error unmarshaling JSON: %v", jsonErr)
-		t.FailNow()
-	}
-
-	prefix := "The Cluster status is:"
-	if response.HttpStatusCode != 200 && !strings.HasPrefix(responseBody, prefix) {
-		t.Errorf("Output dosent match expectation:%s", response.Response)
-		t.FailNow()
-	}
 }
 func TestGetAllCluster(t *testing.T) {
 	// Set up mock input values
 	//clusterName := "Cluster0"
 
 	// Create a new request with the mock input values
-	req, err := http.NewRequest("GET", "/project/"+projectId+"?publicKey="+publicKey+"&privateKey="+privateKey, nil)
+	req, err := http.NewRequest("GET", "/project/"+projectId, nil)
+	req.Header.Set(constants.PublicKeyHeader, publicKey)
+	req.Header.Set(constants.PrivateKeyHeader, privateKey)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -272,7 +258,7 @@ func TestGetAllCluster(t *testing.T) {
 	// Create a new router and register the GetAllCluster handler
 	router := mux.NewRouter()
 	router.Use(util.TraceIDMiddleware)
-	router.HandleFunc("/project/{projectId}", handlers.GetAllClusters)
+	router.HandleFunc("/project/{ProjectId}", handlers.GetAllClusters)
 
 	// Serve the request using the router
 	router.ServeHTTP(rr, req)
@@ -283,35 +269,19 @@ func TestGetAllCluster(t *testing.T) {
 		t.FailNow()
 	}
 
-	responseBody := rr.Body.String()
-
-	var msg atlasresponse.AtlasRespone
-
-	// Unmarshal the response body into the map
-	jsonErr := json.Unmarshal([]byte(responseBody), &msg)
-	if jsonErr != nil {
-		t.Errorf("Error unmarshaling JSON: %v", jsonErr)
-		t.FailNow()
-	}
-
-	if msg.HttpStatusCode != 200 {
-		t.Errorf("Output dosent match expectation:%s", msg.Message)
-		t.FailNow()
-	}
-
 }
 
 func TestCreateDatabaseUser(t *testing.T) {
 
 	// Create a new request with the mock input values
 	requestBody := database_user.InputModel{
-		Username:   &username,
-		Password:   &password,
-		PublicKey:  &publicKey,
-		PrivateKey: &privateKey,
+		Username: &username,
+		Password: &password,
 	}
 	requestBodyJson, _ := json.Marshal(requestBody)
 	req, err := http.NewRequest("POST", "/databaseUsers/"+projectId, bytes.NewBuffer(requestBodyJson))
+	req.Header.Set(constants.PublicKeyHeader, publicKey)
+	req.Header.Set(constants.PrivateKeyHeader, privateKey)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -322,7 +292,7 @@ func TestCreateDatabaseUser(t *testing.T) {
 	// Create a new router and register the CreateDatabaseUser handler
 	router := mux.NewRouter()
 	router.Use(util.TraceIDMiddleware)
-	router.HandleFunc("/databaseUsers/{projectId}", handlers.CreateDatabaseUser).Methods(http.MethodPost)
+	router.HandleFunc("/databaseUsers/{ProjectId}", handlers.CreateDatabaseUser).Methods(http.MethodPost)
 
 	// Serve the request using the router
 	router.ServeHTTP(rr, req)
@@ -330,22 +300,6 @@ func TestCreateDatabaseUser(t *testing.T) {
 	// Check that the response status code is as expected
 	if status := rr.Code; status != http.StatusOK {
 		t.Errorf("Unexpected status code: got %v want %v", status, http.StatusOK)
-		t.FailNow()
-	}
-
-	responseBody := rr.Body.String()
-
-	var msg atlasresponse.AtlasRespone
-
-	// Unmarshal the response body into the map
-	jsonErr := json.Unmarshal([]byte(responseBody), &msg)
-	if jsonErr != nil {
-		t.Errorf("Error unmarshaling JSON: %v", jsonErr)
-		t.FailNow()
-	}
-
-	if msg.HttpStatusCode != 200 {
-		t.Errorf("Output dosent match expectation:%s", msg.Message)
 		t.FailNow()
 	}
 
@@ -355,7 +309,9 @@ func TestGetDatabaseUser(t *testing.T) {
 	// Set up mock input values
 	time.Sleep(5 * time.Second)
 	// Create a new request with the mock input values
-	req, err := http.NewRequest("GET", "/databaseUsers/"+projectId+"/"+databaseName+"/"+username+"?publicKey="+publicKey+"&privateKey="+privateKey, nil)
+	req, err := http.NewRequest("GET", "/databaseUsers/"+projectId+"/"+databaseName+"/"+username, nil)
+	req.Header.Set(constants.PublicKeyHeader, publicKey)
+	req.Header.Set(constants.PrivateKeyHeader, privateKey)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -366,7 +322,7 @@ func TestGetDatabaseUser(t *testing.T) {
 	// Create a new router and register the GetDatabaseUser handler
 	router := mux.NewRouter()
 	router.Use(util.TraceIDMiddleware)
-	router.HandleFunc("/databaseUsers/{projectId}/{databaseName}/{username}", handlers.GetDatabaseUser)
+	router.HandleFunc("/databaseUsers/{ProjectId}/{DatabaseName}/{Username}", handlers.GetDatabaseUser)
 
 	// Serve the request using the router
 	router.ServeHTTP(rr, req)
@@ -374,22 +330,6 @@ func TestGetDatabaseUser(t *testing.T) {
 	// Check that the response status code is as expected
 	if status := rr.Code; status != http.StatusOK {
 		t.Errorf("Unexpected status code: got %v want %v", status, http.StatusOK)
-	}
-
-	responseBody := rr.Body.String()
-
-	var msg atlasresponse.AtlasRespone
-
-	// Unmarshal the response body into the map
-	jsonErr := json.Unmarshal([]byte(responseBody), &msg)
-	if jsonErr != nil {
-		t.Errorf("Error unmarshaling JSON: %v", jsonErr)
-		t.FailNow()
-	}
-
-	if msg.HttpStatusCode != 200 {
-		t.Errorf("Output dosent match expectation:%s", msg.Message)
-		t.FailNow()
 	}
 
 }
@@ -398,7 +338,9 @@ func TestGetAllDatabaseUser(t *testing.T) {
 	// Set up mock input values
 	time.Sleep(5 * time.Second)
 	// Create a new request with the mock input values
-	req, err := http.NewRequest("GET", "/databaseUsers/"+projectId+"?publicKey="+publicKey+"&privateKey="+privateKey, nil)
+	req, err := http.NewRequest("GET", "/databaseUsers/"+projectId, nil)
+	req.Header.Set(constants.PublicKeyHeader, publicKey)
+	req.Header.Set(constants.PrivateKeyHeader, privateKey)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -409,7 +351,7 @@ func TestGetAllDatabaseUser(t *testing.T) {
 	// Create a new router and register the GetDatabaseUser handler
 	router := mux.NewRouter()
 	router.Use(util.TraceIDMiddleware)
-	router.HandleFunc("/databaseUsers/{projectId}", handlers.GetAllDatabaseUser)
+	router.HandleFunc("/databaseUsers/{ProjectId}", handlers.GetAllDatabaseUser)
 
 	// Serve the request using the router
 	router.ServeHTTP(rr, req)
@@ -419,32 +361,14 @@ func TestGetAllDatabaseUser(t *testing.T) {
 		t.Errorf("Unexpected status code: got %v want %v", status, http.StatusOK)
 	}
 
-	responseBody := rr.Body.String()
-
-	var msg atlasresponse.AtlasRespone
-
-	// Unmarshal the response body into the map
-	jsonErr := json.Unmarshal([]byte(responseBody), &msg)
-	if jsonErr != nil {
-		t.Errorf("Error unmarshaling JSON: %v", jsonErr)
-		t.FailNow()
-	}
-
-	if msg.HttpStatusCode != 200 {
-		t.Errorf("Output dosent match expectation:%s", msg.Message)
-		t.FailNow()
-	}
-
 }
 
 func TestCreateDatabase(t *testing.T) {
-	time.Sleep(10 * time.Second)
+	//	time.Sleep(10 * time.Second)
 	data := map[string]interface{}{
 		"collectionName": "default",
 		"databaseName":   databaseName,
 		"hostName":       connectionString,
-		"username":       username,
-		"password":       password,
 	}
 
 	jsonBody, err := json.Marshal(data)
@@ -457,6 +381,7 @@ func TestCreateDatabase(t *testing.T) {
 
 	// Create a new request with the mock input values
 	req, err := http.NewRequest("POST", "/database", strings.NewReader(requestBody))
+	req.Header.Set("Authorization", authorization)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -467,6 +392,7 @@ func TestCreateDatabase(t *testing.T) {
 	// Create a new router and register the CreateDatabase handler
 	router := mux.NewRouter()
 	router.Use(util.TraceIDMiddleware)
+	router.Use(util.BasicAuth)
 	router.HandleFunc("/database", handlers.CreateDatabase).Methods(http.MethodPost)
 
 	// Serve the request using the router
@@ -476,30 +402,40 @@ func TestCreateDatabase(t *testing.T) {
 	if status := rr.Code; status != http.StatusOK {
 		t.Errorf("Unexpected status code: got %v want %v", status, http.StatusOK)
 	}
+}
 
-	// Check that the response body is as expected
-	expectedBody := fmt.Sprintf(configuration.GetConfig()[constants.DatabaseSuccess].Message, databaseName)
+func TestListDatabase(t *testing.T) {
+	time.Sleep(10 * time.Second)
 
-	responseBody := rr.Body.String()
-	var msg atlasresponse.AtlasRespone
-
-	// Unmarshal the response body into the map
-	jsonErr := json.Unmarshal([]byte(responseBody), &msg)
-	if jsonErr != nil {
-		t.Errorf("Error unmarshaling JSON: %v", jsonErr)
-		t.FailNow()
+	req, err := http.NewRequest("GET", "/database?HostName="+"test-aws-25-09-23-16-42-44-5e8de3e1042f5b33ab81f33a-pl-0.iijwc.mongodb.net", nil)
+	req.Header.Set("Authorization", authorization)
+	if err != nil {
+		t.Fatal(err)
 	}
 
-	if expectedBody != msg.Message {
-		t.Errorf("Unexpected response body: got %v want %v", expectedBody, msg.Message)
-		t.FailNow()
+	// Create a new response recorder
+	rr := httptest.NewRecorder()
+
+	// Create a new router and register the CreateDatabase handler
+	router := mux.NewRouter()
+	router.Use(util.TraceIDMiddleware)
+	router.Use(util.BasicAuth)
+	router.HandleFunc("/database", handlers.ReadAllDatabase).Methods(http.MethodGet)
+
+	// Serve the request using the router
+	router.ServeHTTP(rr, req)
+
+	// Check that the response status code is as expected
+	if status := rr.Code; status != http.StatusOK {
+		t.Errorf("Unexpected status code: got %v want %v", status, http.StatusOK)
 	}
 }
 
 func TestDeleteDatabase(t *testing.T) {
 	time.Sleep(5 * time.Second)
 	// Create a new request with the mock input values
-	req, err := http.NewRequest("DELETE", "/database/"+databaseName+"?hostName="+connectionString+"&username="+username+"&password="+password, nil)
+	req, err := http.NewRequest("DELETE", "/database/"+databaseName+"?HostName="+connectionString, nil)
+	req.Header.Set("Authorization", authorization)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -510,7 +446,8 @@ func TestDeleteDatabase(t *testing.T) {
 	// Create a new router and register the DeleteDatabase handler
 	router := mux.NewRouter()
 	router.Use(util.TraceIDMiddleware)
-	router.HandleFunc("/database/{databaseName}", handlers.DeleteDatabase).Methods(http.MethodDelete)
+	router.Use(util.BasicAuth)
+	router.HandleFunc("/database/{DatabaseName}", handlers.DeleteDatabase).Methods(http.MethodDelete)
 
 	// Serve the request using the router
 	router.ServeHTTP(rr, req)
@@ -518,24 +455,6 @@ func TestDeleteDatabase(t *testing.T) {
 	// Check that the response status code is as expected
 	if status := rr.Code; status != http.StatusOK {
 		t.Errorf("Unexpected status code: got %v want %v", status, http.StatusOK)
-		t.FailNow()
-	}
-
-	// Check that the response body is as expected
-	expectedBody := fmt.Sprintf(configuration.GetConfig()[constants.DatabaseDeleteSuccess].Message, databaseName)
-
-	var msg atlasresponse.AtlasRespone
-
-	responseBody := rr.Body.String()
-	// Unmarshal the response body into the map
-	jsonErr := json.Unmarshal([]byte(responseBody), &msg)
-	if jsonErr != nil {
-		t.Errorf("Error unmarshaling JSON: %v", jsonErr)
-		t.FailNow()
-	}
-
-	if expectedBody != msg.Message {
-		t.Errorf("Unexpected response body: got %v want %v", expectedBody, msg.Message)
 		t.FailNow()
 	}
 }
@@ -549,8 +468,6 @@ func TestCreateCollection(t *testing.T) {
 		"collectionNames": collectionNames,
 		"databaseName":    databaseName,
 		"hostName":        connectionString,
-		"username":        username,
-		"password":        password,
 	}
 
 	jsonBody, err := json.Marshal(data)
@@ -563,6 +480,7 @@ func TestCreateCollection(t *testing.T) {
 
 	// Create a new request with the mock input values
 	req, err := http.NewRequest("POST", "/collections/"+databaseName, strings.NewReader(requestBody))
+	req.Header.Set("Authorization", authorization)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -573,7 +491,8 @@ func TestCreateCollection(t *testing.T) {
 	// Create a new router and register the CreateCollection handler
 	router := mux.NewRouter()
 	router.Use(util.TraceIDMiddleware)
-	router.HandleFunc("/collections/{databaseName}", handlers.CreateCollection)
+	router.Use(util.BasicAuth)
+	router.HandleFunc("/collections/{DatabaseName}", handlers.CreateCollection)
 
 	// Serve the request using the router
 	router.ServeHTTP(rr, req)
@@ -583,28 +502,13 @@ func TestCreateCollection(t *testing.T) {
 		t.Errorf("Unexpected status code: got %v want %v", status, http.StatusOK)
 		t.FailNow()
 	}
-
-	responseBody := rr.Body.String()
-
-	var msg atlasresponse.AtlasRespone
-
-	// Unmarshal the response body into the map
-	jsonErr := json.Unmarshal([]byte(responseBody), &msg)
-	if jsonErr != nil {
-		t.Errorf("Error unmarshaling JSON: %v", jsonErr)
-		t.FailNow()
-	}
-
-	if msg.HttpStatusCode != 200 {
-		t.Errorf("Output dosent match expectation:%s", msg.Message)
-		t.FailNow()
-	}
-
 }
-func TestDeleteCollection(t *testing.T) {
-	time.Sleep(5 * time.Second)
+
+func TestListCollection(t *testing.T) {
+	//	time.Sleep(5 * time.Second)
 	// Create a new request with the mock input values
-	req, err := http.NewRequest("DELETE", "/collections/"+databaseName+"/test?hostName="+connectionString+"&username="+username+"&password="+password, nil)
+	req, err := http.NewRequest("GET", "/collections/"+databaseName+"/Collections?HostName="+connectionString, nil)
+	req.Header.Set("Authorization", authorization)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -615,7 +519,8 @@ func TestDeleteCollection(t *testing.T) {
 	// Create a new router and register the DeleteCollection handler
 	router := mux.NewRouter()
 	router.Use(util.TraceIDMiddleware)
-	router.HandleFunc("/collections/{databaseName}/{collectionName}", handlers.DeleteCollection)
+	router.Use(util.BasicAuth)
+	router.HandleFunc("/collections/{DatabaseName}/Collections", handlers.ListCollection)
 
 	// Serve the request using the router
 	router.ServeHTTP(rr, req)
@@ -625,20 +530,32 @@ func TestDeleteCollection(t *testing.T) {
 		t.Errorf("Unexpected status code: got %v want %v", status, http.StatusOK)
 		t.FailNow()
 	}
+}
 
-	responseBody := rr.Body.String()
-
-	var msg atlasresponse.AtlasRespone
-
-	// Unmarshal the response body into the map
-	jsonErr := json.Unmarshal([]byte(responseBody), &msg)
-	if jsonErr != nil {
-		t.Errorf("Error unmarshaling JSON: %v", jsonErr)
-		t.FailNow()
+func TestDeleteCollection(t *testing.T) {
+	time.Sleep(5 * time.Second)
+	// Create a new request with the mock input values
+	req, err := http.NewRequest("DELETE", "/collections/"+databaseName+"/test?HostName="+connectionString, nil)
+	req.Header.Set("Authorization", authorization)
+	if err != nil {
+		t.Fatal(err)
 	}
 
-	if msg.HttpStatusCode != 200 {
-		t.Errorf("Output dosent match expectation:%s", msg.Message)
+	// Create a new response recorder
+	rr := httptest.NewRecorder()
+
+	// Create a new router and register the DeleteCollection handler
+	router := mux.NewRouter()
+	router.Use(util.TraceIDMiddleware)
+	router.Use(util.BasicAuth)
+	router.HandleFunc("/collections/{DatabaseName}/{CollectionName}", handlers.DeleteCollection)
+
+	// Serve the request using the router
+	router.ServeHTTP(rr, req)
+
+	// Check that the response status code is as expected
+	if status := rr.Code; status != http.StatusOK {
+		t.Errorf("Unexpected status code: got %v want %v", status, http.StatusOK)
 		t.FailNow()
 	}
 }
@@ -646,7 +563,9 @@ func TestDeleteCollection(t *testing.T) {
 func TestDeleteDatabaseUser(t *testing.T) {
 	time.Sleep(5 * time.Second)
 	// Create a new request with the mock input values
-	req, err := http.NewRequest("DELETE", "/databaseUsers/"+projectId+"/"+databaseName+"/"+username+"?publicKey="+publicKey+"&privateKey="+privateKey, nil)
+	req, err := http.NewRequest("DELETE", "/databaseUsers/"+projectId+"/"+databaseName+"/"+username, nil)
+	req.Header.Set(constants.PublicKeyHeader, publicKey)
+	req.Header.Set(constants.PrivateKeyHeader, privateKey)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -657,7 +576,7 @@ func TestDeleteDatabaseUser(t *testing.T) {
 	// Create a new router and register the DeleteDatabaseUser handler
 	router := mux.NewRouter()
 	router.Use(util.TraceIDMiddleware)
-	router.HandleFunc("/databaseUsers/{projectId}/{databaseName}/{username}", handlers.DeleteDatabaseUser)
+	router.HandleFunc("/databaseUsers/{ProjectId}/{DatabaseName}/{Username}", handlers.DeleteDatabaseUser)
 
 	// Serve the request using the router
 	router.ServeHTTP(rr, req)
@@ -667,28 +586,15 @@ func TestDeleteDatabaseUser(t *testing.T) {
 		t.Errorf("Unexpected status code: got %v want %v", status, http.StatusOK)
 	}
 
-	responseBody := rr.Body.String()
-
-	var msg atlasresponse.AtlasRespone
-
-	// Unmarshal the response body into the map
-	jsonErr := json.Unmarshal([]byte(responseBody), &msg)
-	if jsonErr != nil {
-		t.Errorf("Error unmarshaling JSON: %v", jsonErr)
-		t.FailNow()
-	}
-
-	if msg.HttpStatusCode != 200 {
-		t.Errorf("Output dosent match expectation:%s", msg.Message)
-		t.FailNow()
-	}
-
 }
 
 func TestDeleteCluster(t *testing.T) {
 	time.Sleep(5 * time.Second)
+	retainBackup := "false"
 	// Create a new request with the mock input values
-	req, err := http.NewRequest("DELETE", "/project/"+projectId+"/cluster/"+clusterName+"?publicKey="+publicKey+"&privateKey="+privateKey, nil)
+	req, err := http.NewRequest("DELETE", "/project/"+projectId+"/cluster/"+clusterName+"?RetainBackup="+retainBackup, nil)
+	req.Header.Set(constants.PublicKeyHeader, publicKey)
+	req.Header.Set(constants.PrivateKeyHeader, privateKey)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -696,11 +602,11 @@ func TestDeleteCluster(t *testing.T) {
 	// Create a new response recorder
 	rr := httptest.NewRecorder()
 	rr.Header().Set("Content-Type", "application/json")
-	rr.Header().Set("Accept", "*/*")
+	rr.Header().Set("Accept", allowAll)
 	// Create a new router and register the DeleteCluster handler
 	router := mux.NewRouter()
 	router.Use(util.TraceIDMiddleware)
-	router.HandleFunc("/project/{projectId}/cluster/{clusterName}", handlers.DeleteCluster).Methods(http.MethodDelete)
+	router.HandleFunc("/project/{ProjectId}/cluster/{ClusterName}", handlers.DeleteCluster).Methods(http.MethodDelete)
 
 	// Serve the request using the router
 	router.ServeHTTP(rr, req)
@@ -951,6 +857,7 @@ func TestClusterDeleteInputClusterCreateError(t *testing.T) {
 
 	validCloudProvider := "aws"
 	invalidClusterName := "@312321#21"
+	retainBackup := "false"
 	// Create the input model for testing
 	inputModel := cluster.InputModel{
 		ProjectId:      &projectId,
@@ -960,6 +867,7 @@ func TestClusterDeleteInputClusterCreateError(t *testing.T) {
 		TshirtSize:     &tshirtSize,
 		CloudProvider:  &validCloudProvider,
 		MongoDBVersion: &mongodbVersion,
+		RetainBackup:   &retainBackup,
 	}
 
 	// Call the Read method with the mock client
@@ -1112,7 +1020,7 @@ func TestDatabaseUserReadInvalidUserNameUnit(t *testing.T) {
 		&inputModel,
 	)
 
-	if response.HttpStatusCode != 404 {
+	if response.HttpStatusCode != 500 {
 		t.Error("Input validation passed instead of failing")
 		t.FailNow()
 	}
@@ -1159,7 +1067,7 @@ func TestDatabaseUserDeleteInvalidUserNameUnit(t *testing.T) {
 		&inputModel,
 	)
 
-	if response.HttpStatusCode != 500 {
+	if response.HttpStatusCode != 400 {
 		t.Error("Input validation passed instead of failing")
 		t.FailNow()
 	}
@@ -1366,6 +1274,298 @@ func TestDatabaseCreateWithInvalidUserNameAndPass(t *testing.T) {
 	}
 }
 
+func TestCreateM10Cluster(t *testing.T) {
+	// Set up mock input values
+	awsCloudProvider := "AWS"
+	tshirtSizeTemp := "test"
+	model := cluster.InputModel{
+		ProjectId:     &projectId,
+		TshirtSize:    &tshirtSizeTemp,
+		CloudProvider: &awsCloudProvider,
+	}
+	body, err := json.Marshal(model)
+	if err != nil {
+		fmt.Println("Error:", err)
+		return
+	}
+	requestBody := string(body)
+	// Create a new request with the mock input values
+	uri := "/project/" + projectId + "/clusterObj"
+	println("*************************************************************************************************")
+
+	println(uri)
+	println("*************************************************************************************************")
+	req, err := http.NewRequest("POST", uri, bytes.NewBuffer([]byte(requestBody)))
+	req.Header.Set(constants.PublicKeyHeader, publicKey)
+	req.Header.Set(constants.PrivateKeyHeader, privateKey)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Create a new response recorder
+	rr := httptest.NewRecorder()
+
+	// Create a new router and register the CreateCluster handler
+	router := mux.NewRouter()
+	router.Use(util.TraceIDMiddleware)
+	router.HandleFunc("/project/{ProjectId}/clusterObj", handlers.CreateCluster).Methods(http.MethodPost)
+
+	// Serve the request using the router
+	router.ServeHTTP(rr, req)
+
+	// Check that the response status code is as expected
+	if status := rr.Code; status != http.StatusOK {
+		t.Errorf("Unexpected status code: got %v want %v", status, http.StatusOK)
+		t.FailNow()
+	}
+
+	var cluster cluster.Model
+
+	// Unmarshal the JSON string into the jsonObject variable
+	err = json.Unmarshal([]byte(rr.Body.String()), &cluster)
+	if err != nil {
+		fmt.Println("Error:", err)
+		return
+	}
+
+	clusterName = *cluster.Name
+
+	println(clusterName)
+
+	time.Sleep(45 * time.Second)
+
+	client, err := util.NewMongoDBSDKClient(publicKey, privateKey)
+	if err != nil {
+		t.FailNow()
+	}
+
+	clusterState := constants.Creating
+	timeTaken := 0
+	for clusterState == constants.Creating {
+
+		println("waiting for cluster creating")
+		clusterObj, _, _ := client.MultiCloudClustersApi.GetCluster(context.Background(), projectId, clusterName).Execute()
+		clusterState = *clusterObj.StateName
+		time.Sleep(60 * time.Second)
+		timeTaken = timeTaken + 60
+	}
+
+}
+
+func TestGetCloudBackupSchedule(t *testing.T) {
+	time.Sleep(10 * time.Second)
+	// Create a new request with the mock input values
+	req, err := http.NewRequest(http.MethodGet, "/project/"+projectId+"/clusters/"+clusterName+"/backup/schedule", nil)
+	req.Header.Set(constants.PublicKeyHeader, publicKey)
+	req.Header.Set(constants.PrivateKeyHeader, privateKey)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// Create a new response recorder
+	rr := httptest.NewRecorder()
+
+	// Create a new router and register the GetCluster handler
+	router := mux.NewRouter()
+	router.Use(util.TraceIDMiddleware)
+	router.HandleFunc("/project/{ProjectId}/clusters/{ClusterName}/backup/schedule", handlers.GetCloudBackupSchedule).Methods(http.MethodGet)
+
+	// Serve the request using the router
+	router.ServeHTTP(rr, req)
+
+	// Check that the response status code is as expected
+	if status := rr.Code; status != http.StatusOK {
+		t.Errorf("Unexpected status code: got %v want %v", status, http.StatusOK)
+		t.FailNow()
+	}
+
+	requestBodyForPutBackupSchedule = rr.Body.String()
+
+}
+
+func TestPUTCloudBackupSchedule(t *testing.T) {
+	time.Sleep(10 * time.Second)
+	// Create a new request with the mock input values
+	req, err := http.NewRequest(http.MethodPatch, "/project/"+projectId+"/clusters/"+clusterName+"/backup/schedule", bytes.NewBuffer([]byte(requestBodyForPutBackupSchedule)))
+	req.Header.Set(constants.PublicKeyHeader, publicKey)
+	req.Header.Set(constants.PrivateKeyHeader, privateKey)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// Create a new response recorder
+	rr := httptest.NewRecorder()
+
+	// Create a new router and register the GetCluster handler
+	router := mux.NewRouter()
+	router.Use(util.TraceIDMiddleware)
+	router.HandleFunc("/project/{ProjectId}/clusters/{ClusterName}/backup/schedule", handlers.UpdateClusterBackupPolicy).Methods(http.MethodPatch)
+
+	// Serve the request using the router
+	router.ServeHTTP(rr, req)
+
+	// Check that the response status code is as expected
+	if status := rr.Code; status != http.StatusOK {
+		t.Errorf("Unexpected status code: got %v want %v", status, http.StatusOK)
+		t.FailNow()
+	}
+
+}
+
+func TestGetCloudBackupSnapshot(t *testing.T) {
+	time.Sleep(10 * time.Second)
+	// Create a new request with the mock input values
+	req, err := http.NewRequest(http.MethodGet, "/project/"+projectId+"/clusters/"+clusterName+"/snapshot", nil)
+	req.Header.Set(constants.PublicKeyHeader, publicKey)
+	req.Header.Set(constants.PrivateKeyHeader, privateKey)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// Create a new response recorder
+	rr := httptest.NewRecorder()
+
+	// Create a new router and register the GetCluster handler
+	router := mux.NewRouter()
+	router.Use(util.TraceIDMiddleware)
+	router.HandleFunc("/project/{ProjectId}/clusters/{ClusterName}/snapshot", handlers.GetAllBackupSnapshot).Methods(http.MethodGet)
+
+	// Serve the request using the router
+	router.ServeHTTP(rr, req)
+
+	// Check that the response status code is as expected
+	if status := rr.Code; status != http.StatusOK {
+		t.Errorf("Unexpected status code: got %v want %v", status, http.StatusOK)
+		t.FailNow()
+	}
+
+}
+
+func TestPostCloudBackupSnapshot(t *testing.T) {
+	time.Sleep(10 * time.Second)
+	// Create a new request with the mock input values
+
+	RetentionInDays := "1"
+	model := cloudBackupSnapshot.InputModel{Description: "test", RetentionInDays: &RetentionInDays}
+	marshal, err := json.Marshal(model)
+	if err != nil {
+		return
+	}
+	request := string(marshal)
+	req, err := http.NewRequest(http.MethodPost, "/project/"+projectId+"/clusters/"+clusterName+"/snapshot?Description=testBackup&RetentionInDays=1", bytes.NewBuffer([]byte(request)))
+	req.Header.Set(constants.PublicKeyHeader, publicKey)
+	req.Header.Set(constants.PrivateKeyHeader, privateKey)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// Create a new response recorder
+	rr := httptest.NewRecorder()
+
+	// Create a new router and register the GetCluster handler
+	router := mux.NewRouter()
+	router.Use(util.TraceIDMiddleware)
+	router.HandleFunc("/project/{ProjectId}/clusters/{ClusterName}/snapshot", handlers.CreateBackupSnapshot).Methods(http.MethodPost)
+
+	// Serve the request using the router
+	router.ServeHTTP(rr, req)
+
+	// Check that the response status code is as expected
+	if status := rr.Code; status != http.StatusOK {
+		t.Errorf("Unexpected status code: got %v want %v", status, http.StatusOK)
+		t.FailNow()
+	}
+
+}
+
+func TestUpgradeM10Cluster(t *testing.T) {
+	time.Sleep(5 * time.Second)
+
+	version := "6.0"
+	model := cluster.UpdateInputModel{MongoDBMajorVersion: &version, ClusterName: &clusterName}
+	marshal, err := json.Marshal(model)
+	if err != nil {
+		return
+	}
+	request := string(marshal)
+	// Create a new request with the mock input values
+	req, err := http.NewRequest("PATCH", "/project/"+projectId+"/cluster", bytes.NewBuffer([]byte(request)))
+	req.Header.Set(constants.PublicKeyHeader, publicKey)
+	req.Header.Set(constants.PrivateKeyHeader, privateKey)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Create a new response recorder
+	rr := httptest.NewRecorder()
+	rr.Header().Set("Content-Type", "application/json")
+	rr.Header().Set("Accept", allowAll)
+	// Create a new router and register the DeleteCluster handler
+	router := mux.NewRouter()
+	router.Use(util.TraceIDMiddleware)
+	router.HandleFunc("/project/{ProjectId}/cluster", handlers.UpdateCluster).Methods(http.MethodPatch)
+
+	// Serve the request using the router
+	router.ServeHTTP(rr, req)
+
+	// Check that the response status code is as expected
+	if status := rr.Code; status != http.StatusOK {
+		t.Errorf("Unexpected status code: got %v want %v", status, http.StatusOK)
+		t.FailNow()
+	}
+}
+
+func TestDeleteM10Cluster(t *testing.T) {
+	time.Sleep(5 * time.Second)
+	retainBackup := "true"
+	// Create a new request with the mock input values
+	req, err := http.NewRequest("DELETE", "/project/"+projectId+"/cluster/"+clusterName+"?RetainBackup="+retainBackup, nil)
+	req.Header.Set(constants.PublicKeyHeader, publicKey)
+	req.Header.Set(constants.PrivateKeyHeader, privateKey)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Create a new response recorder
+	rr := httptest.NewRecorder()
+	rr.Header().Set("Content-Type", "application/json")
+	rr.Header().Set("Accept", allowAll)
+	// Create a new router and register the DeleteCluster handler
+	router := mux.NewRouter()
+	router.Use(util.TraceIDMiddleware)
+	router.HandleFunc("/project/{ProjectId}/cluster/{ClusterName}", handlers.DeleteCluster).Methods(http.MethodDelete)
+
+	// Serve the request using the router
+	router.ServeHTTP(rr, req)
+
+	// Check that the response status code is as expected
+	if status := rr.Code; status != http.StatusOK {
+		t.Errorf("Unexpected status code: got %v want %v", status, http.StatusOK)
+		t.FailNow()
+	}
+}
+
+func TestCloudBackupCreateInputValidationUnit(t *testing.T) {
+
+	// Create the input model for testing
+	inputModel := cloudBackupSnapshot.InputModel{
+		ClusterName:     nil,
+		Description:     "",
+		PublicKey:       nil,
+		PrivateKey:      nil,
+		ProjectId:       nil,
+		SnapshotId:      nil,
+		RetentionInDays: nil,
+	}
+
+	// Call the Read method with the mock client
+	response := cloudBackupSnapshot.Create(
+		getContextWithTraceId(),
+		&inputModel,
+	)
+
+	if response.HttpStatusCode != 400 {
+		t.Error("Input validation passed instead of failing")
+		t.FailNow()
+	}
+}
+
 func getContextWithTraceId() context.Context {
 	traceID := fmt.Sprintf("TraceID-%d", time.Now().UnixNano())
 	ctx := context.Background()
@@ -1375,4 +1575,109 @@ func getContextWithTraceId() context.Context {
 
 func stringPtr(s string) *string {
 	return &s
+}
+
+func TestCloudBackupsnapshotCreateInputValidationInvalidValues(t *testing.T) {
+
+	privateKey = "2131"
+	publicKey = "21312"
+	retentionInDays := "1"
+	// Create the input model for testing
+	inputModel := cloudBackupSnapshot.InputModel{
+		ClusterName:     &clusterName,
+		Description:     "",
+		PublicKey:       &publicKey,
+		PrivateKey:      &privateKey,
+		ProjectId:       &projectId,
+		RetentionInDays: &retentionInDays,
+	}
+
+	// Call the Read method with the mock client
+	response := cloudBackupSnapshot.Create(
+		getContextWithTraceId(),
+		&inputModel,
+	)
+
+	if response.HttpStatusCode != 400 {
+		t.Error("Input validation passed instead of failing")
+		t.FailNow()
+	}
+}
+
+func TestCloudBackupScheduleCreateInputValidationUnit(t *testing.T) {
+
+	// Create the input model for testing
+	inputModel := cloudBackupSchedule.Model{
+		ProjectId:                         nil,
+		ClusterName:                       nil,
+		Id:                                nil,
+		AutoExportEnabled:                 nil,
+		UseOrgAndGroupNamesInExportPrefix: nil,
+		Export:                            nil,
+		CopySettings:                      nil,
+		DeleteCopiedBackups:               nil,
+		Policies:                          nil,
+		ReferenceHourOfDay:                nil,
+		ReferenceMinuteOfHour:             nil,
+		RestoreWindowDays:                 nil,
+		UpdateSnapshots:                   nil,
+		ClusterId:                         nil,
+		NextSnapshot:                      nil,
+		Profile:                           nil,
+		Links:                             nil,
+		PublicKey:                         nil,
+		PrivateKey:                        nil,
+	}
+
+	// Call the Read method with the mock client
+	response := cloudBackupSchedule.Update(
+		getContextWithTraceId(),
+		&inputModel,
+	)
+
+	if response.HttpStatusCode != 400 {
+		t.Error("Input validation passed instead of failing")
+		t.FailNow()
+	}
+}
+
+func TestCloudBackupScheduleCreateInvalidCredentialsUnit(t *testing.T) {
+
+	invalidClustername := "testCluster"
+	testpublickey := "test"
+	testprivatekey := "test"
+
+	// Create the input model for testing
+	inputModel := cloudBackupSchedule.Model{
+		ProjectId:                         &projectId,
+		ClusterName:                       &invalidClustername,
+		Id:                                nil,
+		AutoExportEnabled:                 nil,
+		UseOrgAndGroupNamesInExportPrefix: nil,
+		Export:                            nil,
+		CopySettings:                      nil,
+		DeleteCopiedBackups:               nil,
+		Policies:                          nil,
+		ReferenceHourOfDay:                nil,
+		ReferenceMinuteOfHour:             nil,
+		RestoreWindowDays:                 nil,
+		UpdateSnapshots:                   nil,
+		ClusterId:                         nil,
+		NextSnapshot:                      nil,
+		Profile:                           nil,
+		Links:                             nil,
+		PublicKey:                         &testpublickey,
+		PrivateKey:                        &testprivatekey,
+	}
+
+	// Call the Read method with the mock client
+	response := cloudBackupSchedule.Update(
+		getContextWithTraceId(),
+		&inputModel,
+	)
+
+	if response.HttpStatusCode != 400 {
+		t.Error("Input validation passed instead of failing")
+		t.FailNow()
+	}
 }

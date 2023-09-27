@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -189,6 +190,25 @@ func TraceIDMiddleware(next http.Handler) http.Handler {
 	})
 }
 
+// BasicAuth extracts base64 encoded username and password and adds them to context
+func BasicAuth(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Get the Authorization header value
+		username, password, ok := r.BasicAuth()
+		// Parse the Basic authentication credentials
+		_, _ = logger.Debugf("Request with username: %s", username)
+		if !ok {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+		reqContext := context.WithValue(r.Context(), constants.Username, username)
+		reqContext = context.WithValue(reqContext, constants.Password, password)
+		// Authentication successful, call the next handler
+		r = r.WithContext(reqContext)
+		next.ServeHTTP(w, r)
+	})
+}
+
 func LoadConfigFromFile(targetFileName string, obj interface{}) error {
 	// Start searching from the current working directory
 	currentDir, err := os.Getwd()
@@ -240,4 +260,26 @@ func findFile(dirPath, targetFileName string) (string, error) {
 	} else {
 		return "", err
 	}
+}
+
+func TimePointerToString(timePtr *time.Time) *string {
+	if timePtr == nil {
+		return nil // Handle the case when timePtr is nil
+	}
+
+	// Format the time as a string (you can use any desired format)
+	formattedTime := timePtr.Format("2006-01-02 15:04:05")
+
+	// Take the address of the formatted string
+	return &formattedTime
+}
+
+// ParseInt parses the given string as an integer and returns the result.
+// If the string cannot be parsed as an integer, it returns 0.
+func ParseInt(s string) int {
+	i, err := strconv.Atoi(s)
+	if err != nil {
+		return 0
+	}
+	return i
 }

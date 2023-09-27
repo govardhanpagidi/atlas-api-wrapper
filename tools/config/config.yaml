@@ -1,0 +1,16 @@
+generatorName: go
+gitRepoId: atlas-api-wrapper
+gitUserId: mongodb
+vanityURL: github.com/govardhanpagidi
+templateDir: "./config/go-templates"
+generateInterfaces: true
+enumClassPrefix: true
+structPrefix: true
+useOneOfDiscriminatorLookup: true
+files:
+  atlas_client.mustache:
+    templateType: SupportingFiles
+    destinationFilename: atlas_client.go
+  doc.mustache:
+    templateType: SupportingFiles
+    destinationFilename: doc.go

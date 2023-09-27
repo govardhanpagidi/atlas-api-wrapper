@@ -9,12 +9,20 @@ import (
 )
 
 // Write writes the given AtlasResponse object to the http.ResponseWriter object
-func Write(response atlasresponse.AtlasRespone, w http.ResponseWriter, handlerName string) {
+func Write(response atlasresponse.AtlasResponse, w http.ResponseWriter, handlerName string) {
 	// Set the Content-Type header of the http.ResponseWriter object to "application/json"
 	w.Header().Set("Content-Type", "application/json")
-
-	// Marshal the given AtlasResponse object to a JSON string
-	res, err := json.Marshal(response)
+	if response.HttpStatusCode != 0 {
+		w.WriteHeader(response.HttpStatusCode)
+	}
+	var res []byte
+	var err error
+	if response.Response != nil {
+		res, err = json.Marshal(response.Response)
+	} else {
+		// Marshal the given AtlasResponse object to a JSON string
+		res, err = json.Marshal(response)
+	}
 
 	// If there is an error and the message field of the AtlasResponse object is not empty, log the error and the message
 	if response.Message != "" && err != nil {

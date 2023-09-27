@@ -1,0 +1,2990 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "MMC Atlas API Helper",
+        "title": "MMC Atlas API Helper",
+        "contact": {},
+        "version": "1.0"
+    },
+    "host": "localhost:8080",
+    "basePath": "/api",
+    "paths": {
+        "/api/project/{ProjectId}/cluster": {
+            "get": {
+                "description": "Get all clusters along with their advanced configuration by project ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Cluster"
+                ],
+                "summary": "Get all clusters",
+                "operationId": "GetAllClusters",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "\u003cprojectID\u003e",
+                        "description": "Project ID",
+                        "name": "ProjectId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "\u003cpublicKey\u003e",
+                        "description": "Public Key",
+                        "name": "x-mongo-publickey",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "\u003cprivateKey\u003e",
+                        "description": "Private Key",
+                        "name": "x-mongo-privatekey",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/cluster.Model"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create the cluster based on the provided TshirtSize configuration",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Cluster"
+                ],
+                "summary": "CreateCluster handles the POST requests to create the cluster with the provided TshirtSize",
+                "operationId": "CreateCluster",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "\u003cprojectID\u003e",
+                        "description": "Project ID",
+                        "name": "ProjectId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "\u003cpublicKey\u003e",
+                        "description": "Public Key",
+                        "name": "x-mongo-publickey",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "\u003cprivateKey\u003e",
+                        "description": "Private Key",
+                        "name": "x-mongo-privatekey",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "body",
+                        "name": "InputModel",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/cluster.InputModel"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/cluster.Model"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/project/{ProjectId}/cluster/{ClusterName}": {
+            "delete": {
+                "description": "Delete a cluster by project ID and cluster name",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Cluster"
+                ],
+                "summary": "Delete a cluster",
+                "operationId": "DeleteCluster",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "\u003cprojectID\u003e",
+                        "description": "Project ID",
+                        "name": "ProjectId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "",
+                        "description": "Cluster name",
+                        "name": "ClusterName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "\u003cpublicKey\u003e",
+                        "description": "Public Key",
+                        "name": "x-mongo-publickey",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "\u003cprivateKey\u003e",
+                        "description": "Private Key",
+                        "name": "x-mongo-privatekey",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "true",
+                        "description": "retainBackup",
+                        "name": "RetainBackup",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "description": "Update the cluster with MongoDBMajorVersion",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Cluster"
+                ],
+                "summary": "UpdateCluster handles the Put requests to create the provided MongoDbVersion and MongoDBMajorVersion",
+                "operationId": "UpdateCluster",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "\u003cprojectID\u003e",
+                        "description": "Project ID",
+                        "name": "ProjectId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "",
+                        "description": "Cluster name",
+                        "name": "ClusterName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "\u003cpublicKey\u003e",
+                        "description": "Public Key",
+                        "name": "x-mongo-publickey",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "\u003cprivateKey\u003e",
+                        "description": "Private Key",
+                        "name": "x-mongo-privatekey",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "6.0.9",
+                        "description": "MongoDBMajorVersion",
+                        "name": "MongoDBMajorVersion",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/cluster.Model"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/project/{ProjectId}/cluster/{ClusterName}/restore": {
+            "get": {
+                "description": "Returns the restore job for the specified cluster.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Cluster Restore"
+                ],
+                "summary": "Get Restore Job",
+                "operationId": "GetRestoreJob",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The name of the cluster to restore.",
+                        "name": "ClusterName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "The ID of the project that contains the cluster to restore.",
+                        "name": "ProjectId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "\u003cpublicKey\u003e",
+                        "description": "Public Key",
+                        "name": "x-mongo-publickey",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "\u003cprivateKey\u003e",
+                        "description": "Private Key",
+                        "name": "x-mongo-privatekey",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "The JobID of the cluster to restore.",
+                        "name": "JobId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Creates a restore job for the specified cluster.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Cluster Restore"
+                ],
+                "operationId": "CreateRestoreJob",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The name of the cluster to restore.",
+                        "name": "ClusterName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "The ID of the project that contains the cluster to restore.",
+                        "name": "ProjectId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "\u003cpublicKey\u003e",
+                        "description": "Public Key",
+                        "name": "x-mongo-publickey",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "\u003cprivateKey\u003e",
+                        "description": "Private Key",
+                        "name": "x-mongo-privatekey",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "body",
+                        "name": "InputModel",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/cloudBackupRestore.InputModel"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/project/{ProjectId}/cluster/{ClusterName}/snapshot": {
+            "get": {
+                "description": "Get all cloud backup snapshots of a cluster by project ID and cluster name",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Cloud Backup Snapshot"
+                ],
+                "summary": "Get all cloud backup snapshots of a cluster",
+                "operationId": "GetAllBackupSnapshot",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "\u003cprojectID\u003e",
+                        "description": "Project ID",
+                        "name": "ProjectId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "s-aws-04-09-23-15-02-41-5e8de3e1042f5b33ab81f33a",
+                        "description": "Cluster name",
+                        "name": "ClusterName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "\u003cpublicKey\u003e",
+                        "description": "Public Key",
+                        "name": "x-mongo-publickey",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "\u003cprivateKey\u003e",
+                        "description": "Private Key",
+                        "name": "x-mongo-privatekey",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a cloud backup snapshot of a cluster by project ID and cluster name",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Cloud Backup Snapshot"
+                ],
+                "summary": "Create a cloud backup snapshot of a cluster",
+                "operationId": "CreateBackupSnapshot",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "\u003cprojectID\u003e",
+                        "description": "Project ID",
+                        "name": "ProjectId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "s-aws-04-09-23-15-02-41-5e8de3e1042f5b33ab81f33a",
+                        "description": "Cluster name",
+                        "name": "ClusterName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "\u003cpublicKey\u003e",
+                        "description": "Public Key",
+                        "name": "x-mongo-publickey",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "\u003cprivateKey\u003e",
+                        "description": "Private Key",
+                        "name": "x-mongo-privatekey",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "body",
+                        "name": "InputModel",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/cloudBackupSnapshot.InputModel"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/project/{ProjectId}/cluster/{ClusterName}/status": {
+            "get": {
+                "description": "Get the state of a cluster by project ID and cluster name",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Cluster"
+                ],
+                "summary": "Get the state of a cluster",
+                "operationId": "GetCluster",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "\u003cprojectID\u003e",
+                        "description": "Project ID",
+                        "name": "ProjectId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "s-aws-04-09-23-15-02-41-5e8de3e1042f5b33ab81f33a",
+                        "description": "Cluster name",
+                        "name": "ClusterName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "\u003cpublicKey\u003e",
+                        "description": "Public Key",
+                        "name": "x-mongo-publickey",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "\u003cprivateKey\u003e",
+                        "description": "Private Key",
+                        "name": "x-mongo-privatekey",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/project/{ProjectId}/clusters/{ClusterName}/backup/schedule": {
+            "get": {
+                "description": "Get the state of a cluster backup schedule by project ID and cluster name",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Cloud Backup Schedule"
+                ],
+                "summary": "Get the state of a cluster backup schedule",
+                "operationId": "GetCloudBackupSchedule",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "\u003cprojectID\u003e",
+                        "description": "Project ID",
+                        "name": "ProjectId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "s-aws-04-09-23-15-02-41-5e8de3e1042f5b33ab81f33a",
+                        "description": "Cluster name",
+                        "name": "ClusterName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "\u003cpublicKey\u003e",
+                        "description": "Public Key",
+                        "name": "x-mongo-publickey",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "\u003cprivateKey\u003e",
+                        "description": "Private Key",
+                        "name": "x-mongo-privatekey",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "description": "Update the cluster backup policy",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Cloud Backup Schedule"
+                ],
+                "summary": "UpdateClusterBackupPolicy handles the PUT requests to update the cluster backup policy",
+                "operationId": "UpdateClusterBackupPolicy",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "\u003cprojectID\u003e",
+                        "description": "Project ID",
+                        "name": "ProjectId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "s-aws-04-09-23-15-02-41-5e8de3e1042f5b33ab81f33a",
+                        "description": "Cluster name",
+                        "name": "ClusterName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "\u003cpublicKey\u003e",
+                        "description": "Public Key",
+                        "name": "x-mongo-publickey",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "\u003cprivateKey\u003e",
+                        "description": "Private Key",
+                        "name": "x-mongo-privatekey",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "body",
+                        "name": "UpdateInputModel",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/cloudBackupSchedule.Model"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/project/{ProjectId}/databaseUsers": {
+            "get": {
+                "description": "Get all database users",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Database User"
+                ],
+                "summary": "Get all database users",
+                "operationId": "GetAllDatabaseUser",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "\u003cprojectID\u003e",
+                        "description": "Project ID",
+                        "name": "ProjectId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "\u003cpublicKey\u003e",
+                        "description": "Public Key",
+                        "name": "x-mongo-publickey",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "\u003cprivateKey\u003e",
+                        "description": "Private Key",
+                        "name": "x-mongo-privatekey",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/database_user.Model"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/project/{ProjectId}/databaseUsers/{Username}": {
+            "get": {
+                "description": "Get a database user with the specified ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Database User"
+                ],
+                "summary": "Get a database user",
+                "operationId": "GetDatabaseUser",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "\u003cprojectID\u003e",
+                        "description": "Project ID",
+                        "name": "ProjectId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "testUser",
+                        "description": "Username",
+                        "name": "Username",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "\u003cpublicKey\u003e",
+                        "description": "Public Key",
+                        "name": "x-mongo-publickey",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "\u003cprivateKey\u003e",
+                        "description": "Private Key",
+                        "name": "x-mongo-privatekey",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/database_user.Model"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete a database user with the specified ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Database User"
+                ],
+                "summary": "Delete a database user",
+                "operationId": "DeleteDatabaseUser",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "\u003cprojectID\u003e",
+                        "description": "Project ID",
+                        "name": "ProjectId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "testUser",
+                        "description": "Username",
+                        "name": "Username",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "\u003cpublicKey\u003e",
+                        "description": "Public Key",
+                        "name": "x-mongo-publickey",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "\u003cprivateKey\u003e",
+                        "description": "Private Key",
+                        "name": "x-mongo-privatekey",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/project/{ProjectId}/cluster/{ClusterName}/database": {
+            "get": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "read all the databases using hostname,username and password",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Database"
+                ],
+                "summary": "lists all database",
+                "operationId": "ReadAllDatabase",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "",
+                        "description": "authorization",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "projectId",
+                        "description": "ProjectId",
+                        "name": "ProjectId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "clusterId",
+                        "description": "ClusterName",
+                        "name": "ClusterName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "\u003cpublicKey\u003e",
+                        "description": "Public Key",
+                        "name": "x-mongo-publickey",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "\u003cprivateKey\u003e",
+                        "description": "Private Key",
+                        "name": "x-mongo-privatekey",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Create a new database with the specified name and owner",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Database"
+                ],
+                "summary": "Create a new database",
+                "operationId": "CreateDatabase",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "",
+                        "description": "authorization",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "projectId",
+                        "description": "ProjectId",
+                        "name": "ProjectId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "clusterId",
+                        "description": "ClusterName",
+                        "name": "ClusterName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "\u003cpublicKey\u003e",
+                        "description": "Public Key",
+                        "name": "x-mongo-publickey",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "\u003cprivateKey\u003e",
+                        "description": "Private Key",
+                        "name": "x-mongo-privatekey",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "body",
+                        "name": "InputModel",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/database.InputModel"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/project/{ProjectId}/cluster/{ClusterName}/database/{DatabaseName}": {
+            "delete": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Delete a database with the specified ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Database"
+                ],
+                "summary": "Delete a database",
+                "operationId": "DeleteDatabase",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "testDatabase",
+                        "description": "databaseName",
+                        "name": "DatabaseName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "projectId",
+                        "description": "ProjectId",
+                        "name": "ProjectId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "clusterId",
+                        "description": "ClusterName",
+                        "name": "ClusterName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "\u003cpublicKey\u003e",
+                        "description": "Public Key",
+                        "name": "x-mongo-publickey",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "\u003cprivateKey\u003e",
+                        "description": "Private Key",
+                        "name": "x-mongo-privatekey",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "",
+                        "description": "authorization",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/project/{ProjectId}/cluster/{ClusterName}/database/{DatabaseName}/collection/{CollectionName}": {
+            "delete": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Delete a collection with the specified ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Collection"
+                ],
+                "summary": "Delete a collection",
+                "operationId": "DeleteCollection",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "testDatabase",
+                        "description": "databaseName",
+                        "name": "DatabaseName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "default",
+                        "description": "collectionName",
+                        "name": "CollectionName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "projectId",
+                        "description": "ProjectId",
+                        "name": "ProjectId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "clusterId",
+                        "description": "ClusterName",
+                        "name": "ClusterName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "\u003cpublicKey\u003e",
+                        "description": "Public Key",
+                        "name": "x-mongo-publickey",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "\u003cprivateKey\u003e",
+                        "description": "Private Key",
+                        "name": "x-mongo-privatekey",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "",
+                        "description": "authorization",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/project/{ProjectId}/cluster/{ClusterName}/database/{DatabaseName}/collections": {
+            "get": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Lists all the collections in the database",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Collection"
+                ],
+                "summary": "Lists all the collection",
+                "operationId": "ListCollection",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "testDatabase",
+                        "description": "databaseName",
+                        "name": "DatabaseName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "projectId",
+                        "description": "ProjectId",
+                        "name": "ProjectId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "clusterId",
+                        "description": "ClusterName",
+                        "name": "ClusterName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "\u003cpublicKey\u003e",
+                        "description": "Public Key",
+                        "name": "x-mongo-publickey",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "\u003cprivateKey\u003e",
+                        "description": "Private Key",
+                        "name": "x-mongo-privatekey",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "",
+                        "description": "authorization",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Create a new collection with the specified name and description",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Collection"
+                ],
+                "summary": "Create a new collection",
+                "operationId": "CreateCollection",
+                "parameters": [
+                    {
+                        "description": "body",
+                        "name": "InputModel",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/collection.InputModel"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "default": "testDatabase",
+                        "description": "databaseName",
+                        "name": "DatabaseName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "projectId",
+                        "description": "ProjectId",
+                        "name": "ProjectId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "clusterId",
+                        "description": "ClusterName",
+                        "name": "ClusterName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "\u003cpublicKey\u003e",
+                        "description": "Public Key",
+                        "name": "x-mongo-publickey",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "\u003cprivateKey\u003e",
+                        "description": "Private Key",
+                        "name": "x-mongo-privatekey",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "",
+                        "description": "authorization",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/project/{ProjectId}/databaseUsers": {
+            "post": {
+                "description": "Create a new database user with the specified name and email",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Database User"
+                ],
+                "summary": "Create a database user",
+                "operationId": "CreateDatabaseUser",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "\u003cprojectID\u003e",
+                        "description": "Project ID",
+                        "name": "ProjectId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "\u003cpublicKey\u003e",
+                        "description": "Public Key",
+                        "name": "x-mongo-publickey",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "\u003cprivateKey\u003e",
+                        "description": "Private Key",
+                        "name": "x-mongo-privatekey",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "body",
+                        "name": "InputModel",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/database_user.InputModel"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/database_user.Model"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/project/{ProjectId}/databaseUsers/{Username}": {
+            "patch": {
+                "description": "Update roles and permission for a database user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Database User"
+                ],
+                "summary": "Update roles and permission for a database user",
+                "operationId": "UpdateDatabaseUser",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "\u003cprojectID\u003e",
+                        "description": "Project ID",
+                        "name": "ProjectId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "testUser",
+                        "description": "Username",
+                        "name": "Username",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "\u003cpublicKey\u003e",
+                        "description": "Public Key",
+                        "name": "x-mongo-publickey",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "\u003cprivateKey\u003e",
+                        "description": "Private Key",
+                        "name": "x-mongo-privatekey",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "body",
+                        "name": "InputModel",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/database_user.UpdateInputModel"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/database_user.Model"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/atlasresponse.AtlasResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "atlasresponse.AtlasResponse": {
+            "type": "object",
+            "properties": {
+                "errorCode": {
+                    "type": "string"
+                },
+                "errorMessage": {
+                    "type": "string"
+                },
+                "response": {},
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "cloudBackupRestore.InputModel": {
+            "type": "object",
+            "properties": {
+                "deliveryType": {
+                    "description": "The delivery type.\n\nrequired: false",
+                    "type": "string"
+                },
+                "jobId": {
+                    "description": "The ID of the job.\n\nrequired: false",
+                    "type": "string"
+                },
+                "opLogInc": {
+                    "description": "The increment of the oplog to restore.\n\nrequired: false",
+                    "type": "string"
+                },
+                "opLogTs": {
+                    "description": "The timestamp of the oplog to restore.\n\nrequired: false",
+                    "type": "string"
+                },
+                "pointInTimeUtcSeconds": {
+                    "description": "The point in time to restore to, in UTC seconds.\n\nrequired: false",
+                    "type": "string"
+                },
+                "snapshotId": {
+                    "description": "The ID of the snapshot to restore.\n\nrequired: true",
+                    "type": "string"
+                },
+                "targetClusterName": {
+                    "description": "The name of the target cluster.\n\nrequired: false",
+                    "type": "string"
+                },
+                "targetProjectId": {
+                    "description": "The ID of the target project.\n\nrequired: false",
+                    "type": "string"
+                }
+            }
+        },
+        "cloudBackupSchedule.ApiAtlasDiskBackupCopySettingView": {
+            "type": "object",
+            "properties": {
+                "cloudProvider": {
+                    "description": "The cloud provider where the backup is copied.\n\nrequired: false",
+                    "type": "string"
+                },
+                "frequencies": {
+                    "description": "The frequencies of the backup copy.\n\nrequired: false",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "regionName": {
+                    "description": "The name of the region where the backup is copied.\n\nrequired: false",
+                    "type": "string"
+                },
+                "replicationSpecId": {
+                    "description": "The ID of the replication specification.\n\nrequired: false",
+                    "type": "string"
+                },
+                "shouldCopyOplogs": {
+                    "description": "Whether to copy oplogs.\n\nrequired: false",
+                    "type": "boolean"
+                }
+            }
+        },
+        "cloudBackupSchedule.ApiDeleteCopiedBackupsView": {
+            "type": "object",
+            "properties": {
+                "cloudProvider": {
+                    "description": "The cloud provider where the backups are copied.\n\nrequired: false",
+                    "type": "string"
+                },
+                "regionName": {
+                    "description": "The name of the region where the backups are copied.\n\nrequired: false",
+                    "type": "string"
+                },
+                "replicationSpecId": {
+                    "description": "The ID of the replication specification.\n\nrequired: false",
+                    "type": "string"
+                }
+            }
+        },
+        "cloudBackupSchedule.ApiPolicyItemView": {
+            "type": "object",
+            "properties": {
+                "frequencyInterval": {
+                    "description": "The frequency interval of the policy item.\n\nrequired: false",
+                    "type": "integer"
+                },
+                "frequencyType": {
+                    "description": "The frequency type of the policy item.\n\nrequired: false",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "The ID of the policy item.\n\nrequired: false",
+                    "type": "string"
+                },
+                "retentionUnit": {
+                    "description": "The retention unit of the policy item.\n\nrequired: false",
+                    "type": "string"
+                },
+                "retentionValue": {
+                    "description": "The retention value of the policy item.\n\nrequired: false",
+                    "type": "integer"
+                }
+            }
+        },
+        "cloudBackupSchedule.ApiPolicyView": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "description": "The ID of the policy.\n\nrequired: false",
+                    "type": "string"
+                },
+                "policyItems": {
+                    "description": "The policy items of the policy.\n\nrequired: false",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/cloudBackupSchedule.ApiPolicyItemView"
+                    }
+                }
+            }
+        },
+        "cloudBackupSchedule.Export": {
+            "type": "object",
+            "properties": {
+                "exportBucketId": {
+                    "description": "The ID of the export bucket.\n\nrequired: false",
+                    "type": "string"
+                },
+                "frequencyType": {
+                    "description": "The frequency type of the export.\n\nrequired: false",
+                    "type": "string"
+                }
+            }
+        },
+        "cloudBackupSchedule.Link": {
+            "type": "object",
+            "properties": {
+                "href": {
+                    "description": "The URL of the link.\n\nrequired: false",
+                    "type": "string"
+                },
+                "rel": {
+                    "description": "The relationship of the link to the current resource.\n\nrequired: false",
+                    "type": "string"
+                }
+            }
+        },
+        "cloudBackupSchedule.Model": {
+            "type": "object",
+            "properties": {
+                "Id": {
+                    "description": "The ID of the backup schedule.\n\nrequired: false",
+                    "type": "string"
+                },
+                "autoExportEnabled": {
+                    "description": "Whether auto-export is enabled.\n\nrequired: false",
+                    "type": "boolean"
+                },
+                "clusterId": {
+                    "description": "The ID of the cluster.\n\nrequired: false",
+                    "type": "string"
+                },
+                "copySettings": {
+                    "description": "The copy settings.\n\nrequired: false",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/cloudBackupSchedule.ApiAtlasDiskBackupCopySettingView"
+                    }
+                },
+                "deleteCopiedBackups": {
+                    "description": "The delete copied backups settings.\n\nrequired: false",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/cloudBackupSchedule.ApiDeleteCopiedBackupsView"
+                    }
+                },
+                "export": {
+                    "description": "The export settings.\n\nrequired: false",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/cloudBackupSchedule.Export"
+                        }
+                    ]
+                },
+                "links": {
+                    "description": "The links.\n\nrequired: false",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/cloudBackupSchedule.Link"
+                    }
+                },
+                "nextSnapshot": {
+                    "description": "The next snapshot.\n\nrequired: false",
+                    "type": "string"
+                },
+                "policies": {
+                    "description": "The policies.\n\nrequired: false",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/cloudBackupSchedule.ApiPolicyView"
+                    }
+                },
+                "profile": {
+                    "description": "The profile.\n\nrequired: false",
+                    "type": "string"
+                },
+                "referenceHourOfDay": {
+                    "description": "The reference hour of day.\n\nrequired: false",
+                    "type": "integer"
+                },
+                "referenceMinuteOfHour": {
+                    "description": "The reference minute of hour.\n\nrequired: false",
+                    "type": "integer"
+                },
+                "restoreWindowDays": {
+                    "description": "The number of days in the restore window.\n\nrequired: false",
+                    "type": "integer"
+                },
+                "updateSnapshots": {
+                    "description": "Whether to update snapshots.\n\nrequired: false",
+                    "type": "boolean"
+                },
+                "useOrgAndGroupNamesInExportPrefix": {
+                    "description": "Whether to use org and group names in the export prefix.\n\nrequired: false",
+                    "type": "boolean"
+                }
+            }
+        },
+        "cloudBackupSnapshot.InputModel": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "description": "The description of the snapshot.\n\nrequired: false",
+                    "type": "string"
+                },
+                "retentionInDays": {
+                    "description": "The number of days to retain the snapshot.\n\nrequired: false",
+                    "type": "string"
+                }
+            }
+        },
+        "cluster.AdvancedAutoScaling": {
+            "type": "object",
+            "properties": {
+                "compute": {
+                    "description": "The compute configuration for the auto-scaling group.\n\nrequired: false",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/cluster.Compute"
+                        }
+                    ]
+                },
+                "diskGB": {
+                    "description": "The disk size configuration for the auto-scaling group.\n\nrequired: false",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/cluster.DiskGB"
+                        }
+                    ]
+                }
+            }
+        },
+        "cluster.AdvancedRegionConfig": {
+            "type": "object",
+            "properties": {
+                "BackingProviderName": {
+                    "description": "The name of the backing provider for the region.\n\nrequired: false",
+                    "type": "string"
+                },
+                "analyticsAutoScaling": {
+                    "description": "The auto-scaling configuration for analytics nodes in the region.\n\nrequired: false",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/cluster.AdvancedAutoScaling"
+                        }
+                    ]
+                },
+                "analyticsSpecs": {
+                    "description": "The specifications for analytics nodes in the region.\n\nrequired: false",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/cluster.Specs"
+                        }
+                    ]
+                },
+                "autoScaling": {
+                    "description": "The auto-scaling configuration for all nodes in the region.\n\nrequired: false",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/cluster.AdvancedAutoScaling"
+                        }
+                    ]
+                },
+                "electableSpecs": {
+                    "description": "The specifications for electable nodes in the region.\n\nrequired: false",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/cluster.Specs"
+                        }
+                    ]
+                },
+                "priority": {
+                    "description": "The priority of the region.\n\nrequired: false",
+                    "type": "integer"
+                },
+                "providerName": {
+                    "description": "The name of the provider for the region.\n\nrequired: false",
+                    "type": "string"
+                },
+                "readOnlySpecs": {
+                    "description": "The specifications for read-only nodes in the region.\n\nrequired: false",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/cluster.Specs"
+                        }
+                    ]
+                },
+                "regionName": {
+                    "description": "The name of the region.\n\nrequired: false",
+                    "type": "string"
+                }
+            }
+        },
+        "cluster.AdvancedReplicationSpec": {
+            "type": "object",
+            "properties": {
+                "advancedRegionConfigs": {
+                    "description": "The advanced region configurations for the advanced replication specification.\n\nrequired: false",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/cluster.AdvancedRegionConfig"
+                    }
+                },
+                "id": {
+                    "description": "The ID of the advanced replication specification.\n\nrequired: false",
+                    "type": "string"
+                },
+                "numShards": {
+                    "description": "The number of shards for the advanced replication specification.\n\nrequired: false",
+                    "type": "integer"
+                },
+                "zoneName": {
+                    "description": "The name of the zone for the advanced replication specification.\n\nrequired: false",
+                    "type": "string"
+                }
+            }
+        },
+        "cluster.BiConnector": {
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "description": "Indicates whether the BI Connector is enabled.\n\nrequired: false",
+                    "type": "boolean"
+                },
+                "readPreference": {
+                    "description": "The read preference for the BI Connector.\n\nrequired: false",
+                    "type": "string"
+                }
+            }
+        },
+        "cluster.Compute": {
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "type": "boolean"
+                },
+                "maxInstanceSize": {
+                    "type": "string"
+                },
+                "minInstanceSize": {
+                    "type": "string"
+                },
+                "scaleDownEnabled": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "cluster.ConnectionStrings": {
+            "type": "object",
+            "properties": {
+                "awsPrivateLink": {
+                    "description": "The AWS PrivateLink connection string for the cluster.\n\nrequired: false",
+                    "type": "string"
+                },
+                "awsPrivateLinkSrv": {
+                    "description": "The AWS PrivateLink SRV connection string for the cluster.\n\nrequired: false",
+                    "type": "string"
+                },
+                "private": {
+                    "description": "The private connection string for the cluster.\n\nrequired: false",
+                    "type": "string"
+                },
+                "privateEndpoint": {
+                    "description": "The private endpoint for the cluster.\n\nrequired: false",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/cluster.PrivateEndpoint"
+                    }
+                },
+                "privateSrv": {
+                    "description": "The private SRV connection string for the cluster.\n\nrequired: false",
+                    "type": "string"
+                },
+                "standard": {
+                    "description": "The standard connection string for the cluster.\n\nrequired: false",
+                    "type": "string"
+                },
+                "standardSrv": {
+                    "description": "The standard SRV connection string for the cluster.\n\nrequired: false",
+                    "type": "string"
+                }
+            }
+        },
+        "cluster.DiskGB": {
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "description": "Indicates whether disk size configuration is enabled.\n\nrequired: false",
+                    "type": "boolean"
+                }
+            }
+        },
+        "cluster.Endpoint": {
+            "type": "object",
+            "properties": {
+                "endpointID": {
+                    "description": "The ID of the endpoint.\n\nrequired: false",
+                    "type": "string"
+                },
+                "providerName": {
+                    "description": "The name of the provider for the endpoint.\n\nrequired: false",
+                    "type": "string"
+                },
+                "region": {
+                    "description": "The region of the endpoint.\n\nrequired: false",
+                    "type": "string"
+                }
+            }
+        },
+        "cluster.InputModel": {
+            "type": "object",
+            "properties": {
+                "cloudProvider": {
+                    "description": "The cloud provider for the cluster.\n\nrequired: false\nexample: AWS",
+                    "type": "string",
+                    "example": "AWS"
+                },
+                "labels": {
+                    "description": "Labels to the cluster for tagging.\n\nrequired: false",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/cluster.Labels"
+                    }
+                },
+                "mongoDBVersion": {
+                    "description": "The version of MongoDB for the cluster.\n\nrequired: false\nexample: 6.0.9",
+                    "type": "string",
+                    "example": "6.0.9"
+                },
+                "tshirtSize": {
+                    "description": "Applications uses this field to determine the cluster size.possible values are \"s\",\"m\"\n\nrequired: true\nexample: s",
+                    "type": "string",
+                    "example": "s"
+                }
+            }
+        },
+        "cluster.Labels": {
+            "type": "object",
+            "properties": {
+                "key": {
+                    "description": "The key of the label.\n\nrequired: false",
+                    "type": "string"
+                },
+                "value": {
+                    "description": "The value of the label.\n\nrequired: false",
+                    "type": "string"
+                }
+            }
+        },
+        "cluster.Model": {
+            "type": "object",
+            "properties": {
+                "advancedSettings": {
+                    "description": "Advanced settings for the cluster.\n\nrequired: false",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/cluster.ProcessArgs"
+                        }
+                    ]
+                },
+                "backupEnabled": {
+                    "description": "Indicates whether backups are enabled for the cluster.\n\nrequired: false",
+                    "type": "boolean"
+                },
+                "biConnector": {
+                    "description": "BI Connector configuration for the cluster.\n\nrequired: false",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/cluster.BiConnector"
+                        }
+                    ]
+                },
+                "clusterType": {
+                    "description": "The type of the cluster.\n\nrequired: false",
+                    "type": "string"
+                },
+                "connectionStrings": {
+                    "description": "Connection strings for the cluster.\n\nrequired: false",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/cluster.ConnectionStrings"
+                        }
+                    ]
+                },
+                "createdDate": {
+                    "description": "The date the cluster was created.\n\nrequired: false",
+                    "type": "string"
+                },
+                "diskSizeGB": {
+                    "description": "The size of the disk in GB.\n\nrequired: false",
+                    "type": "number"
+                },
+                "encryptionAtRestProvider": {
+                    "description": "The provider used for encryption at rest.\n\nrequired: false",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "The ID of the cluster.\n\nrequired: false",
+                    "type": "string"
+                },
+                "labels": {
+                    "description": "Labels for the cluster.\n\nrequired: false",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/cluster.Labels"
+                    }
+                },
+                "mongoDBMajorVersion": {
+                    "description": "The major version of MongoDB used by the cluster.\n\nrequired: false",
+                    "type": "string"
+                },
+                "mongoDBVersion": {
+                    "description": "The version of MongoDB used by the cluster.\n\nrequired: false",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "The name of the cluster.\n\nrequired: false",
+                    "type": "string"
+                },
+                "paused": {
+                    "description": "Indicates whether the cluster is paused.\n\nrequired: false",
+                    "type": "boolean"
+                },
+                "pitEnabled": {
+                    "description": "Indicates whether point-in-time backups are enabled for the cluster.\n\nrequired: false",
+                    "type": "boolean"
+                },
+                "profile": {
+                    "description": "The profile used for the cluster.\n\nrequired: false",
+                    "type": "string"
+                },
+                "projectId": {
+                    "description": "The ID of the project the cluster belongs to.\n\nrequired: false",
+                    "type": "string"
+                },
+                "publicAccessEnabled": {
+                    "description": "Indicates whether public access is enabled for the cluster.\n\nrequired: false",
+                    "type": "boolean"
+                },
+                "replicationSpecs": {
+                    "description": "Replication specifications for the cluster.\n\nrequired: false",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/cluster.AdvancedReplicationSpec"
+                    }
+                },
+                "rootCertType": {
+                    "description": "The type of root certificate used for the cluster.\n\nrequired: false",
+                    "type": "string"
+                },
+                "stateName": {
+                    "description": "The state of the cluster.\n\nrequired: false",
+                    "type": "string"
+                },
+                "terminationProtectionEnabled": {
+                    "description": "Indicates whether termination protection is enabled for the cluster.\n\nrequired: false",
+                    "type": "boolean"
+                },
+                "versionReleaseSystem": {
+                    "description": "The version release system used for the cluster.\n\nrequired: false",
+                    "type": "string"
+                }
+            }
+        },
+        "cluster.PrivateEndpoint": {
+            "type": "object",
+            "properties": {
+                "connectionString": {
+                    "description": "The connection string for the private endpoint.\n\nrequired: false",
+                    "type": "string"
+                },
+                "endpoints": {
+                    "description": "The list of endpoints for the private endpoint.\n\nrequired: false",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/cluster.Endpoint"
+                    }
+                },
+                "srvConnectionString": {
+                    "description": "The SRV connection string for the private endpoint.\n\nrequired: false",
+                    "type": "string"
+                },
+                "type": {
+                    "description": "The type of the private endpoint.\n\nrequired: false",
+                    "type": "string"
+                }
+            }
+        },
+        "cluster.ProcessArgs": {
+            "type": "object",
+            "properties": {
+                "defaultReadConcern": {
+                    "description": "The default read concern for the cluster.\n\nrequired: false",
+                    "type": "string"
+                },
+                "defaultWriteConcern": {
+                    "description": "The default write concern for the cluster.\n\nrequired: false",
+                    "type": "string"
+                },
+                "failIndexKeyTooLong": {
+                    "description": "Indicates whether to fail if an index key is too long.\n\nrequired: false",
+                    "type": "boolean"
+                },
+                "javascriptEnabled": {
+                    "description": "Indicates whether JavaScript is enabled for the cluster.\n\nrequired: false",
+                    "type": "boolean"
+                },
+                "minimumEnabledTLSProtocol": {
+                    "description": "The minimum enabled TLS protocol for the cluster.\n\nrequired: false",
+                    "type": "string"
+                },
+                "noTableScan": {
+                    "description": "Indicates whether table scans are disabled for the cluster.\n\nrequired: false",
+                    "type": "boolean"
+                },
+                "oplogMinRetentionHours": {
+                    "description": "The minimum retention hours for the oplog.\n\nrequired: false",
+                    "type": "number"
+                },
+                "oplogSizeMB": {
+                    "description": "The size of the oplog in MB.\n\nrequired: false",
+                    "type": "integer"
+                },
+                "sampleRefreshIntervalBIConnector": {
+                    "description": "The sample refresh interval for the BI Connector.\n\nrequired: false",
+                    "type": "integer"
+                },
+                "sampleSizeBIConnector": {
+                    "description": "The sample size for the BI Connector.\n\nrequired: false",
+                    "type": "integer"
+                }
+            }
+        },
+        "cluster.Specs": {
+            "type": "object",
+            "properties": {
+                "InstanceSize": {
+                    "type": "string"
+                },
+                "diskIOPS": {
+                    "type": "string"
+                },
+                "ebsVolumeType": {
+                    "type": "string"
+                },
+                "nodeCount": {
+                    "type": "integer"
+                }
+            }
+        },
+        "collection.InputModel": {
+            "type": "object",
+            "properties": {
+                "collectionNames": {
+                    "description": "CollectionNames is an array of collection names to be queried.\n\nrequired: false\nexample: [\"default\", \"users\"]",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "default"
+                    ]
+                }
+            }
+        },
+        "database.InputModel": {
+            "type": "object",
+            "properties": {
+                "collectionName": {
+                    "description": "The name of the collection to be queried.\n\nrequired: false\nexample: \"testCollection\"",
+                    "type": "string",
+                    "example": "testCollection"
+                },
+                "databaseName": {
+                    "description": "The name of the database to be queried.\n\nrequired: false\nexample: \"testDatabase\"",
+                    "type": "string",
+                    "example": "testDatabase"
+                }
+            }
+        },
+        "database_user.InputModel": {
+            "type": "object",
+            "properties": {
+                "password": {
+                    "description": "The password for the user.\n\nrequired: false\nexample: \"testPass\"",
+                    "type": "string",
+                    "example": "testPass"
+                },
+                "roles": {
+                    "description": "The roles associated with the user.\n\nrequired: false",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/database_user.RoleDefinition"
+                    }
+                },
+                "username": {
+                    "description": "The username for the user.\n\nrequired: false\nexample: \"testUser\"",
+                    "type": "string",
+                    "example": "testUser"
+                }
+            }
+        },
+        "database_user.LabelDefinition": {
+            "type": "object",
+            "properties": {
+                "key": {
+                    "description": "The key of the label.\n\nrequired: false\nexample: \"environment\"",
+                    "type": "string",
+                    "example": "environment"
+                },
+                "value": {
+                    "description": "The value of the label.\n\nrequired: false\nexample: \"production\"",
+                    "type": "string",
+                    "example": "production"
+                }
+            }
+        },
+        "database_user.Model": {
+            "type": "object",
+            "properties": {
+                "awsIAMType": {
+                    "description": "The type of AWS IAM authentication to use.\n\nrequired: false\nexample: \"AWS_IAM\"",
+                    "type": "string",
+                    "example": "AWS_IAM"
+                },
+                "databaseName": {
+                    "description": "The name of the database to which the user should have access.\n\nrequired: false\nexample: \"testDatabase\"",
+                    "type": "string",
+                    "example": "testDatabase"
+                },
+                "deleteAfterDate": {
+                    "description": "The date after which the user should be deleted.\n\nrequired: false\nexample: \"2022-01-01\"",
+                    "type": "string",
+                    "example": "2022-01-01"
+                },
+                "labels": {
+                    "description": "The labels associated with the user.\n\nrequired: false",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/database_user.LabelDefinition"
+                    }
+                },
+                "ldapAuthType": {
+                    "description": "The type of LDAP authentication to use.\n\nrequired: false\nexample: \"LDAP\"",
+                    "type": "string",
+                    "example": "LDAP"
+                },
+                "password": {
+                    "description": "The password for the user.\n\nrequired: false",
+                    "type": "string"
+                },
+                "profile": {
+                    "description": "The profile associated with the user.\n\nrequired: false",
+                    "type": "string"
+                },
+                "projectId": {
+                    "description": "The ID of the project to which the user belongs.\n\nrequired: false\nexample: \"12345\"",
+                    "type": "string",
+                    "example": "12345"
+                },
+                "roles": {
+                    "description": "The roles associated with the user.\n\nrequired: false",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/database_user.RoleDefinition"
+                    }
+                },
+                "scopes": {
+                    "description": "The scopes associated with the user.\n\nrequired: false",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/database_user.ScopeDefinition"
+                    }
+                },
+                "username": {
+                    "description": "The username for the user.\n\nrequired: false\nexample: \"testUser\"",
+                    "type": "string",
+                    "example": "testUser"
+                },
+                "x509Type": {
+                    "description": "The type of X.509 authentication to use.\n\nrequired: false\nexample: \"X509\"",
+                    "type": "string",
+                    "example": "X509"
+                }
+            }
+        },
+        "database_user.RoleDefinition": {
+            "type": "object",
+            "properties": {
+                "collectionName": {
+                    "description": "The name of the collection to which the role applies.\n\nrequired: false\nexample: \"testCollection\"",
+                    "type": "string",
+                    "example": "testCollection"
+                },
+                "databaseName": {
+                    "description": "The name of the database to which the role applies.\n\nrequired: true\nexample: \"testDatabase\"",
+                    "type": "string",
+                    "example": "testDatabase"
+                },
+                "roleName": {
+                    "description": "The name of the role.\n\nrequired: true\nexample: \"testRole\"",
+                    "type": "string",
+                    "example": "testRole"
+                }
+            }
+        },
+        "database_user.ScopeDefinition": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "description": "The name of the scope.\n\nrequired: false\nexample: \"readWrite\"",
+                    "type": "string",
+                    "example": "readWrite"
+                },
+                "type": {
+                    "description": "The type of the scope.\n\nrequired: false\nexample: \"database\"",
+                    "type": "string",
+                    "example": "database"
+                }
+            }
+        },
+        "database_user.UpdateInputModel": {
+            "type": "object",
+            "properties": {
+                "roles": {
+                    "description": "The roles associated with the user.\n\nrequired: false",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/database_user.RoleDefinition"
+                    }
+                }
+            }
+        }
+    },
+    "securityDefinitions": {
+        "BasicAuth": {
+            "type": "basic"
+        }
+    }
+}

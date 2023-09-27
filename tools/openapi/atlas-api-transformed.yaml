@@ -1,0 +1,1592 @@
+basePath: /api
+definitions:
+  atlasresponse.AtlasResponse:
+    properties:
+      errorCode:
+        type: string
+      errorMessage:
+        type: string
+      response: {}
+      status:
+        type: string
+    type: object
+  cloudBackupSchedule.ApiAtlasDiskBackupCopySettingView:
+    properties:
+      cloudProvider:
+        type: string
+      frequencies:
+        items:
+          type: string
+        type: array
+      regionName:
+        type: string
+      replicationSpecId:
+        type: string
+      shouldCopyOplogs:
+        type: boolean
+    type: object
+  cloudBackupSchedule.ApiDeleteCopiedBackupsView:
+    properties:
+      cloudProvider:
+        type: string
+      regionName:
+        type: string
+      replicationSpecId:
+        type: string
+    type: object
+  cloudBackupSchedule.ApiPolicyItemView:
+    properties:
+      frequencyInterval:
+        type: integer
+      frequencyType:
+        type: string
+      id:
+        type: string
+      retentionUnit:
+        type: string
+      retentionValue:
+        type: integer
+    type: object
+  cloudBackupSchedule.ApiPolicyView:
+    properties:
+      id:
+        type: string
+      policyItems:
+        items:
+          $ref: '#/definitions/cloudBackupSchedule.ApiPolicyItemView'
+        type: array
+    type: object
+  cloudBackupSchedule.Export:
+    properties:
+      exportBucketId:
+        type: string
+      frequencyType:
+        type: string
+    type: object
+  cloudBackupSchedule.Link:
+    properties:
+      href:
+        type: string
+      rel:
+        type: string
+    type: object
+  cloudBackupSchedule.Model:
+    properties:
+      Id:
+        type: string
+      autoExportEnabled:
+        type: boolean
+      clusterId:
+        type: string
+      copySettings:
+        items:
+          $ref: '#/definitions/cloudBackupSchedule.ApiAtlasDiskBackupCopySettingView'
+        type: array
+      deleteCopiedBackups:
+        items:
+          $ref: '#/definitions/cloudBackupSchedule.ApiDeleteCopiedBackupsView'
+        type: array
+      export:
+        $ref: '#/definitions/cloudBackupSchedule.Export'
+      links:
+        items:
+          $ref: '#/definitions/cloudBackupSchedule.Link'
+        type: array
+      nextSnapshot:
+        type: string
+      policies:
+        items:
+          $ref: '#/definitions/cloudBackupSchedule.ApiPolicyView'
+        type: array
+      profile:
+        type: string
+      referenceHourOfDay:
+        type: integer
+      referenceMinuteOfHour:
+        type: integer
+      restoreWindowDays:
+        type: integer
+      updateSnapshots:
+        type: boolean
+      useOrgAndGroupNamesInExportPrefix:
+        type: boolean
+    type: object
+  cluster.AdvancedAutoScaling:
+    properties:
+      compute:
+        $ref: '#/definitions/cluster.Compute'
+      diskGB:
+        $ref: '#/definitions/cluster.DiskGB'
+    type: object
+  cluster.AdvancedRegionConfig:
+    properties:
+      BackingProviderName:
+        type: string
+      analyticsAutoScaling:
+        $ref: '#/definitions/cluster.AdvancedAutoScaling'
+      analyticsSpecs:
+        $ref: '#/definitions/cluster.Specs'
+      autoScaling:
+        $ref: '#/definitions/cluster.AdvancedAutoScaling'
+      electableSpecs:
+        $ref: '#/definitions/cluster.Specs'
+      priority:
+        type: integer
+      providerName:
+        type: string
+      readOnlySpecs:
+        $ref: '#/definitions/cluster.Specs'
+      regionName:
+        type: string
+    type: object
+  cluster.AdvancedReplicationSpec:
+    properties:
+      advancedRegionConfigs:
+        items:
+          $ref: '#/definitions/cluster.AdvancedRegionConfig'
+        type: array
+      id:
+        type: string
+      numShards:
+        type: integer
+      zoneName:
+        type: string
+    type: object
+  cluster.BiConnector:
+    properties:
+      enabled:
+        type: boolean
+      readPreference:
+        type: string
+    type: object
+  cluster.Compute:
+    properties:
+      enabled:
+        type: boolean
+      maxInstanceSize:
+        type: string
+      minInstanceSize:
+        type: string
+      scaleDownEnabled:
+        type: boolean
+    type: object
+  cluster.ConnectionStrings:
+    properties:
+      awsPrivateLink:
+        type: string
+      awsPrivateLinkSrv:
+        type: string
+      private:
+        type: string
+      privateEndpoint:
+        items:
+          $ref: '#/definitions/cluster.PrivateEndpoint'
+        type: array
+      privateSrv:
+        type: string
+      standard:
+        type: string
+      standardSrv:
+        type: string
+    type: object
+  cluster.DiskGB:
+    properties:
+      enabled:
+        type: boolean
+    type: object
+  cluster.Endpoint:
+    properties:
+      endpointID:
+        type: string
+      providerName:
+        type: string
+      region:
+        type: string
+    type: object
+  cluster.InputModel:
+    properties:
+      cloudProvider:
+        example: AWS
+        type: string
+      mongoDBVersion:
+        example: 6.0.9
+        type: string
+      projectId:
+        example: <projectID>
+        type: string
+      tshirtSize:
+        example: s
+        type: string
+    type: object
+  cluster.Labels:
+    properties:
+      key:
+        type: string
+      value:
+        type: string
+    type: object
+  cluster.Model:
+    properties:
+      advancedSettings:
+        $ref: '#/definitions/cluster.ProcessArgs'
+      backupEnabled:
+        type: boolean
+      biConnector:
+        $ref: '#/definitions/cluster.BiConnector'
+      clusterType:
+        type: string
+      connectionStrings:
+        $ref: '#/definitions/cluster.ConnectionStrings'
+      createdDate:
+        type: string
+      diskSizeGB:
+        type: number
+      encryptionAtRestProvider:
+        type: string
+      id:
+        type: string
+      labels:
+        items:
+          $ref: '#/definitions/cluster.Labels'
+        type: array
+      mongoDBMajorVersion:
+        type: string
+      mongoDBVersion:
+        type: string
+      name:
+        type: string
+      paused:
+        type: boolean
+      pitEnabled:
+        type: boolean
+      profile:
+        type: string
+      projectId:
+        type: string
+      publicAccessEnabled:
+        type: boolean
+      replicationSpecs:
+        items:
+          $ref: '#/definitions/cluster.AdvancedReplicationSpec'
+        type: array
+      rootCertType:
+        type: string
+      stateName:
+        type: string
+      terminationProtectionEnabled:
+        type: boolean
+      versionReleaseSystem:
+        type: string
+    type: object
+  cluster.PrivateEndpoint:
+    properties:
+      connectionString:
+        type: string
+      endpoints:
+        items:
+          $ref: '#/definitions/cluster.Endpoint'
+        type: array
+      srvConnectionString:
+        type: string
+      type:
+        type: string
+    type: object
+  cluster.ProcessArgs:
+    properties:
+      defaultReadConcern:
+        type: string
+      defaultWriteConcern:
+        type: string
+      failIndexKeyTooLong:
+        type: boolean
+      javascriptEnabled:
+        type: boolean
+      minimumEnabledTLSProtocol:
+        type: string
+      noTableScan:
+        type: boolean
+      oplogMinRetentionHours:
+        type: number
+      oplogSizeMB:
+        type: integer
+      sampleRefreshIntervalBIConnector:
+        type: integer
+      sampleSizeBIConnector:
+        type: integer
+    type: object
+  cluster.Specs:
+    properties:
+      InstanceSize:
+        type: string
+      diskIOPS:
+        type: string
+      ebsVolumeType:
+        type: string
+      nodeCount:
+        type: integer
+    type: object
+  cluster.UpdateInputModel:
+    properties:
+      clusterName:
+        example: ""
+        type: string
+      mongoDBMajorVersion:
+        example: "6.0"
+        type: string
+      projectId:
+        example: <projectID>
+        type: string
+    type: object
+  collection.InputModel:
+    properties:
+      collectionNames:
+        example:
+        - default
+        items:
+          type: string
+        type: array
+      databaseName:
+        example: testDatabase
+        type: string
+      hostName:
+        example: ""
+        type: string
+    type: object
+  database.InputModel:
+    properties:
+      collectionName:
+        example: testCollection
+        type: string
+      databaseName:
+        example: testDatabase
+        type: string
+      hostName:
+        type: string
+    type: object
+  database_user.InputModel:
+    properties:
+      password:
+        example: testPass
+        type: string
+      projectId:
+        example: <projectID>
+        type: string
+      username:
+        example: testUser
+        type: string
+    type: object
+  database_user.LabelDefinition:
+    properties:
+      key:
+        type: string
+      value:
+        type: string
+    type: object
+  database_user.Model:
+    properties:
+      awsIAMType:
+        type: string
+      databaseName:
+        type: string
+      deleteAfterDate:
+        type: string
+      labels:
+        items:
+          $ref: '#/definitions/database_user.LabelDefinition'
+        type: array
+      ldapAuthType:
+        type: string
+      password:
+        type: string
+      profile:
+        type: string
+      projectId:
+        type: string
+      roles:
+        items:
+          $ref: '#/definitions/database_user.RoleDefinition'
+        type: array
+      scopes:
+        items:
+          $ref: '#/definitions/database_user.ScopeDefinition'
+        type: array
+      username:
+        type: string
+      x509Type:
+        type: string
+    type: object
+  database_user.RoleDefinition:
+    properties:
+      collectionName:
+        type: string
+      databaseName:
+        type: string
+      roleName:
+        type: string
+    type: object
+  database_user.ScopeDefinition:
+    properties:
+      name:
+        type: string
+      type:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: MMC Atlas API Helper
+  title: MMC Atlas API Helper
+  version: "1.0"
+paths:
+  /api/database:
+    post:
+      consumes:
+      - application/json
+      description: Create a new database with the specified name and owner
+      operationId: CreateDatabase
+      parameters:
+      - description: body
+        in: body
+        name: InputModel
+        required: true
+        schema:
+          $ref: '#/definitions/database.InputModel'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+      summary: Create a new database
+      tags:
+      - Database
+  /api/database/{DatabaseName}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a database with the specified ID
+      operationId: DeleteDatabase
+      parameters:
+      - default: testDatabase
+        description: databaseName
+        in: path
+        name: DatabaseName
+        required: true
+        type: string
+      - default: ""
+        description: hostName
+        in: query
+        name: HostName
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+      security:
+      - BasicAuth: []
+      summary: Delete a database
+      tags:
+      - Database
+  /api/database/{DatabaseName}/collection/{CollectionName}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a collection with the specified ID
+      operationId: DeleteCollection
+      parameters:
+      - default: testDatabase
+        description: databaseName
+        in: path
+        name: DatabaseName
+        required: true
+        type: string
+      - default: default
+        description: collectionName
+        in: path
+        name: CollectionName
+        required: true
+        type: string
+      - default: ""
+        description: hostName
+        in: query
+        name: HostName
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+      summary: Delete a collection
+      tags:
+      - Collection
+  /api/database/{DatabaseName}/collections:
+    post:
+      consumes:
+      - application/json
+      description: Create a new collection with the specified name and description
+      operationId: CreateCollection
+      parameters:
+      - description: body
+        in: body
+        name: InputModel
+        required: true
+        schema:
+          $ref: '#/definitions/collection.InputModel'
+      - default: testDatabase
+        description: databaseName
+        in: path
+        name: DatabaseName
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+      summary: Create a new collection
+      tags:
+      - Collection
+  /api/project/{ProjectId}/cluster:
+    get:
+      consumes:
+      - application/json
+      description: Get all clusters along with their advanced configuration by project
+        ID
+      operationId: GetAllClusters
+      parameters:
+      - default: <projectID>
+        description: Project ID
+        in: path
+        name: ProjectId
+        required: true
+        type: string
+      - default: <publicKey>
+        description: Public Key
+        in: header
+        name: x-mongo-publickey
+        required: true
+        type: string
+      - default: <privateKey>
+        description: Private Key
+        in: header
+        name: x-mongo-privatekey
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/cluster.Model'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+      summary: Get all clusters
+      tags:
+      - Cluster
+    patch:
+      consumes:
+      - application/json
+      description: Update the cluster with the provided MongoDbVersion and MongoDBMajorVersion
+      operationId: UpdateCluster
+      parameters:
+      - default: <projectID>
+        description: Project ID
+        in: path
+        name: ProjectId
+        required: true
+        type: string
+      - default: <publicKey>
+        description: Public Key
+        in: header
+        name: x-mongo-publickey
+        required: true
+        type: string
+      - default: <privateKey>
+        description: Private Key
+        in: header
+        name: x-mongo-privatekey
+        required: true
+        type: string
+      - description: body
+        in: body
+        name: UpdateInputModel
+        required: true
+        schema:
+          $ref: '#/definitions/cluster.UpdateInputModel'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/cluster.Model'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+      summary: UpdateCluster handles the Put requests to create the provided MongoDbVersion
+        and MongoDBMajorVersion
+      tags:
+      - Cluster
+    post:
+      consumes:
+      - application/json
+      description: create the cluster with the provided TshirtSize
+      operationId: CreateCluster
+      parameters:
+      - default: <projectID>
+        description: Project ID
+        in: path
+        name: ProjectId
+        required: true
+        type: string
+      - default: <publicKey>
+        description: Public Key
+        in: header
+        name: x-mongo-publickey
+        required: true
+        type: string
+      - default: <privateKey>
+        description: Private Key
+        in: header
+        name: x-mongo-privatekey
+        required: true
+        type: string
+      - description: body
+        in: body
+        name: InputModel
+        required: true
+        schema:
+          $ref: '#/definitions/cluster.InputModel'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/cluster.Model'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+      summary: CreateCluster handles the POST requests to create the cluster with
+        the provided TshirtSize
+      tags:
+      - Cluster
+  /api/project/{ProjectId}/cluster/{ClusterName}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a cluster by project ID and cluster name
+      operationId: DeleteCluster
+      parameters:
+      - default: <projectID>
+        description: Project ID
+        in: path
+        name: ProjectId
+        required: true
+        type: string
+      - default: ""
+        description: Cluster name
+        in: path
+        name: ClusterName
+        required: true
+        type: string
+      - default: <publicKey>
+        description: Public Key
+        in: header
+        name: x-mongo-publickey
+        required: true
+        type: string
+      - default: <privateKey>
+        description: Private Key
+        in: header
+        name: x-mongo-privatekey
+        required: true
+        type: string
+      - default: "true"
+        description: retainBackup
+        in: query
+        name: RetainBackup
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+      summary: Delete a cluster
+      tags:
+      - Cluster
+  /api/project/{ProjectId}/cluster/{ClusterName}/restore:
+    get:
+      consumes:
+      - application/json
+      description: Returns the restore job for the specified cluster.
+      operationId: GetRestoreJob
+      parameters:
+      - description: The name of the cluster to restore.
+        in: path
+        name: ClusterName
+        required: true
+        type: string
+      - description: The ID of the project that contains the cluster to restore.
+        in: path
+        name: ProjectId
+        required: true
+        type: string
+      - default: <publicKey>
+        description: Public Key
+        in: header
+        name: x-mongo-publickey
+        required: true
+        type: string
+      - default: <privateKey>
+        description: Private Key
+        in: header
+        name: x-mongo-privatekey
+        required: true
+        type: string
+      - description: The JobID of the cluster to restore.
+        in: query
+        name: JobId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+      summary: Get Restore Job
+      tags:
+      - Cluster Restore
+    post:
+      consumes:
+      - application/json
+      description: Creates a restore job for the specified cluster.
+      operationId: CreateRestoreJob
+      parameters:
+      - description: The name of the cluster to restore.
+        in: path
+        name: ClusterName
+        required: true
+        type: string
+      - description: The ID of the project that contains the cluster to restore.
+        in: path
+        name: ProjectId
+        required: true
+        type: string
+      - default: <publicKey>
+        description: Public Key
+        in: header
+        name: x-mongo-publickey
+        required: true
+        type: string
+      - default: <privateKey>
+        description: Private Key
+        in: header
+        name: x-mongo-privatekey
+        required: true
+        type: string
+      - description: The ID of the snapshot to restore.
+        in: query
+        name: SnapshotId
+        type: string
+      - description: The timestamp of the oplog to restore.
+        in: query
+        name: OpLogTs
+        type: integer
+      - description: The increment of the oplog to restore.
+        in: query
+        name: OpLogInc
+        type: integer
+      - description: The point-in-time to restore, specified as a Unix timestamp in
+          seconds.
+        in: query
+        name: PointInTimeUtcSeconds
+        type: integer
+      - description: The name of the target cluster.
+        in: query
+        name: TargetClusterName
+        type: string
+      - description: The ID of the project that contains the target cluster.
+        in: query
+        name: TargetProjectId
+        type: string
+      - description: The delivery type of the restore job.
+        in: query
+        name: DeliveryType
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+      tags:
+      - Cluster Restore
+  /api/project/{ProjectId}/cluster/{ClusterName}/snapshot:
+    get:
+      consumes:
+      - application/json
+      description: Get all cloud backup snapshots of a cluster by project ID and cluster
+        name
+      operationId: GetAllBackupSnapshot
+      parameters:
+      - default: <projectID>
+        description: Project ID
+        in: path
+        name: ProjectId
+        required: true
+        type: string
+      - default: s-aws-04-09-23-15-02-41-5e8de3e1042f5b33ab81f33a
+        description: Cluster name
+        in: path
+        name: ClusterName
+        required: true
+        type: string
+      - default: <publicKey>
+        description: Public Key
+        in: header
+        name: x-mongo-publickey
+        required: true
+        type: string
+      - default: <privateKey>
+        description: Private Key
+        in: header
+        name: x-mongo-privatekey
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+      summary: Get all cloud backup snapshots of a cluster
+      tags:
+      - Cloud Backup Snapshot
+    post:
+      consumes:
+      - application/json
+      description: Create a cloud backup snapshot of a cluster by project ID and cluster
+        name
+      operationId: CreateBackupSnapshot
+      parameters:
+      - default: <projectID>
+        description: Project ID
+        in: path
+        name: ProjectId
+        required: true
+        type: string
+      - default: s-aws-04-09-23-15-02-41-5e8de3e1042f5b33ab81f33a
+        description: Cluster name
+        in: path
+        name: ClusterName
+        required: true
+        type: string
+      - default: <publicKey>
+        description: Public Key
+        in: header
+        name: x-mongo-publickey
+        required: true
+        type: string
+      - default: <privateKey>
+        description: Private Key
+        in: header
+        name: x-mongo-privatekey
+        required: true
+        type: string
+      - default: '""'
+        description: Description
+        in: query
+        name: Description
+        type: string
+      - default: '""'
+        description: Retention in days
+        in: query
+        name: RetentionInDays
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+      summary: Create a cloud backup snapshot of a cluster
+      tags:
+      - Cloud Backup Snapshot
+  /api/project/{ProjectId}/cluster/{ClusterName}/status:
+    get:
+      consumes:
+      - application/json
+      description: Get the state of a cluster by project ID and cluster name
+      operationId: GetCluster
+      parameters:
+      - default: <projectID>
+        description: Project ID
+        in: path
+        name: ProjectId
+        required: true
+        type: string
+      - default: s-aws-04-09-23-15-02-41-5e8de3e1042f5b33ab81f33a
+        description: Cluster name
+        in: path
+        name: ClusterName
+        required: true
+        type: string
+      - default: <publicKey>
+        description: Public Key
+        in: header
+        name: x-mongo-publickey
+        required: true
+        type: string
+      - default: <privateKey>
+        description: Private Key
+        in: header
+        name: x-mongo-privatekey
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+      summary: Get the state of a cluster
+      tags:
+      - Cluster
+  /api/project/{ProjectId}/clusters/{ClusterName}/backup/schedule:
+    get:
+      consumes:
+      - application/json
+      description: Get the state of a cluster backup schedule by project ID and cluster
+        name
+      operationId: GetCloudBackupSchedule
+      parameters:
+      - default: <projectID>
+        description: Project ID
+        in: path
+        name: ProjectId
+        required: true
+        type: string
+      - default: s-aws-04-09-23-15-02-41-5e8de3e1042f5b33ab81f33a
+        description: Cluster name
+        in: path
+        name: ClusterName
+        required: true
+        type: string
+      - default: <publicKey>
+        description: Public Key
+        in: header
+        name: x-mongo-publickey
+        required: true
+        type: string
+      - default: <privateKey>
+        description: Private Key
+        in: header
+        name: x-mongo-privatekey
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+      summary: Get the state of a cluster backup schedule
+      tags:
+      - Cloud Backup Schedule
+    patch:
+      consumes:
+      - application/json
+      description: Update the cluster backup policy
+      operationId: UpdateClusterBackupPolicy
+      parameters:
+      - default: <projectID>
+        description: Project ID
+        in: path
+        name: ProjectId
+        required: true
+        type: string
+      - default: s-aws-04-09-23-15-02-41-5e8de3e1042f5b33ab81f33a
+        description: Cluster name
+        in: path
+        name: ClusterName
+        required: true
+        type: string
+      - default: <publicKey>
+        description: Public Key
+        in: header
+        name: x-mongo-publickey
+        required: true
+        type: string
+      - default: <privateKey>
+        description: Private Key
+        in: header
+        name: x-mongo-privatekey
+        required: true
+        type: string
+      - description: body
+        in: body
+        name: UpdateInputModel
+        required: true
+        schema:
+          $ref: '#/definitions/cloudBackupSchedule.Model'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+      summary: UpdateClusterBackupPolicy handles the PUT requests to update the cluster
+        backup policy
+      tags:
+      - Cloud Backup Schedule
+  /api/project/{ProjectId}/databaseUsers:
+    get:
+      consumes:
+      - application/json
+      description: Get all database users
+      operationId: GetAllDatabaseUser
+      parameters:
+      - default: <projectID>
+        description: Project ID
+        in: path
+        name: ProjectId
+        required: true
+        type: string
+      - default: <publicKey>
+        description: Public Key
+        in: header
+        name: x-mongo-publickey
+        required: true
+        type: string
+      - default: <privateKey>
+        description: Private Key
+        in: header
+        name: x-mongo-privatekey
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/database_user.Model'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+      summary: Get all database users
+      tags:
+      - Database User
+    post:
+      consumes:
+      - application/json
+      description: Create a new database user with the specified name and email
+      operationId: CreateDatabaseUser
+      parameters:
+      - default: <projectID>
+        description: Project ID
+        in: path
+        name: ProjectId
+        required: true
+        type: string
+      - default: <publicKey>
+        description: Public Key
+        in: header
+        name: x-mongo-publickey
+        required: true
+        type: string
+      - default: <privateKey>
+        description: Private Key
+        in: header
+        name: x-mongo-privatekey
+        required: true
+        type: string
+      - description: body
+        in: body
+        name: InputModel
+        required: true
+        schema:
+          $ref: '#/definitions/database_user.InputModel'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/database_user.Model'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+      summary: Create a database user
+      tags:
+      - Database User
+  /api/project/{ProjectId}/databaseUsers/{Username}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a database user with the specified ID
+      operationId: DeleteDatabaseUser
+      parameters:
+      - default: <projectID>
+        description: Project ID
+        in: path
+        name: ProjectId
+        required: true
+        type: string
+      - default: testUser
+        description: Username
+        in: path
+        name: Username
+        required: true
+        type: string
+      - default: <publicKey>
+        description: Public Key
+        in: header
+        name: x-mongo-publickey
+        required: true
+        type: string
+      - default: <privateKey>
+        description: Private Key
+        in: header
+        name: x-mongo-privatekey
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+      summary: Delete a database user
+      tags:
+      - Database User
+    get:
+      consumes:
+      - application/json
+      description: Get a database user with the specified ID
+      operationId: GetDatabaseUser
+      parameters:
+      - default: <projectID>
+        description: Project ID
+        in: path
+        name: ProjectId
+        required: true
+        type: string
+      - default: testUser
+        description: Username
+        in: path
+        name: Username
+        required: true
+        type: string
+      - default: <publicKey>
+        description: Public Key
+        in: header
+        name: x-mongo-publickey
+        required: true
+        type: string
+      - default: <privateKey>
+        description: Private Key
+        in: header
+        name: x-mongo-privatekey
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/atlasresponse.AtlasResponse'
+      summary: Get a database user
+      tags:
+      - Database User
+securityDefinitions:
+  BasicAuth:
+    type: basic
+swagger: "2.0"

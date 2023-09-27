@@ -1,10 +1,13 @@
 {
-  "clusterName": "",
-  "publicKey": "nlbcisuz",
-  "privateKey": "b37ea498-3950-4b8c-bfed-7779987d6195",
-  "projectId": "64b6db1fe471e8514b8a59a6",
-  "connectionString": "",
+  "clusterName": "s-AWS-20-09-23-10-35-51-5e8de3e1042f5b33ab81f33a",
+  "publicKey": "hlmhviho",
+  "privateKey": "437ac971-163e-445b-998b-0cfcb30e3bf8",
+  "projectId": "5e8de3e1042f5b33ab81f33a",
+  "connectionString": "m-aws-21-09-23-11-31-37.iijwc.mongodb.net",
   "databaseName": "test",
   "username": "testUser",
   "password": "testPass"
 }
+
+
+

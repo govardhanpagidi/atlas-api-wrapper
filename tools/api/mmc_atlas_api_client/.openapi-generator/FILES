@@ -1,0 +1,7 @@
+test/api_cloud_backup_schedule_test.go
+test/api_cloud_backup_snapshot_test.go
+test/api_cluster_restore_test.go
+test/api_cluster_test.go
+test/api_collection_test.go
+test/api_database_test.go
+test/api_database_user_test.go

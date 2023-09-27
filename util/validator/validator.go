@@ -63,7 +63,7 @@ func fieldIsEmpty(model interface{}, field string) bool {
 			if elemValue.Kind() == reflect.Ptr {
 				elemValue = elemValue.Elem()
 			}
-			if elemValue.Kind() != reflect.String || elemValue.String() != constants.EmptyString {
+			if elemValue.Kind() != reflect.String || strings.TrimSpace(elemValue.String()) != constants.EmptyString {
 				return false
 			}
 		}
@@ -71,5 +71,5 @@ func fieldIsEmpty(model interface{}, field string) bool {
 	}
 
 	// Otherwise, check if the field is an empty string
-	return f.IsNil() || (f.IsValid() && f.Elem().String() == constants.EmptyString)
+	return f.IsNil() || (f.IsValid() && strings.TrimSpace(f.Elem().String()) == constants.EmptyString)
 }

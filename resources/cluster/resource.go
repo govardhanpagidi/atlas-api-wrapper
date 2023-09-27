@@ -47,10 +47,12 @@ var CreateRequiredFields = []string{constants.ProjectID, constants.PrivateKey, c
 var ReadRequiredFields = []string{constants.ProjectID, constants.ClusterName, constants.PublicKey, constants.PrivateKey}
 
 // DeleteRequiredFields is a list of required fields for deleting a MongoDB Atlas cluster
-var DeleteRequiredFields = []string{constants.ProjectID, constants.ClusterName, constants.PublicKey, constants.PrivateKey}
+var DeleteRequiredFields = []string{constants.ProjectID, constants.ClusterName, constants.PublicKey, constants.PrivateKey, constants.RetainBackup}
 
 // ListRequiredFields is a list of required fields for listing MongoDB Atlas clusters
 var ListRequiredFields = []string{constants.ProjectID, constants.PublicKey, constants.PrivateKey}
+
+var UpdateRequiredFields = []string{constants.ProjectID, constants.PublicKey, constants.PrivateKey, constants.MongoDBMajorVersion, constants.ClusterName}
 
 const (
 	AlreadyExists = "already exists"
@@ -68,12 +70,12 @@ func setup() {
 }
 
 // validateModel inputs based on the method
-func validateModel(fields []string, model *InputModel) error {
+func validateModel(fields []string, model interface{}) error {
 	return validator.ValidateModel(fields, model)
 }
 
 // Create handles the Create event from the Cloudformation service.
-func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasRespone {
+func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResponse {
 	setup()
 
 	// Validate required fields in the request
@@ -116,8 +118,8 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 		return handleError(constants.ClusterModelError, constants.EmptyString, err)
 	}
 	currentModel.validateDefaultLabel()
-
 	//list all private endpoints for the specific project
+
 	endPoints, _, endPointErr := client.PrivateEndpointServicesApi.ListPrivateEndpointServices(ctx, *inputModel.ProjectId, *inputModel.CloudProvider).Execute()
 
 	if endPointErr != nil {
@@ -161,9 +163,11 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 		message := fmt.Sprintf(configuration.GetConfig()[constants.NoEndpointConfigured].Message, *inputModel.ProjectId)
 		return handleError(constants.NoEndpointConfiguredForRegion, message, err)
 	}
+
 	// Prepare cluster request
 	clusterRequest, err := createClusterRequest(ctx, &currentModel)
 
+	//If there is an error creating the cluster request, return an error response
 	if err != nil {
 		message := fmt.Sprintf(configuration.GetConfig()[constants.NoAdvancedClusterConfiguration].Message)
 		return handleError(constants.ClusterRequestError, message, err)
@@ -172,163 +176,28 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 	// Create Cluster
 	cluster, _, err := client.MultiCloudClustersApi.CreateCluster(ctx, cast.ToString(inputModel.ProjectId), clusterRequest).Execute()
 	if err != nil {
-		return handleError(constants.ClusterCreateError, constants.EmptyString, err)
+		errModel := err.(*admin.GenericOpenAPIError)
+		return atlasresponse.AtlasResponse{
+			HttpStatusCode: *errModel.Model().Error,
+			Message:        *errModel.Model().Detail,
+			ErrorCode:      *errModel.Model().ErrorCode,
+		}
 	}
 
-	model := &Model{}
-	mapClusterToModel(ctx, model, cluster)
-	model.PublicAccessEnabled = &hasPublicAccess
-	// Fetch advanced cluster config
-	processArgs, _, clusterErr := client.ClustersApi.GetClusterAdvancedConfiguration(context.Background(), *model.ProjectId, *model.Name).Execute()
-
-	if clusterErr != nil {
+	// Populate response model
+	model, _, err := populateResponseModel(ctx, cluster, hasPublicAccess, client)
+	if err != nil {
 		return handleError(constants.ClusterAdvancedListError, constants.EmptyString, err)
 	}
 
-	model.AdvancedSettings = flattenProcessArgs(processArgs)
-
-	currentModel.StateName = cluster.StateName
-
-	return atlasresponse.AtlasRespone{
-		Response:       model,
-		HttpStatusCode: configuration.GetConfig()[constants.ClusterCreateSuccess].Code,
+	// Return a successful response with the populated response model
+	return atlasresponse.AtlasResponse{
+		Response: model,
 	}
-}
-
-func checkIfProjectHasPublicAccess(results []admin.NetworkPermissionEntry) bool {
-	for _, result := range results {
-		if result.IpAddress != nil && *result.IpAddress == constants.PublicIp {
-			return true
-		}
-		if result.CidrBlock != nil && *result.CidrBlock == constants.PublicIp {
-			return true
-		}
-	}
-	return false
-}
-
-// handleError is a helper method that logs an error and returns an error response
-func handleError(code string, message string, err error) atlasresponse.AtlasRespone {
-	// If there is an error, log a warning
-	if err != nil {
-		errMsg := fmt.Sprintf("%s error:%s", code, err.Error())
-		_, _ = logger.Warn(errMsg)
-	}
-	// If the message is empty, use the message from the configuration
-	if message == constants.EmptyString {
-		message = configuration.GetConfig()[code].Message
-	}
-	// Return an error response
-	return atlasresponse.AtlasRespone{
-		Response:       nil,
-		HttpStatusCode: configuration.GetConfig()[code].Code,
-		Message:        message,
-	}
-}
-
-// checkIfEndpointRegionIsSameAsClusterRegion checks if the regions from config.json match the regions from private endpoints
-func checkIfEndpointRegionIsSameAsClusterRegion(endpoints, advancedCluster []string) bool {
-	// Create a map to store values from the first slice
-	seen := make(map[string]bool)
-	for _, item := range endpoints {
-		seen[item] = true
-	}
-
-	// Check if any value from the second slice exists in the map
-	for _, item := range advancedCluster {
-		if seen[item] {
-			return true
-		}
-	}
-
-	return false
-}
-
-// loadClusterConfiguration loads the config.json file from project path
-func loadClusterConfiguration(ctx context.Context, model InputModel) (Model, error) {
-	var currentModel Model
-	var ClusterConfig map[string]Model
-
-	err := util.LoadConfigFromFile(constants.ClusterConfigLocation, &ClusterConfig)
-	if ClusterConfig == nil || err != nil {
-		return currentModel, fmt.Errorf("failed to load cluster configuration from file: %s", constants.ClusterConfigLocation)
-	}
-
-	// Extract the key for the current cluster configuration
-	key := extractClusterKey(model)
-
-	// Get the cluster configuration for the current key
-	clusterConfig, ok := ClusterConfig[key]
-
-	// Log the selected cluster configuration
-	util.Debugf(ctx, "Selected Cluster Configuration : %+v  for the T-shirt Size :%s", clusterConfig.ToString(), *model.TshirtSize)
-
-	// If the cluster configuration is found, set it as the current model
-	if ok {
-		currentModel = clusterConfig
-	} else {
-		// If the cluster configuration is not found, return an error
-		return currentModel, fmt.Errorf("provided Cluster Size:%s and cloudProvider:%s is Invalid: ", *model.TshirtSize, *model.CloudProvider)
-	}
-
-	// If the cluster name is provided, set it as the current model's name
-	if model.ClusterName != nil {
-		currentModel.Name = model.ClusterName
-	} else {
-		// If the cluster name is not provided, generate a new name for the cluster
-		currentModel.Name = generateClusterName(model)
-	}
-
-	// If the MongoDB version is provided, set it as the current model's MongoDB version
-	if model.MongoDBVersion != nil {
-		currentModel.MongoDBVersion = model.MongoDBVersion
-	}
-
-	return currentModel, nil
-}
-
-// extractClusterKey This method generates the key using which the config is fetched
-func extractClusterKey(model InputModel) string {
-	// Create a buffer to store the key
-	var configKey bytes.Buffer
-
-	// Append the T-shirt size to the key
-	configKey.WriteString(strings.ToLower(*model.TshirtSize))
-
-	// Append a hyphen to the key
-	configKey.WriteString("-")
-
-	// Append the cloud provider to the key
-	configKey.WriteString(strings.ToLower(*model.CloudProvider))
-
-	// Convert the buffer to a string and return it as the key
-	key := configKey.String()
-	return key
-}
-
-// generateClusterName This method generates the cluster name which is then assigned to the created cluster
-func generateClusterName(model InputModel) *string {
-	// Get the current time in the format "02-01-06 15:04:05"
-	toRet := time.Now().Format("02-01-06 15:04:05")
-
-	// Replace all colons with hyphens
-	toRet = strings.ReplaceAll(toRet, ":", "-")
-
-	// Replace all spaces with hyphens
-	toRet = strings.ReplaceAll(toRet, " ", "-")
-
-	// Replace all hyphens with hyphens (no-op)
-	toRet = strings.ReplaceAll(toRet, "-", "-")
-
-	// Concatenate the cloud provider, project ID, T-shirt size, and current time to generate the cluster name
-	toRet = *model.TshirtSize + "-" + *model.CloudProvider + "-" + toRet + "-" + *model.ProjectId
-
-	// Return the cluster name as a pointer to a string
-	return &toRet
 }
 
 // Read handles the Read event from the Cloudformation service.
-func Read(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasRespone {
+func Read(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResponse {
 	// Set up the logger
 	setup()
 
@@ -358,23 +227,85 @@ func Read(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasRespon
 	}
 
 	// Read the cluster based on the provided params
-	model, resp, err := readCluster(ctx, client, &Model{ProjectId: inputModel.ProjectId, Name: inputModel.ClusterName})
+	model, resp, err := ReadCluster(ctx, client, &Model{ProjectId: inputModel.ProjectId, Name: inputModel.ClusterName})
 
 	if err != nil {
 		util.Warnf(ctx, "error cluster get- err:%+v resp:%+v", err, resp)
 		message := fmt.Sprintf(configuration.GetConfig()[constants.ResourceDoesNotExist].Message, constants.Cluster, *inputModel.ClusterName)
 		return handleError(constants.ResourceDoesNotExist, message, err)
 	}
-
-	return atlasresponse.AtlasRespone{
-		Response:       nil,
-		HttpStatusCode: configuration.GetConfig()[constants.ClusterReadSuccess].Code,
-		Message:        fmt.Sprintf(configuration.GetConfig()[constants.ClusterReadSuccess].Message, *model.StateName),
+	msg := constants.DefaultHostMessage
+	if model.ConnectionStrings.StandardSrv != nil {
+		parts := strings.SplitN(*model.ConnectionStrings.StandardSrv, constants.HostNameSpearator, 2)
+		msg = parts[1]
+	}
+	message := fmt.Sprintf(configuration.GetConfig()[constants.ClusterReadSuccess].Message, *getStatus(model.StateName), msg)
+	return atlasresponse.AtlasResponse{
+		Response: ClusterStatus{
+			Message:  &message,
+			HostName: &msg,
+			Status:   model.StateName,
+		},
 	}
 }
 
+func Update(ctx context.Context, inputModel *UpdateInputModel) atlasresponse.AtlasResponse {
+	// Set up the logger
+	setup()
+
+	// Validate the input fields
+	modelValidation := validateModel(UpdateRequiredFields, inputModel)
+
+	if modelValidation != nil {
+		util.Warnf(ctx, "update cluster is failing with invalid parameters : %+v", modelValidation.Error())
+		message := fmt.Sprintf(configuration.GetConfig()[constants.InvalidInputParameter].Message, modelValidation.Error())
+		return handleError(constants.InvalidInputParameter, message, modelValidation)
+	}
+
+	// Create a MongoDB client using the public key and private key
+	client, peErr := util.NewMongoDBSDKClient(cast.ToString(inputModel.PublicKey), cast.ToString(inputModel.PrivateKey))
+
+	if peErr != nil {
+		util.Warnf(ctx, "CreateMongoDBClient error: %v", peErr.Error())
+		return handleError(constants.MongoClientCreationError, constants.EmptyString, peErr)
+	}
+
+	// Check if the project already exists
+	_, _, projectErr := client.ProjectsApi.GetProject(context.Background(), cast.ToString(inputModel.ProjectId)).Execute()
+
+	if projectErr != nil {
+		util.Warnf(ctx, "Get Project error: %v", projectErr.Error())
+		message := fmt.Sprintf(configuration.GetConfig()[constants.ResourceDoesNotExist].Message, constants.Project, *inputModel.ProjectId)
+		return handleError(constants.ResourceDoesNotExist, message, projectErr)
+	}
+
+	cluster, res, err := client.MultiCloudClustersApi.GetCluster(ctx, *inputModel.ProjectId, *inputModel.ClusterName).Execute()
+	if err != nil {
+		util.Warnf(ctx, "error cluster get- err:%+v resp:%+v", err, res)
+		message := fmt.Sprintf(configuration.GetConfig()[constants.ResourceDoesNotExist].Message, constants.Cluster, *inputModel.ClusterName)
+		return handleError(constants.ResourceDoesNotExist, message, err)
+	}
+
+	clusterUpdate := admin.AdvancedClusterDescription{MongoDBMajorVersion: inputModel.MongoDBMajorVersion}
+
+	cluster.SetMongoDBMajorVersion(*inputModel.MongoDBMajorVersion)
+	updatedCluster, res, err := client.MultiCloudClustersApi.UpdateCluster(ctx, *cluster.GroupId, *cluster.Name, &clusterUpdate).Execute()
+
+	if err != nil {
+		apiError := err.(*admin.GenericOpenAPIError)
+		util.Warnf(ctx, "error cluster update- err:%+v resp:%+v", err, res)
+		return atlasresponse.AtlasResponse{
+			HttpStatusCode: *apiError.Model().Error,
+			Message:        *apiError.Model().Detail,
+			ErrorCode:      *apiError.Model().ErrorCode,
+		}
+	}
+
+	return atlasresponse.AtlasResponse{Response: updatedCluster}
+}
+
 // Delete This method deletes the cluster based on the clusterName
-func Delete(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasRespone {
+func Delete(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResponse {
 	// Set up the logger
 	setup()
 
@@ -405,7 +336,7 @@ func Delete(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 	}
 
 	// Set retainBackup to false
-	retainBackup := false
+	retainBackup := ParseBoolQueryParam(*inputModel.RetainBackup)
 
 	// Create args for the API call to delete the cluster
 	args := admin.DeleteClusterApiParams{
@@ -419,19 +350,24 @@ func Delete(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 
 	if err != nil {
 		util.Warnf(ctx, "Delete cluster error: %v", err.Error())
+
+		errModel := err.(*admin.GenericOpenAPIError)
+		if *errModel.Model().ErrorCode == constants.ClusterAlreadyDeleteError {
+			message := fmt.Sprintf(configuration.GetConfig()[constants.ClusterAlreadyDeleteError].Message, *inputModel.ClusterName)
+			return handleError(constants.ClusterAlreadyDeleteError, message, err)
+		}
+
 		message := fmt.Sprintf(configuration.GetConfig()[constants.ClusterDeleteError].Message, *inputModel.ClusterName)
 		return handleError(constants.ClusterDeleteError, message, err)
 	}
 
-	return atlasresponse.AtlasRespone{
-		Response:       nil,
-		HttpStatusCode: configuration.GetConfig()[constants.ClusterDeleteSuccess].Code,
-		Message:        fmt.Sprintf(configuration.GetConfig()[constants.ClusterDeleteSuccess].Message, *inputModel.ClusterName),
+	return atlasresponse.AtlasResponse{
+		Status: fmt.Sprintf(configuration.GetConfig()[constants.ClusterDeleteSuccess].Message, *inputModel.ClusterName),
 	}
 }
 
 // List handles the List event from the Cloudformation service.
-func List(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasRespone {
+func List(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResponse {
 	// Set up the logger
 	setup()
 
@@ -486,132 +422,76 @@ func List(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasRespon
 
 	// Iterate over the clusters in the response and map them to models
 	for i := range clustersResponse.Results {
-		model := &Model{}
-		mapClusterToModel(ctx, model, &clustersResponse.Results[i])
-
-		// Fetch advanced cluster config
-		processArgs, _, clusterErr := client.ClustersApi.GetClusterAdvancedConfiguration(context.Background(), *model.ProjectId, *model.Name).Execute()
-
-		if clusterErr != nil {
-			message := fmt.Sprintf(configuration.GetConfig()[constants.ClusterListError].Message, *inputModel.ProjectId)
-			return handleError(constants.ClusterAdvancedListError, message, err)
+		model, _, _ := populateResponseModel(ctx, &clustersResponse.Results[i], hasPublicAccess, client)
+		if model != nil {
+			models = append(models, model)
 		}
-
-		model.AdvancedSettings = flattenProcessArgs(processArgs)
-		model.PublicAccessEnabled = &hasPublicAccess
-		models = append(models, model)
 	}
 
-	// Return an AtlasRespone with the models and the appropriate message and status code
-	return atlasresponse.AtlasRespone{
-		Response:       models,
-		HttpStatusCode: configuration.GetConfig()[constants.ClusterListSuccess].Code,
+	// Return an AtlasResponse with the models and the appropriate message and status code
+	return atlasresponse.AtlasResponse{
+		Response: models,
 	}
 }
 
-// mapClusterToModel This method is used to map the cluster object returned from the mongo client to our model
-func mapClusterToModel(ctx context.Context, model *Model, cluster *admin.AdvancedClusterDescription) {
+func ParseBoolQueryParam(queryParam string) bool {
+	// Parse the query parameter value into a boolean
+	parsedValue, _ := strconv.ParseBool(queryParam)
+	return parsedValue
+}
 
-	// Map the cluster ID to the model
-	if cluster.Id != nil {
-		model.Id = cluster.Id
+// getStatus This function is used to get the cluster status using cluster state
+func getStatus(name *string) *string {
+	Idle := constants.ClusterStatusIDLE
+	Unknown := constants.ClusterStatusUnknown
+	Creating := constants.ClusterStatusCREATING
+	Deleting := constants.ClusterStatusDELETING
+	Updating := constants.ClusterStatusUPDATING
+	Repairing := constants.ClusterStatusREPAIRING
+	Restarting := constants.ClusterStatusRESTARTING
+	Paused := constants.ClusterStatusPAUSED
+	Active := constants.ClusterStatusACTIVE
+
+	if *name == constants.Idle {
+		return &Idle
+	} else if *name == constants.Creating {
+		return &Creating
+	} else if *name == constants.Deleting {
+		return &Deleting
+	} else if *name == constants.Updating {
+		return &Updating
+	} else if *name == constants.Repairing {
+		return &Repairing
+	} else if *name == constants.Restarting {
+		return &Restarting
+	} else if *name == constants.Paused {
+		return &Paused
+	} else if *name == constants.Active {
+		return &Active
+	}
+	return &Unknown
+}
+
+// ReadCluster This function is used to read the cluster data from the API and update the current model
+func ReadCluster(ctx context.Context, client *admin.APIClient, currentModel *Model) (*Model, *http.Response, error) {
+	// Call the GetCluster API to get the cluster data
+	cluster, res, err := client.MultiCloudClustersApi.GetCluster(ctx, *currentModel.ProjectId, *currentModel.Name).Execute()
+
+	// If there was an error or the response status code is not 200, return the current model, response, and error
+	if err != nil || res.StatusCode != 200 {
+		return currentModel, res, err
 	}
 
-	// Map the project ID to the model
-	if cluster.GroupId != nil {
-		model.ProjectId = cluster.GroupId
+	// Call the setClusterData function to update the current model with the cluster data
+	model, resp, errr := populateResponseModel(ctx, cluster, false, client)
+
+	// If there was an error or the response status code is not 200, return the current model, response, and error
+	if errr != nil || (resp != nil && resp.StatusCode != 200) {
+		return currentModel, resp, errr
 	}
 
-	// Map the cluster name to the model
-	if cluster.Name != nil {
-		model.Name = cluster.Name
-	}
-
-	// Map the backup enabled flag to the model
-	if cluster.BackupEnabled != nil {
-		model.BackupEnabled = cluster.BackupEnabled
-	}
-
-	// Map the BI connector config to the model
-	if cluster.BiConnector != nil {
-		model.BiConnector = flattenBiConnectorConfig(cluster.BiConnector)
-	}
-
-	// Map the connection strings to the model
-	if cluster.ConnectionStrings != nil {
-		model.ConnectionStrings = flattenConnectionStrings(cluster.ConnectionStrings)
-	}
-
-	// Map the cluster type to the model
-	if cluster.ClusterType != nil {
-		model.ClusterType = cluster.ClusterType
-	}
-
-	// Map the created date to the model
-	if cluster.CreateDate != nil {
-		createdDate := cluster.CreateDate.Format("2006-01-02 15:04:05")
-		model.CreatedDate = &createdDate
-	}
-
-	// Map the disk size to the model
-	if cluster.DiskSizeGB != nil {
-		model.DiskSizeGB = cluster.DiskSizeGB
-	}
-
-	// Map the encryption at rest provider to the model
-	if cluster.EncryptionAtRestProvider != nil {
-		model.EncryptionAtRestProvider = cluster.EncryptionAtRestProvider
-	}
-
-	// Map the labels to the model
-	if cluster.Labels != nil {
-		model.Labels = flattenLabels(cluster.Labels)
-	}
-
-	// Map the MongoDB major version to the model
-	if cluster.MongoDBMajorVersion != nil {
-		model.MongoDBMajorVersion = cluster.MongoDBMajorVersion
-	}
-
-	// Map the MongoDB version to the model
-	if cluster.MongoDBVersion != nil {
-		model.MongoDBVersion = cluster.MongoDBVersion
-	}
-
-	// Map the paused flag to the model
-	if cluster.Paused != nil {
-		model.Paused = cluster.Paused
-	}
-
-	// Map the PIT enabled flag to the model
-	if cluster.PitEnabled != nil {
-		model.PitEnabled = cluster.PitEnabled
-	}
-
-	// Map the replication specs to the model
-	if cluster.ReplicationSpecs != nil {
-		model.ReplicationSpecs = flattenReplicationSpecs(ctx, cluster.ReplicationSpecs)
-	}
-
-	// Map the root cert type to the model
-	if cluster.RootCertType != nil {
-		model.RootCertType = cluster.RootCertType
-	}
-
-	// Map the state name to the model
-	if cluster.StateName != nil {
-		model.StateName = cluster.StateName
-	}
-
-	// Map the version release system to the model
-	if cluster.VersionReleaseSystem != nil {
-		model.VersionReleaseSystem = cluster.VersionReleaseSystem
-	}
-
-	// Map the termination protection enabled flag to the model
-	if cluster.TerminationProtectionEnabled != nil {
-		model.TerminationProtectionEnabled = cluster.TerminationProtectionEnabled
-	}
+	// Return the updated current model, response, and error
+	return model, res, err
 }
 
 // HasAdvanceSettings This method checks if the model has advanced settings
@@ -1169,96 +1049,6 @@ func formatMongoDBMajorVersion(val *string) *string {
 	return &ret
 }
 
-// readCluster This function is used to read the cluster data from the API and update the current model
-func readCluster(ctx context.Context, client *admin.APIClient, currentModel *Model) (*Model, *http.Response, error) {
-	// Call the GetCluster API to get the cluster data
-	cluster, res, err := client.MultiCloudClustersApi.GetCluster(ctx, *currentModel.ProjectId, *currentModel.Name).Execute()
-
-	// If there was an error or the response status code is not 200, return the current model, response, and error
-	if err != nil || res.StatusCode != 200 {
-		return currentModel, res, err
-	}
-
-	// Call the setClusterData function to update the current model with the cluster data
-	setClusterData(ctx, currentModel, cluster)
-
-	// Call the GetClusterAdvancedConfiguration API to get the advanced configuration data
-	processArgs, resp, errr := client.ClustersApi.GetClusterAdvancedConfiguration(ctx, *currentModel.ProjectId, *currentModel.Name).Execute()
-
-	// If there was an error or the response status code is not 200, return the current model, response, and error
-	if errr != nil || resp.StatusCode != 200 {
-		return currentModel, resp, errr
-	}
-
-	// Call the flattenProcessArgs function to flatten the advanced configuration data and update the current model
-	currentModel.AdvancedSettings = flattenProcessArgs(processArgs)
-
-	// Return the updated current model, response, and error
-	return currentModel, res, err
-}
-
-// setClusterData This method sets the cluster details to Model
-func setClusterData(ctx context.Context, currentModel *Model, cluster *admin.AdvancedClusterDescription) {
-	// If the cluster is nil, return
-	if cluster == nil {
-		return
-	}
-
-	// Map the fields from the AdvancedClusterDescription struct to the currentModel struct
-	currentModel.ProjectId = cluster.GroupId
-	currentModel.Name = cluster.Name
-	currentModel.Id = cluster.Id
-
-	if cluster.BackupEnabled != nil {
-		currentModel.BackupEnabled = cluster.BackupEnabled
-	}
-	if cluster.BiConnector != nil {
-		currentModel.BiConnector = flattenBiConnectorConfig(cluster.BiConnector)
-	}
-	// Readonly
-	currentModel.ConnectionStrings = flattenConnectionStrings(cluster.ConnectionStrings)
-	if cluster.ClusterType != nil {
-		currentModel.ClusterType = cluster.ClusterType
-	}
-	// Readonly
-	createdDate := cluster.CreateDate.Format("2006-01-02 15:04:05")
-	currentModel.CreatedDate = &createdDate
-	if cluster.DiskSizeGB != nil {
-		currentModel.DiskSizeGB = cluster.DiskSizeGB
-	}
-	if cluster.EncryptionAtRestProvider != nil {
-		currentModel.EncryptionAtRestProvider = cluster.EncryptionAtRestProvider
-	}
-	if cluster.Labels != nil {
-		currentModel.Labels = flattenLabels(cluster.Labels)
-	}
-	if cluster.MongoDBMajorVersion != nil {
-		currentModel.MongoDBMajorVersion = cluster.MongoDBMajorVersion
-	}
-	// Readonly
-	currentModel.MongoDBVersion = cluster.MongoDBVersion
-
-	if cluster.Paused != nil {
-		currentModel.Paused = cluster.Paused
-	}
-	if cluster.PitEnabled != nil {
-		currentModel.PitEnabled = cluster.PitEnabled
-	}
-	if cluster.RootCertType != nil {
-		currentModel.RootCertType = cluster.RootCertType
-	}
-	if cluster.ReplicationSpecs != nil {
-		currentModel.ReplicationSpecs = flattenReplicationSpecs(ctx, cluster.ReplicationSpecs)
-	}
-	// Readonly
-	currentModel.StateName = cluster.StateName
-	if cluster.VersionReleaseSystem != nil {
-		currentModel.VersionReleaseSystem = cluster.VersionReleaseSystem
-	}
-
-	currentModel.TerminationProtectionEnabled = cluster.TerminationProtectionEnabled
-}
-
 // createClusterRequest creates the ClusterRequest from the Model
 func createClusterRequest(ctx context.Context, currentModel *Model) (*admin.AdvancedClusterDescription, error) {
 	// Create a new ClusterRequest struct with the Name and ReplicationSpecs fields from the currentModel struct
@@ -1325,4 +1115,274 @@ func containsLabelOrKey(list []Labels, item Labels) bool {
 
 	// If the item is not found, return false
 	return false
+}
+
+// populateResponseModel This function populates the response model with the data from the given cluster. It returns the populated model
+func populateResponseModel(ctx context.Context, cluster *admin.AdvancedClusterDescription, hasPublicAccess bool, client *admin.APIClient) (*Model, *http.Response, error) {
+	model := &Model{}
+
+	// Map the cluster ID to the model
+	if cluster.Id != nil {
+		model.Id = cluster.Id
+	}
+
+	// Map the project ID to the model
+	if cluster.GroupId != nil {
+		model.ProjectId = cluster.GroupId
+	}
+
+	// Map the cluster name to the model
+	if cluster.Name != nil {
+		model.Name = cluster.Name
+	}
+
+	// Map the backup enabled flag to the model
+	if cluster.BackupEnabled != nil {
+		model.BackupEnabled = cluster.BackupEnabled
+	}
+
+	// Map the BI connector config to the model
+	if cluster.BiConnector != nil {
+		model.BiConnector = flattenBiConnectorConfig(cluster.BiConnector)
+	}
+
+	// Map the connection strings to the model
+	if cluster.ConnectionStrings != nil {
+		model.ConnectionStrings = flattenConnectionStrings(cluster.ConnectionStrings)
+	}
+
+	// Map the cluster type to the model
+	if cluster.ClusterType != nil {
+		model.ClusterType = cluster.ClusterType
+	}
+
+	// Map the created date to the model
+	if cluster.CreateDate != nil {
+		createdDate := cluster.CreateDate.Format("2006-01-02 15:04:05")
+		model.CreatedDate = &createdDate
+	}
+
+	// Map the disk size to the model
+	if cluster.DiskSizeGB != nil {
+		model.DiskSizeGB = cluster.DiskSizeGB
+	}
+
+	// Map the encryption at rest provider to the model
+	if cluster.EncryptionAtRestProvider != nil {
+		model.EncryptionAtRestProvider = cluster.EncryptionAtRestProvider
+	}
+
+	// Map the labels to the model
+	if cluster.Labels != nil {
+		model.Labels = flattenLabels(cluster.Labels)
+	}
+
+	// Map the MongoDB major version to the model
+	if cluster.MongoDBMajorVersion != nil {
+		model.MongoDBMajorVersion = cluster.MongoDBMajorVersion
+	}
+
+	// Map the MongoDB version to the model
+	if cluster.MongoDBVersion != nil {
+		model.MongoDBVersion = cluster.MongoDBVersion
+	}
+
+	// Map the paused flag to the model
+	if cluster.Paused != nil {
+		model.Paused = cluster.Paused
+	}
+
+	// Map the PIT enabled flag to the model
+	if cluster.PitEnabled != nil {
+		model.PitEnabled = cluster.PitEnabled
+	}
+
+	// Map the replication specs to the model
+	if cluster.ReplicationSpecs != nil {
+		model.ReplicationSpecs = flattenReplicationSpecs(ctx, cluster.ReplicationSpecs)
+	}
+
+	// Map the root cert type to the model
+	if cluster.RootCertType != nil {
+		model.RootCertType = cluster.RootCertType
+	}
+
+	// Map the state name to the model
+	if cluster.StateName != nil {
+		model.StateName = cluster.StateName
+	}
+
+	// Map the version release system to the model
+	if cluster.VersionReleaseSystem != nil {
+		model.VersionReleaseSystem = cluster.VersionReleaseSystem
+	}
+
+	// Map the termination protection enabled flag to the model
+	if cluster.TerminationProtectionEnabled != nil {
+		model.TerminationProtectionEnabled = cluster.TerminationProtectionEnabled
+	}
+
+	// Set the public access enabled flag to the model
+	model.PublicAccessEnabled = &hasPublicAccess
+
+	// Get the advanced configuration for the cluster
+	processArgs, resp, clusterErr := client.ClustersApi.GetClusterAdvancedConfiguration(context.Background(), *model.ProjectId, *model.Name).Execute()
+
+	// If there was an error getting the advanced configuration, return an error response
+	if clusterErr != nil {
+		return nil, resp, clusterErr
+	}
+
+	// Map the advanced settings to the model
+	model.AdvancedSettings = flattenProcessArgs(processArgs)
+
+	// Return the model, false for the hasError flag, and an empty AtlasResponse
+	return model, nil, nil
+}
+
+// checkIfProjectHasPublicAccess This function checks if the given list of network permission entries contains a public IP address or CIDR block. It returns true if a public IP address or CIDR block is found, false otherwise.
+func checkIfProjectHasPublicAccess(results []admin.NetworkPermissionEntry) bool {
+	// Iterate over the list of network permission entries and check if the current entry has a public IP address or CIDR block
+	for _, result := range results {
+		if result.IpAddress != nil && *result.IpAddress == constants.PublicIp {
+			return true
+		}
+		if result.CidrBlock != nil && *result.CidrBlock == constants.PublicIp {
+			return true
+		}
+	}
+
+	// If a public IP address or CIDR block is not found, return false
+	return false
+}
+
+// handleError is a helper method that logs an error and returns an error response
+func handleError(code string, message string, err error) atlasresponse.AtlasResponse {
+	// If there is an error, log a warning
+	if err != nil {
+		errMsg := fmt.Sprintf("%s error:%s", code, err.Error())
+		_, _ = logger.Warn(errMsg)
+	}
+	// If the message is empty, use the message from the configuration
+	if message == constants.EmptyString {
+		message = configuration.GetConfig()[code].Message
+	}
+	// Return an error response
+	return atlasresponse.AtlasResponse{
+		Response:       nil,
+		HttpStatusCode: configuration.GetConfig()[code].Code,
+		Message:        message,
+		ErrorCode:      configuration.GetConfig()[code].ErrorCode,
+	}
+}
+
+// checkIfEndpointRegionIsSameAsClusterRegion checks if the regions from config.json match the regions from private endpoints
+func checkIfEndpointRegionIsSameAsClusterRegion(endpoints, advancedCluster []string) bool {
+	// Create a map to store values from the first slice
+	seen := make(map[string]bool)
+	for _, item := range endpoints {
+		seen[item] = true
+	}
+
+	// Check if any value from the second slice exists in the map
+	for _, item := range advancedCluster {
+		if seen[item] {
+			return true
+		}
+	}
+
+	return false
+}
+
+// loadClusterConfiguration loads the config.json file from project path
+func loadClusterConfiguration(ctx context.Context, model InputModel) (Model, error) {
+	var currentModel Model
+	var ClusterConfig map[string]Model
+
+	err := util.LoadConfigFromFile(constants.ClusterConfigLocation, &ClusterConfig)
+	if ClusterConfig == nil || err != nil {
+		return currentModel, fmt.Errorf("failed to load cluster configuration from file: %s", constants.ClusterConfigLocation)
+	}
+
+	// Extract the key for the current cluster configuration
+	key := extractClusterKey(model)
+
+	// Get the cluster configuration for the current key
+	clusterConfig, ok := ClusterConfig[key]
+
+	// Log the selected cluster configuration
+	util.Debugf(ctx, "Selected Cluster Configuration : %+v  for the T-shirt Size :%s", clusterConfig.ToString(), *model.TshirtSize)
+
+	// If the cluster configuration is found, set it as the current model
+	if ok {
+		currentModel = clusterConfig
+	} else {
+		// If the cluster configuration is not found, return an error
+		return currentModel, fmt.Errorf("provided Cluster Size:%s and cloudProvider:%s is Invalid: ", *model.TshirtSize, *model.CloudProvider)
+	}
+
+	// If the cluster name is provided, set it as the current model's name
+	if model.ClusterName != nil {
+		currentModel.Name = model.ClusterName
+	} else {
+		// If the cluster name is not provided, generate a new name for the cluster
+		currentModel.Name = generateClusterName(model)
+	}
+
+	// If the MongoDB version is provided, set it as the current model's MongoDB version
+	if model.MongoDBVersion != nil {
+		currentModel.MongoDBMajorVersion = convertMongodbVersionToMajorVersion(*model.MongoDBVersion)
+		currentModel.MongoDBVersion = model.MongoDBVersion
+
+	}
+
+	return currentModel, nil
+}
+
+func convertMongodbVersionToMajorVersion(input string) *string {
+	if len(input) < 3 {
+		return nil // Return an empty string if the input is too short
+	}
+	output := input[:len(input)-2]
+	return &output
+}
+
+// extractClusterKey This method generates the key using which the config is fetched
+func extractClusterKey(model InputModel) string {
+	// Create a buffer to store the key
+	var configKey bytes.Buffer
+
+	// Append the T-shirt size to the key
+	configKey.WriteString(strings.ToLower(*model.TshirtSize))
+
+	// Append a hyphen to the key
+	configKey.WriteString("-")
+
+	// Append the cloud provider to the key
+	configKey.WriteString(strings.ToLower(*model.CloudProvider))
+
+	// Convert the buffer to a string and return it as the key
+	key := configKey.String()
+	return key
+}
+
+// generateClusterName This method generates the cluster name which is then assigned to the created cluster
+func generateClusterName(model InputModel) *string {
+	// Get the current time in the format "02-01-06 15:04:05"
+	toRet := time.Now().Format("02-01-06 15:04:05")
+
+	// Replace all colons with hyphens
+	toRet = strings.ReplaceAll(toRet, ":", "-")
+
+	// Replace all spaces with hyphens
+	toRet = strings.ReplaceAll(toRet, " ", "-")
+
+	// Replace all hyphens with hyphens (no-op)
+	toRet = strings.ReplaceAll(toRet, "-", "-")
+
+	// Concatenate the cloud provider, project ID, T-shirt size, and current time to generate the cluster name
+	toRet = *model.TshirtSize + "-" + *model.CloudProvider + "-" + toRet + "-" + *model.ProjectId
+
+	// Return the cluster name as a pointer to a string
+	return &toRet
 }

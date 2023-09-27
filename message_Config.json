@@ -1,158 +1,293 @@
 {
   "INVALID_INPUT_PARAMETER": {
     "Code": 400,
-    "Message": "Input parameter(s) are invalid : %s"
+    "Message": "Input parameter(s) are invalid : %s",
+    "ErrorCode": "INVALID_INPUT_PARAMETER"
   },
   "RESOURCE_NOT_EXIST": {
     "Code": 400,
-    "Message": "%s does not exist  : %s"
+    "Message": "%s does not exist  : %s",
+    "ErrorCode": "RESOURCE_NOT_EXIST"
   },
   "CONFIGURATION_NOT_AVAILABLE": {
     "Code": 400,
-    "Message": "Configuration is not available for T-Shirt Size : %s"
+    "Message": "Configuration is not available for T-Shirt Size : %s",
+    "ErrorCode": "CONFIGURATION_NOT_AVAILABLE"
   },
   "NO_ACTIVE_PRIVATE_ENDPOINT": {
     "Code": 400,
-    "Message": "The destination project(%s) does not have configured and active Private Endpoints connectivity"
+    "Message": "The destination project(%s) does not have configured and active Private Endpoints connectivity",
+    "ErrorCode": "NO_ACTIVE_PRIVATE_ENDPOINT"
   },
   "INVALID_REGION": {
     "Code": 400,
-    "Message": "Private Endpoints configuration does not match desired cloud providers region(%s) distribution."
+    "Message": "Private Endpoints configuration does not match desired cloud providers region(%s) distribution.",
+    "ErrorCode": "INVALID_REGION"
   },
   "MONGO_CLIENT_CREATE_ERROR": {
     "Code": 400,
-    "Message": "MongoClient Creation failed."
+    "Message": "MongoClient Creation failed.",
+    "ErrorCode": "MONGO_CLIENT_CREATE_ERROR"
   },
   "CLUSTER_NOT_EXIST": {
     "Code": 400,
-    "Message": "The cluster does not exist for : %s"
+    "Message": "The cluster does not exist for : %s",
+    "ErrorCode": "CLUSTER_NOT_EXIST"
   },
   "CLUSTER_SUCCESS": {
     "Code": 200,
-    "Message": "The cluster status is : %s"
+    "Message": "The cluster status is : %s",
+    "ErrorCode": "CLUSTER_SUCCESS"
   },
   "CLUSTER_MODEL_ERROR": {
     "Code": 400,
-    "Message": "Invalid cluster configuration."
+    "Message": "Invalid cluster configuration.",
+    "ErrorCode": "CLUSTER_MODEL_ERROR"
   },
   "CLUSTER_REQUEST_ERROR": {
     "Code": 500,
-    "Message": "Error occurred while creating the cluster Request."
+    "Message": "Error occurred while creating the cluster Request.",
+    "ErrorCode": "CLUSTER_REQUEST_ERROR"
   },
   "CLUSTER_CREATE_ERROR": {
     "Code": 500,
-    "Message": "Error occurred while creating the cluster."
+    "Message": "Error occurred while creating the cluster.",
+    "ErrorCode": "CLUSTER_CREATE_ERROR"
   },
   "CLUSTER_CREATE_SUCCESS": {
     "Code": 200,
-    "Message": "The Cluster is created Successfully: %s ."
+    "Message": "The Cluster is created Successfully: %s .",
+    "ErrorCode": "CLUSTER_CREATE_SUCCESS"
   },
   "CLUSTER_READ_SUCCESS": {
     "Code": 200,
-    "Message": "The Cluster status is: %s ."
+    "Message": " %s and HostName is %s",
+    "ErrorCode": "CLUSTER_READ_SUCCESS"
+  },
+  "CLUSTER_UPDATE_ERROR": {
+    "Code": 500,
+    "Message": "Error occurred while updating the cluster",
+    "ErrorCode": "CLUSTER_UPDATE_ERROR"
   },
   "CLUSTER_DELETE_ERROR": {
     "Code": 500,
-    "Message": "Error occured when deleting the cluster: %s."
+    "Message": "Error occured when deleting the cluster: %s.",
+    "ErrorCode": "CLUSTER_DELETE_ERROR"
+  },
+  "CLUSTER_ALREADY_REQUESTED_DELETION": {
+    "Code": 500,
+    "Message": "The cluster has already been requested for deletion: %s.",
+    "ErrorCode": "CLUSTER_ALREADY_REQUESTED_DELETION"
   },
   "CLUSTER_DELETE_SUCCESS": {
     "Code": 200,
-    "Message": "The Cluster is deleted Successfully:%s ."
+    "Message": "The Cluster is deleted Successfully:%s .",
+    "ErrorCode": "CLUSTER_DELETE_SUCCESS"
   },
   "CLUSTER_LIST_ERROR": {
     "Code": 500,
-    "Message": "Failed to list all clusters under the projectId :%s ."
+    "Message": "Failed to list all clusters under the projectId :%s .",
+    "ErrorCode": "CLUSTER_LIST_ERROR"
   },
   "CLUSTER_ADVANCED_LIST_ERROR": {
     "Code": 500,
-    "Message": "Failed to list advanced cluster configurations for projects under the projectId :%s ."
+    "Message": "Failed to list advanced cluster configurations for projects under the projectId :%s .",
+    "ErrorCode": "CLUSTER_ADVANCED_LIST_ERROR"
   },
   "CLUSTER_LIST_SUCCESS": {
     "Code": 200,
-    "Message": "The clusters under the projectId %s are listed successfully ."
+    "Message": "The clusters under the projectId %s are listed successfully .",
+    "ErrorCode": "CLUSTER_LIST_SUCCESS"
   },
   "COLLECTION_ERROR": {
     "Code": 500,
-    "Message": "The Collection under the Name: %s cannot be created ."
+    "Message": "Failed to create one or more collections: %s .",
+    "ErrorCode": "COLLECTION_ERROR"
   },
   "COLLECTION_SUCCESS": {
     "Code": 200,
-    "Message": "The Collection under the Name: %s is created successfully."
+    "Message": "The Collection under the Name: %s is created successfully.",
+    "ErrorCode": "COLLECTION_SUCCESS"
   },
   "COLLECTION_DELETE_ERROR": {
     "Code": 500,
-    "Message": "The Collection under the Name: %s cannot be deleted ."
+    "Message": "The Collection under the Name: %s cannot be deleted .",
+    "ErrorCode": "COLLECTION_DELETE_ERROR"
   },
   "COLLECTION_DELETE_SUCCESS": {
     "Code": 200,
-    "Message": "The Collection under the Name: %s is deleted successfully."
+    "Message": "The Collection under the Name: %s is deleted successfully.",
+    "ErrorCode": "COLLECTION_DELETE_SUCCESS"
   },
   "DATABASE_ERROR": {
     "Code": 500,
-    "Message": "The Database under the name: %s cannot be created ."
+    "Message": "The Database under the name: %s cannot be created .",
+    "ErrorCode": "DATABASE_ERROR"
   },
   "DATABASE_SUCCESS": {
     "Code": 200,
-    "Message": "The Database under the Name: %s is created successfully."
+    "Message": "The Database under the Name: %s is created successfully.",
+    "ErrorCode": "DATABASE_SUCCESS"
   },
   "DATABASE_DELETE_ERROR": {
     "Code": 500,
-    "Message": "The Database under the Name: %s cannot be deleted ."
+    "Message": "The Database under the Name: %s cannot be deleted .",
+    "ErrorCode": "DATABASE_DELETE_ERROR"
   },
   "DATABASE_DELETE_SUCCESS": {
     "Code": 200,
-    "Message": "The Database under the Name: %s is deleted successfully."
+    "Message": "The Database under the Name: %s is deleted successfully.",
+    "ErrorCode": "DATABASE_DELETE_SUCCESS"
   },
   "USER_CREATE_ERROR": {
     "Code": 500,
-    "Message": "Failed to create Database User with name: %s."
+    "Message": "Failed to create Database User with name: %s.",
+    "ErrorCode": "USER_CREATE_ERROR"
   },
   "USER_CREATE_SUCCESS": {
     "Code": 200,
-    "Message": "Database User with name: %s is created."
+    "Message": "Database User with name: %s is created.",
+    "ErrorCode": "USER_CREATE_SUCCESS"
   },
   "USER_NOT_FOUND": {
     "Code": 404,
-    "Message": "Database User with name: %s is not found."
+    "Message": "Database User with name: %s is not found.",
+    "ErrorCode": "USER_NOT_FOUND"
   },
   "FETCH_USER": {
     "Code": 200,
-    "Message": "Database User with name: %s is fetched found."
+    "Message": "Database User with name: %s is fetched found.",
+    "ErrorCode": "FETCH_USER"
+  },
+  "FETCH_USER_ERROR": {
+    "Code": 500,
+    "Message": "Error occured when fetching the user: %s .",
+    "ErrorCode": "FETCH_USER_ERROR"
   },
   "DELETE_USER_ERROR": {
     "Code": 500,
-    "Message": "Error occurred when deleting database User with name: %s."
+    "Message": "Error occurred when deleting database User with name: %s.",
+    "ErrorCode": "DELETE_USER_ERROR"
   },
   "DELETE_USER_SUCCESS": {
     "Code": 200,
-    "Message": "Database User with name: %s has been deleted successfully."
+    "Message": "Database User with name: %s has been deleted successfully.",
+    "ErrorCode": "DELETE_USER_SUCCESS"
   },
   "USER_LIST_ERROR": {
     "Code": 500,
-    "Message": "Error occurred when listing Database users for ProjectId: %s."
+    "Message": "Error occurred when listing Database users for ProjectId: %s.",
+    "ErrorCode": "USER_LIST_ERROR"
   },
   "USER_LIST_SUCCESS": {
     "Code": 200,
-    "Message": "Database users for ProjectId: %s has been listed."
+    "Message": "Database users for ProjectId: %s has been listed.",
+    "ErrorCode": "USER_LIST_SUCCESS"
   },
   "LIST_ENDPOINT_ERROR": {
     "Code": 500,
-    "Message": "Error occured when listing private endpoints for ProjectId: %s ."
+    "Message": "Error occured when listing private endpoints for ProjectId: %s .",
+    "ErrorCode": "LIST_ENDPOINT_ERROR"
   },
   "NO_ENDPOINT_ERROR": {
     "Code": 500,
-    "Message": "No private endpoints configured for ProjectId: %s ."
+    "Message": "No private endpoints configured for ProjectId: %s .",
+    "ErrorCode": "NO_ENDPOINT_ERROR"
   },
   "NO_ENDPOINT_REGION_ERROR": {
     "Code": 500,
-    "Message": "No private endpoints configured for ProjectId: %s for the region(s) :%s ."
+    "Message": "No private endpoints configured for ProjectId: %s for the region(s) :%s .",
+    "ErrorCode": "NO_ENDPOINT_REGION_ERROR"
   },
   "NO_ADVANCED_CLUSTER_CONFIG": {
     "Code": 500,
-    "Message": "No Advanced Cluster Configuration with Region is provided"
+    "Message": "No Advanced Cluster Configuration with Region is provided",
+    "ErrorCode": "NO_ADVANCED_CLUSTER_CONFIG"
   },
   "PROJECT_IP_ACCESS_LIST_ERROR": {
     "Code": 500,
-    "Message": "Error When fetching Project IP AccessList"
+    "Message": "Error When fetching Project IP AccessList",
+    "ErrorCode": "PROJECT_IP_ACCESS_LIST_ERROR"
+  },
+  "GET_BACKUP_SCHEDULE_ERROR": {
+    "Code": 500,
+    "Message": "Failed to fetch backup policy for the cluster: %s",
+    "ErrorCode": "GET_BACKUP_SCHEDULE_ERROR"
+  },
+  "DATABASE_LIST_SUCCESS": {
+    "Code": 200,
+    "Message": "The list of databases: %v",
+    "ErrorCode": "DATABASE_LIST_SUCCESS"
+  },
+  "COLLECTION_LIST_SUCCESS": {
+    "Code": 200,
+    "Message": "The list of collections: %v",
+    "ErrorCode": "COLLECTION_LIST_SUCCESS"
+  },
+  "COLLECTION_LIST_ERROR": {
+    "Code": 200,
+    "Message": "Error occurred when fetching collections list",
+    "ErrorCode": "COLLECTION_LIST_ERROR"
+  },
+  "READ_POLICY_SCHEDULE_ERROR": {
+    "Code": 500,
+    "Message": "Error occurred when reading the policy backup schedule for cluster: %s",
+    "ErrorCode": "READ_POLICY_SCHEDULE_ERROR"
+  },
+  "VALIDATE_EXPORT_DETAILS_ERROR": {
+    "Code": 500,
+    "Message": "Error occurred when validating export details for cluster: %s",
+    "ErrorCode": "VALIDATE_EXPORT_DETAILS_ERROR"
+  },
+  "DELETE_BACKUP_SCHEDULE_ERROR": {
+    "Code": 500,
+    "Message": "Error occurred when deleting backup schedule for cluster: %s",
+    "ErrorCode": "DELETE_BACKUP_SCHEDULE_ERROR"
+  },
+  "UPDATE_BACKUP_SCHEDULE_ERROR": {
+    "Code": 500,
+    "Message": "Error occurred when updating backup schedule for cluster: %s",
+    "ErrorCode": "UPDATE_BACKUP_SCHEDULE_ERROR"
+  },
+  "RESTORE_JOB_READ_ERROR": {
+    "Code": 500,
+    "Message": "Error occurred when fetching the restore job for cluster: %s",
+    "ErrorCode": "RESTORE_JOB_READ_ERROR"
+  },
+  "RESTORE_JOB_CREATE_ERROR": {
+    "Code": 500,
+    "Message": "Error occurred when creating the restore job for cluster: %s",
+    "ErrorCode": "RESTORE_JOB_CREATE_ERROR"
+  },
+  "INVALID_TARGET_CLUSTER_NAME_AND_PROJECT_ID": {
+    "Code": 500,
+    "Message": "Target ClusterName and Target ProjectId cannot be empty",
+    "ErrorCode": "INVALID_TARGET_CLUSTER_NAME_AND_PROJECT_ID"
+  },
+  "INVALID_POINT_IN_TIME_ERROR": {
+  "Code": 500,
+  "Message": "Please provide a value for anyone of the following values pointInTimeUtcSeconds, oplogTs and oplogInc ",
+  "ErrorCode": "INVALID_POINT_IN_TIME_ERROR"
+},"LIST_REPLICASET_BACKUP_ERROR": {
+  "Code": 500,
+  "Message": "Error occurred when Listing ReplicaSet Backup for the cluster: %s ",
+  "ErrorCode": "LIST_REPLICASET_BACKUP_ERROR"
+},"LIST_SHARDED_CLUSTER_BACKUP_ERROR": {
+  "Code": 500,
+  "Message": "Error occurred when Listing Sharded Cluster Backup for the cluster: %s  ",
+  "ErrorCode": "LIST_SHARDED_CLUSTER_BACKUP_ERROR"
+},"SNAPSHOT_CREATE_ERROR": {
+  "Code": 500,
+  "Message": "Error occurred when creating a backup snapshot for the cluster: %s  ",
+  "ErrorCode": "SNAPSHOT_CREATE_ERROR"
+},"CLUSTER_NAME_NOT_GENERATED": {
+  "Code": 500,
+  "Message": "Cluster Hostname not yet created.Please try again after sometime  ",
+  "ErrorCode": "CLUSTER_NAME_NOT_GENERATED"
+},
+  "CLUSTER_HOSTNAME_NOT_SET": {
+    "Code": 500,
+    "Message": "Error occurred when fetching Hostname",
+    "ErrorCode": "CLUSTER_HOSTNAME_NOT_SET"
   }
 }

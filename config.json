@@ -6,7 +6,6 @@
       "NoTableScan": false
     },
     "ClusterType": "REPLICASET",
-    "MongoDBVersion": "6.0.8",
     "Name": "Cluster0",
     "Paused": false,
     "ReplicationSpecs": [
@@ -35,6 +34,10 @@
   },
   "m-aws": {
     "ClusterType":"REPLICASET",
+    "backupEnabled": true,
+    "pitEnabled": true,
+    "MongoDBVersion": "5.0.8",
+    "MongoDBMajorVersion": "5.0",
     "ReplicationSpecs":[
       {
         "NumShards": 1,
@@ -68,7 +71,7 @@
               "InstanceSize":"M10",
               "NodeCount":2
             },
-  
+
             "ReadOnlySpecs":{
               "EbsVolumeType": "STANDARD",
               "DiskIOPS": "",
@@ -78,6 +81,31 @@
             "Priority":5,
             "ProviderName":"AWS",
             "RegionName":"US_WEST_1"
+          }
+        ]
+      }
+    ]
+  },
+  "test-aws": {
+    "ClusterType":"REPLICASET",
+    "backupEnabled": true,
+    "pitEnabled": true,
+    "MongoDBVersion": "5.0.8",
+    "MongoDBMajorVersion": "5.0",
+    "ReplicationSpecs":[
+      {
+        "NumShards": 1,
+        "AdvancedRegionConfigs":[
+          {
+            "ElectableSpecs":{
+              "EbsVolumeType": "STANDARD",
+              "DiskIOPS": "",
+              "InstanceSize":"M10",
+              "NodeCount":3
+            },
+            "Priority":7,
+            "ProviderName":"AWS",
+            "RegionName":"US_EAST_1"
           }
         ]
       }

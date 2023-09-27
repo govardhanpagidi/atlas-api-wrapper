@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/atlas-api-helper.iml" filepath="$PROJECT_DIR$/.idea/atlas-api-helper.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../js-marshmclennan-726852-mmc/.idea/js-marshmclennan-726852-mmc.iml" filepath="$PROJECT_DIR$/../js-marshmclennan-726852-mmc/.idea/js-marshmclennan-726852-mmc.iml" />
     </modules>
   </component>
 </project>

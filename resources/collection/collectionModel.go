@@ -5,20 +5,100 @@ import (
 	"github.com/atlas-api-helper/util"
 )
 
+// InputModel represents the input for creating a collection.
+// swagger:parameters InputModel
 type InputModel struct {
-	CollectionNames []*string `json:"collectionNames,omitempty"`
-	DatabaseName    *string   `json:"databaseName,omitempty"`
-	HostName        *string   `json:"hostName,omitempty"`
-	Username        *string   `json:"userName,omitempty"`
-	Password        *string   `json:"password,omitempty"`
+	// CollectionNames is an array of collection names to be queried.
+	//
+	// required: false
+	// example: ["default", "users"]
+	CollectionNames []*string `json:"collectionNames,omitempty" example:"default"`
+	// DatabaseName is the name of the database to be queried.
+	//
+	// required: true
+	// example: "testDatabase"
+	DatabaseName *string `json:"-" example:"testDatabase" swagg:"omit"`
+	// ProjectId is the ID of the project.
+	//
+	//required: true
+	// example: ""
+	ProjectId *string `json:"-"`
+	// ClusterName is the name of the cluster.
+	//
+	// required: true
+	// example: ""
+	ClusterName *string `json:"-"`
+	// HostName is the hostname of the database server.
+	//
+	// required: false
+	// example: "localhost"
+	HostName *string `json:"-,omitempty"`
+	// Username is the username for the database server.
+	//
+	// required: false
+	// example: ""
+	Username *string `json:"-"`
+	// Password is the password for the database server.
+	//
+	// required: false
+	// example: ""
+	Password *string `json:"-"`
+	// PublicKey is the public key.
+	//
+	// required: true
+	// example: ""
+	PublicKey *string `json:"-"`
+	// PrivateKey is the private key.
+	//
+	// required: true
+	// example: ""
+	PrivateKey *string `json:"-"`
 }
 
+// DeleteInputModel represents the input for deleting a collection.
+// swagger:parameters DeleteInputModel
 type DeleteInputModel struct {
-	CollectionName *string `json:"collectionName,omitempty"`
-	DatabaseName   *string `json:"databaseName,omitempty"`
-	HostName       *string `json:"hostName,omitempty"`
-	Username       *string `json:"userName,omitempty"`
-	Password       *string `json:"password,omitempty"`
+	// CollectionName is the name of the collection to be deleted.
+	CollectionName *string `json:"collectionName,omitempty" example:"testCollection"`
+	// DatabaseName is the name of the database to be queried.
+	//
+	// example: "testDatabase"
+	DatabaseName *string `json:"-" example:"testDatabase"`
+	// ProjectId is the ID of the project.
+	//
+	// required: true
+	// example: ""
+	ProjectId *string `json:"-"`
+	// ClusterName is the name of the cluster.
+	//
+	// required: true
+	// example: ""
+	ClusterName *string `json:"-"`
+	// HostName is the hostname of the database server.
+	//
+	// required: false
+	// example: "localhost"
+	HostName *string `json:"-"`
+	// Username is the username for the database server.
+	//
+	// required: false
+	// example: ""
+	Username *string `json:"-"`
+	// Password is the password for the database server.
+	//
+	// required: false
+	// example: ""
+	Password *string `json:"-"`
+	// PublicKey is the public key.
+	//
+	// required: true
+	// example: ""
+	PublicKey *string `json:"-"`
+	// PrivateKey is the private key.
+	//
+	// required: true
+	// example: ""
+	PrivateKey *string `json:"-"`
 }
 
 func (model InputModel) String() string {

@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"bytes"
 	"encoding/json"
 	"net/http"
 	"time"
@@ -72,6 +73,7 @@ func GetCluster(w http.ResponseWriter, r *http.Request) {
 // @Param ProjectId path string true "Project ID" default(<projectID>)
 // @Param x-mongo-publickey header string true "Public Key" default(<publicKey>)
 // @Param x-mongo-privatekey header string true "Private Key" default(<privateKey>)
+// @Param Filter query string false "Filter"
 // @Success 200 {object} []cluster.Model
 // @Failure 400 {object}  atlasresponse.AtlasResponse
 // @Failure 401 {object}  atlasresponse.AtlasResponse
@@ -87,7 +89,19 @@ func GetAllClusters(w http.ResponseWriter, r *http.Request) {
 	publicKey := r.Header.Get(constants.PublicKeyHeader)
 	privateKey := r.Header.Get(constants.PrivateKeyHeader)
 	projectId := vars[constants.ProjectID]
+	filter := r.URL.Query().Get(constants.Filter)
 	model := cluster.InputModel{ProjectId: &projectId, PrivateKey: &privateKey, PublicKey: &publicKey}
+
+	if filter != constants.EmptyString {
+		filterInput := bytes.NewReader([]byte(filter))
+		var filterObj []cluster.Tags
+		err := json.NewDecoder(filterInput).Decode(&filterObj)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		model.Filter = filterObj
+	}
 
 	//log the input model
 	util.Debugf(r.Context(), "Get all clusters request : %+v", model.String())

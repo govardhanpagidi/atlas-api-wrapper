@@ -1687,6 +1687,10 @@ paths:
         name: x-mongo-privatekey
         required: true
         type: string
+      - description: Filter
+        in: query
+        name: Filter
+        type: string
       produces:
       - application/json
       responses:

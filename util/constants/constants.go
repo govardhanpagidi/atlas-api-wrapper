@@ -5,16 +5,16 @@ package constants
 type TraceIDKeyType string
 
 const (
-	ProjectID       = "ProjectId"
-	AWS             = "AWS"
-	HostName        = "HostName"
-	DatabaseName    = "DatabaseName"
-	Username        = "Username"
-	Password        = "Password"
-	ClusterName     = "ClusterName"
-	CollectionName  = "CollectionName"
-	CollectionNames = "CollectionNames"
-
+	ProjectID               = "ProjectId"
+	AWS                     = "AWS"
+	HostName                = "HostName"
+	DatabaseName            = "DatabaseName"
+	Username                = "Username"
+	Password                = "Password"
+	ClusterName             = "ClusterName"
+	CollectionName          = "CollectionName"
+	CollectionNames         = "CollectionNames"
+	Filter                  = "Filter"
 	DatabaseUserHandlerName = "DatabaseUserhandler"
 
 	ClusterHandler               = "ClusterHandler"

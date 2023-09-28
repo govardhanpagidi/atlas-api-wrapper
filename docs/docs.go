@@ -856,6 +856,12 @@ const docTemplate = `{
                         "name": "x-mongo-privatekey",
                         "in": "header",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter",
+                        "name": "Filter",
+                        "in": "query"
                     }
                 ],
                 "responses": {

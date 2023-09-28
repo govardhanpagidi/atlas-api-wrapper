@@ -439,6 +439,11 @@ type InputModel struct {
 	//
 	// required: false
 	Tags []Tags `json:"tags,omitempty"`
+
+	// Indicates whether filter should be applied when fetching clusters.
+	//
+	// required: false
+	Filter []Tags `json:"-"`
 }
 
 // UpdateInputModel represents the input for updating a cluster.

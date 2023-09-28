@@ -470,6 +470,49 @@ func List(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasRespon
 		}
 	}
 
+	if inputModel.Filter != nil {
+		// Create a slice to store matching models
+		filteredModels := make([]*Model, 0)
+
+		// Iterate through the first slice of models
+		for _, model := range models {
+			// Create a flag to track if the model matches all filter tags
+			matchesAllTags := true
+
+			// Iterate through the filter tags
+			for _, filterTag := range inputModel.Filter {
+				// Check if the filter tag is present in the model's tags
+				tagMatch := false
+
+				for _, modelTag := range model.Tags {
+					key1 := *modelTag.Key
+					value1 := *modelTag.Value
+					key2 := *filterTag.Key
+					value2 := *filterTag.Value
+
+					// Compare tags based on both key and value
+					if key1 == key2 && value1 == value2 {
+						tagMatch = true
+						break // Tag found, no need to continue searching
+					}
+				}
+
+				// If the filter tag is not found in the model's tags, set the flag to false
+				if !tagMatch {
+					matchesAllTags = false
+					break // Model doesn't match all filter tags, no need to continue checking
+				}
+			}
+
+			// If the model matches all filter tags, add it to the filteredModels slice
+			if matchesAllTags {
+				filteredModels = append(filteredModels, model)
+			}
+		}
+		models = filteredModels
+		// Now, filteredModels contains only the models that match all filter tags
+	}
+
 	// Return an AtlasResponse with the models and the appropriate message and status code
 	return atlasresponse.AtlasResponse{
 		Response: models,

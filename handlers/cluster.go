@@ -34,7 +34,7 @@ func setupClusterLog() {
 // @Failure 403 {object}  atlasresponse.AtlasResponse
 // @Failure 404 {object}  atlasresponse.AtlasResponse
 // @Failure 500 {object}  atlasresponse.AtlasResponse
-// @Router /api/project/{ProjectId}/cluster/{ClusterName}/status [get]
+// @Router /project/{ProjectId}/cluster/{ClusterName}/status [get]
 func GetCluster(w http.ResponseWriter, r *http.Request) {
 	setupClusterLog()
 
@@ -78,7 +78,7 @@ func GetCluster(w http.ResponseWriter, r *http.Request) {
 // @Failure 403 {object}  atlasresponse.AtlasResponse
 // @Failure 404 {object}  atlasresponse.AtlasResponse
 // @Failure 500 {object}  atlasresponse.AtlasResponse
-// @Router /api/project/{ProjectId}/cluster [get]
+// @Router /project/{ProjectId}/cluster [get]
 func GetAllClusters(w http.ResponseWriter, r *http.Request) {
 	setupClusterLog()
 
@@ -122,7 +122,7 @@ func GetAllClusters(w http.ResponseWriter, r *http.Request) {
 // @Failure 403 {object}  atlasresponse.AtlasResponse
 // @Failure 404 {object}  atlasresponse.AtlasResponse
 // @Failure 500 {object}  atlasresponse.AtlasResponse
-// @Router /api/project/{ProjectId}/cluster/{ClusterName} [delete]
+// @Router /project/{ProjectId}/cluster/{ClusterName} [delete]
 func DeleteCluster(w http.ResponseWriter, r *http.Request) {
 	setupClusterLog()
 
@@ -168,7 +168,7 @@ func DeleteCluster(w http.ResponseWriter, r *http.Request) {
 // @Failure 403 {object}  atlasresponse.AtlasResponse
 // @Failure 404 {object}  atlasresponse.AtlasResponse
 // @Failure 500 {object}  atlasresponse.AtlasResponse
-// @Router /api/project/{ProjectId}/cluster [post]
+// @Router /project/{ProjectId}/cluster [post]
 func CreateCluster(w http.ResponseWriter, r *http.Request) {
 	//fetch all input parameters and create input model
 	var model cluster.InputModel
@@ -212,14 +212,14 @@ func CreateCluster(w http.ResponseWriter, r *http.Request) {
 // @Param ClusterName path string true "Cluster name" default()
 // @Param x-mongo-publickey header string true "Public Key" default(<publicKey>)
 // @Param x-mongo-privatekey header string true "Private Key" default(<privateKey>)
-// @Param MongoDBMajorVersion query string true "MongoDBMajorVersion" default(6.0.9)
+// @Param InputModel body cluster.UpdateInputModel true "body"
 // @Success 200 {object} cluster.Model
 // @Failure 400 {object}  atlasresponse.AtlasResponse
 // @Failure 401 {object}  atlasresponse.AtlasResponse
 // @Failure 403 {object}  atlasresponse.AtlasResponse
 // @Failure 404 {object}  atlasresponse.AtlasResponse
 // @Failure 500 {object}  atlasresponse.AtlasResponse
-// @Router /api/project/{ProjectId}/cluster/{ClusterName} [patch]
+// @Router /project/{ProjectId}/cluster/{ClusterName} [patch]
 func UpdateCluster(w http.ResponseWriter, r *http.Request) {
 	//fetch all input parameters and create input model
 	var model cluster.UpdateInputModel
@@ -227,15 +227,18 @@ func UpdateCluster(w http.ResponseWriter, r *http.Request) {
 	projectId := vars[constants.ProjectID]
 	publicKey := r.Header.Get(constants.PublicKeyHeader)
 	privateKey := r.Header.Get(constants.PrivateKeyHeader)
-	model.PublicKey = &publicKey
-	model.PrivateKey = &privateKey
+	clusterName := vars[constants.ClusterName]
+
 	//decode the request body into input model
 	err := json.NewDecoder(r.Body).Decode(&model)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+	model.PublicKey = &publicKey
+	model.PrivateKey = &privateKey
 	model.ProjectId = &projectId
+	model.ClusterName = &clusterName
 
 	//log the input model
 	util.Debugf(r.Context(), "Create cluster request : %+v", model.ToString())

@@ -42,6 +42,7 @@ const (
 	ClusterCreateError             = "CLUSTER_CREATE_ERROR"
 	ClusterUpdateError             = "CLUSTER_UPDATE_ERROR"
 	ClusterCreateSuccess           = "CLUSTER_CREATE_SUCCESS"
+	UpdateTagsError                = "UPDATE_TAGS_ERROR"
 	ClusterReadSuccess             = "CLUSTER_READ_SUCCESS"
 	ClusterDeleteError             = "CLUSTER_DELETE_ERROR"
 	ClusterDeleteSuccess           = "CLUSTER_DELETE_SUCCESS"
@@ -142,9 +143,9 @@ const (
 	CreateOrGetDatabaseUserReqURI = "project/{ProjectId}/databaseUsers"
 	DeleteOrGetDatabaseUserReqURI = "project/{ProjectId}/databaseUsers/{Username}"
 
-	CreateOrGetClusterReqURI = "project/{ProjectId}/cluster"
-	DeleteClusterReqURI      = "project/{ProjectId}/cluster/{ClusterName}"
-	GetClusterReqURI         = "project/{ProjectId}/cluster/{ClusterName}/status"
+	CreateOrGetClusterReqURI    = "project/{ProjectId}/cluster"
+	DeleteOrUpdateClusterReqURI = "project/{ProjectId}/cluster/{ClusterName}"
+	GetClusterReqURI            = "project/{ProjectId}/cluster/{ClusterName}/status"
 
 	CreateDatabaseReqURI = "project/{ProjectId}/cluster/{ClusterName}/database"
 	GetDatabaseReqURI    = "project/{ProjectId}/cluster/{ClusterName}/database"

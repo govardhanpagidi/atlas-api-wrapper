@@ -136,7 +136,7 @@ func ReadAll(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasRes
 	formattedDbNames := []string{strings.Join(databaseNames, ", ")}
 	// If the collection is created successfully, return a success response
 	return atlasresponse.AtlasResponse{
-		Status: fmt.Sprintf(configuration.GetConfig()[constants.DatabaseListSuccess].Message, formattedDbNames),
+		Response: formattedDbNames,
 	}
 }
 

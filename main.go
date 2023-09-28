@@ -53,9 +53,9 @@ func main() {
 
 	apiRouter.HandleFunc(uri(constants.GetClusterReqURI), handlers.GetCluster).Methods(http.MethodGet)
 	apiRouter.HandleFunc(uri(constants.CreateOrGetClusterReqURI), handlers.GetAllClusters).Methods(http.MethodGet)
-	apiRouter.HandleFunc(uri(constants.DeleteClusterReqURI), handlers.DeleteCluster).Methods(http.MethodDelete)
+	apiRouter.HandleFunc(uri(constants.DeleteOrUpdateClusterReqURI), handlers.DeleteCluster).Methods(http.MethodDelete)
 	apiRouter.HandleFunc(uri(constants.CreateOrGetClusterReqURI), handlers.CreateCluster).Methods(http.MethodPost)
-	apiRouter.HandleFunc(uri(constants.CreateOrGetClusterReqURI), handlers.UpdateCluster).Methods(http.MethodPatch)
+	apiRouter.HandleFunc(uri(constants.DeleteOrUpdateClusterReqURI), handlers.UpdateCluster).Methods(http.MethodPatch)
 
 	apiRouter.HandleFunc(uri(constants.DeleteOrGetDatabaseUserReqURI), handlers.GetDatabaseUser).Methods(http.MethodGet)
 	apiRouter.HandleFunc(uri(constants.CreateOrGetDatabaseUserReqURI), handlers.GetAllDatabaseUser).Methods(http.MethodGet)

@@ -140,24 +140,8 @@ func ReadAll(ctx context.Context, inputModel *DeleteInputModel) atlasresponse.At
 
 	collectionsOptions := options.ListCollectionsOptions{}
 
-	// Drop the collection from the database
+	// fetch the collection from the database
 	collectionNames, dbCreateErr := database.ListCollectionNames(ctx, collectionsOptions)
-	//collections, dbCreateErr := database.ListCollections(ctx, nil)
-
-	/*var collectionNames []string
-
-	for collections.Next(context.Background()) {
-		var collectionName string
-		if err := collections.Decode(&collectionName); err != nil {
-			log.Fatal(err)
-		}
-		fmt.Println(collectionName)
-
-		// Append the collection name to the list
-		collectionNames = append(collectionNames, collectionName)
-	}*/
-
-	formattedCollectionNames := []string{strings.Join(collectionNames, ", ")}
 
 	if dbCreateErr != nil {
 		// If there is an error dropping the collection, log a warning and return an error response
@@ -166,7 +150,7 @@ func ReadAll(ctx context.Context, inputModel *DeleteInputModel) atlasresponse.At
 	}
 
 	// If the collection is dropped successfully, return a success response
-	return atlasresponse.AtlasResponse{Status: fmt.Sprintf(configuration.GetConfig()[constants.CollectionListSuccess].Message, formattedCollectionNames)}
+	return atlasresponse.AtlasResponse{Response: collectionNames}
 }
 
 // Delete method drops the collection from the database

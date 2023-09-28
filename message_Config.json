@@ -61,7 +61,7 @@
   },
   "CLUSTER_READ_SUCCESS": {
     "Code": 200,
-    "Message": " %s and HostName is %s",
+    "Message": " %s",
     "ErrorCode": "CLUSTER_READ_SUCCESS"
   },
   "CLUSTER_UPDATE_ERROR": {
@@ -289,5 +289,10 @@
     "Code": 500,
     "Message": "Error occurred when fetching Hostname",
     "ErrorCode": "CLUSTER_HOSTNAME_NOT_SET"
+  },
+  "UPDATE_TAGS_ERROR": {
+    "Code": 500,
+    "Message": "Error occurred when updating tags to the cluster",
+    "ErrorCode": "UPDATE_TAGS_ERROR"
   }
 }

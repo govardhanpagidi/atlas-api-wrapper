@@ -52,7 +52,7 @@ var DeleteRequiredFields = []string{constants.ProjectID, constants.ClusterName, 
 // ListRequiredFields is a list of required fields for listing MongoDB Atlas clusters
 var ListRequiredFields = []string{constants.ProjectID, constants.PublicKey, constants.PrivateKey}
 
-var UpdateRequiredFields = []string{constants.ProjectID, constants.PublicKey, constants.PrivateKey, constants.MongoDBMajorVersion, constants.ClusterName}
+var UpdateRequiredFields = []string{constants.ProjectID, constants.PublicKey, constants.PrivateKey, constants.ClusterName}
 
 const (
 	AlreadyExists = "already exists"
@@ -184,6 +184,30 @@ func Create(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasResp
 		}
 	}
 
+	if len(currentModel.Tags) > 0 {
+		var tags []admin.ResourceTag
+		for _, tag := range currentModel.Tags {
+			if tag.Key != nil && tag.Value != nil {
+				tags = append(tags, admin.ResourceTag{
+					Key:   tag.Key,
+					Value: tag.Value,
+				})
+			} else {
+				util.Warnf(ctx, "Tags not added to cluster due to invalid input: %v", tags)
+			}
+
+		}
+		clusterUpdateRequest := &admin.AdvancedClusterDescription{
+			Name: currentModel.Name,
+			Tags: tags,
+		}
+		cluster, _, err = client.MultiCloudClustersApi.UpdateCluster(ctx, *inputModel.ProjectId, *cluster.Name, clusterUpdateRequest).Execute()
+		if err != nil {
+			message := fmt.Sprintf(configuration.GetConfig()[constants.UpdateTagsError].Message, *cluster.Name)
+			return handleError(constants.UpdateTagsError, message, err)
+		}
+	}
+
 	// Populate response model
 	model, _, err := populateResponseModel(ctx, cluster, hasPublicAccess, client)
 	if err != nil {
@@ -239,7 +263,7 @@ func Read(ctx context.Context, inputModel *InputModel) atlasresponse.AtlasRespon
 		parts := strings.SplitN(*model.ConnectionStrings.StandardSrv, constants.HostNameSpearator, 2)
 		msg = parts[1]
 	}
-	message := fmt.Sprintf(configuration.GetConfig()[constants.ClusterReadSuccess].Message, *getStatus(model.StateName), msg)
+	message := fmt.Sprintf(configuration.GetConfig()[constants.ClusterReadSuccess].Message, *getStatus(model.StateName))
 	return atlasresponse.AtlasResponse{
 		Response: ClusterStatus{
 			Message:  &message,
@@ -286,9 +310,27 @@ func Update(ctx context.Context, inputModel *UpdateInputModel) atlasresponse.Atl
 		return handleError(constants.ResourceDoesNotExist, message, err)
 	}
 
-	clusterUpdate := admin.AdvancedClusterDescription{MongoDBMajorVersion: inputModel.MongoDBMajorVersion}
+	clusterUpdate := admin.AdvancedClusterDescription{}
+	if inputModel.MongoDBMajorVersion != nil {
+		clusterUpdate.MongoDBMajorVersion = inputModel.MongoDBMajorVersion
+	}
+	if len(inputModel.Tags) > 0 {
+		var tags []admin.ResourceTag
+		for _, tag := range inputModel.Tags {
+			if tag.Key != nil && tag.Value != nil {
+				tags = append(tags, admin.ResourceTag{
+					Key:   tag.Key,
+					Value: tag.Value,
+				})
+			} else {
+				util.Warnf(ctx, "Tags not added to cluster due to invalid input: %v", tags)
+			}
 
-	cluster.SetMongoDBMajorVersion(*inputModel.MongoDBMajorVersion)
+		}
+		clusterUpdate.Tags = tags
+
+	}
+
 	updatedCluster, res, err := client.MultiCloudClustersApi.UpdateCluster(ctx, *cluster.GroupId, *cluster.Name, &clusterUpdate).Execute()
 
 	if err != nil {
@@ -1177,6 +1219,10 @@ func populateResponseModel(ctx context.Context, cluster *admin.AdvancedClusterDe
 		model.Labels = flattenLabels(cluster.Labels)
 	}
 
+	if len(cluster.Tags) > 0 {
+		model.Tags = flatternTags(cluster.Tags)
+	}
+
 	// Map the MongoDB major version to the model
 	if cluster.MongoDBMajorVersion != nil {
 		model.MongoDBMajorVersion = cluster.MongoDBMajorVersion
@@ -1238,6 +1284,17 @@ func populateResponseModel(ctx context.Context, cluster *admin.AdvancedClusterDe
 
 	// Return the model, false for the hasError flag, and an empty AtlasResponse
 	return model, nil, nil
+}
+
+func flatternTags(tags []admin.ResourceTag) []Tags {
+	var tagsModel []Tags
+	for _, tag := range tags {
+		tagsModel = append(tagsModel, Tags{
+			Key:   tag.Key,
+			Value: tag.Value,
+		})
+	}
+	return tagsModel
 }
 
 // checkIfProjectHasPublicAccess This function checks if the given list of network permission entries contains a public IP address or CIDR block. It returns true if a public IP address or CIDR block is found, false otherwise.
@@ -1334,6 +1391,9 @@ func loadClusterConfiguration(ctx context.Context, model InputModel) (Model, err
 		currentModel.MongoDBMajorVersion = convertMongodbVersionToMajorVersion(*model.MongoDBVersion)
 		currentModel.MongoDBVersion = model.MongoDBVersion
 
+	}
+	if model.Tags != nil {
+		currentModel.Tags = model.Tags
 	}
 
 	return currentModel, nil

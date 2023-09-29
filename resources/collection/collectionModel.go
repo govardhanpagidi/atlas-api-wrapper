@@ -10,7 +10,7 @@ import (
 type InputModel struct {
 	// CollectionNames is an array of collection names to be queried.
 	//
-	// required: false
+	// required: true
 	// example: ["default", "users"]
 	CollectionNames []*string `json:"collectionNames,omitempty" example:"default"`
 	// DatabaseName is the name of the database to be queried.
@@ -35,12 +35,12 @@ type InputModel struct {
 	HostName *string `json:"-,omitempty"`
 	// Username is the username for the database server.
 	//
-	// required: false
+	// required: true
 	// example: ""
 	Username *string `json:"-"`
 	// Password is the password for the database server.
 	//
-	// required: false
+	// required: true
 	// example: ""
 	Password *string `json:"-"`
 	// PublicKey is the public key.
@@ -59,9 +59,12 @@ type InputModel struct {
 // swagger:parameters DeleteInputModel
 type DeleteInputModel struct {
 	// CollectionName is the name of the collection to be deleted.
+	//
+	// required: true
 	CollectionName *string `json:"collectionName,omitempty" example:"testCollection"`
 	// DatabaseName is the name of the database to be queried.
 	//
+	// required: true
 	// example: "testDatabase"
 	DatabaseName *string `json:"-" example:"testDatabase"`
 	// ProjectId is the ID of the project.
@@ -81,12 +84,12 @@ type DeleteInputModel struct {
 	HostName *string `json:"-"`
 	// Username is the username for the database server.
 	//
-	// required: false
+	// required: true
 	// example: ""
 	Username *string `json:"-"`
 	// Password is the password for the database server.
 	//
-	// required: false
+	// required: true
 	// example: ""
 	Password *string `json:"-"`
 	// PublicKey is the public key.

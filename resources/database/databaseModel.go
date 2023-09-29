@@ -10,7 +10,7 @@ import (
 type InputModel struct {
 	// The name of the collection to be queried.
 	//
-	// required: false
+	// required: true
 	// example: "testCollection"
 	CollectionName *string `json:"collectionName,omitempty" example:"testCollection"`
 	// The name of the database to be queried.
@@ -35,12 +35,12 @@ type InputModel struct {
 	HostName *string `json:"-,omitempty"`
 	// Username is the username for the database server.
 	//
-	// required: false
+	// required: true
 	// example: ""
 	Username *string `json:"-"`
 	// Password is the password for the database server.
 	//
-	// required: false
+	// required: true
 	// example: ""
 	Password *string `json:"-"`
 	// PublicKey is the public key.

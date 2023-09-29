@@ -44,18 +44,18 @@ type Model struct {
 
 	// The password for the user.
 	//
-	// required: false
+	// required: true
 	Password *string `json:"password,omitempty"`
 
 	// The ID of the project to which the user belongs.
 	//
-	// required: false
+	// required: true
 	// example: "12345"
 	ProjectId *string `json:"projectId,omitempty" example:"12345"`
 
 	// The roles associated with the user.
 	//
-	// required: false
+	// required: true
 	Roles []RoleDefinition `json:"roles,omitempty"`
 
 	// The scopes associated with the user.
@@ -65,7 +65,7 @@ type Model struct {
 
 	// The username for the user.
 	//
-	// required: false
+	// required: true
 	// example: "testUser"
 	Username *string `json:"username,omitempty" example:"testUser"`
 
@@ -131,35 +131,35 @@ type ScopeDefinition struct {
 type InputModel struct {
 	// The username for the user.
 	//
-	// required: false
+	// required: true
 	// example: "testUser"
 	Username *string `json:"username,omitempty" example:"testUser"`
 
 	// The password for the user.
 	//
-	// required: false
+	// required: true
 	// example: "testPass"
 	Password *string `json:"password,omitempty" example:"testPass"`
 
 	// The public key for the user.
 	//
-	// required: false
+	// required: true
 	PublicKey *string `json:"-"`
 
 	// The private key for the user.
 	//
-	// required: false
+	// required: true
 	PrivateKey *string `json:"-"`
 
 	// The ID of the project to which the user belongs.
 	//
-	// required: false
+	// required: true
 	// example: "<projectID>"
 	ProjectId *string `json:"-" example:"<projectID>"`
 
 	// The roles associated with the user.
 	//
-	// required: false
+	// required: true
 	Roles []RoleDefinition `json:"roles,omitempty"`
 }
 
@@ -168,29 +168,29 @@ type InputModel struct {
 type UpdateInputModel struct {
 	// The username for the user.
 	//
-	// required: false
+	// required: true
 	// example: "testUser"
 	Username *string `json:"-" example:"testUser"`
 
 	// The public key for the user.
 	//
-	// required: false
+	// required: true
 	PublicKey *string `json:"-"`
 
 	// The private key for the user.
 	//
-	// required: false
+	// required: true
 	PrivateKey *string `json:"-"`
 
 	// The ID of the project to which the user belongs.
 	//
-	// required: false
+	// required: true
 	// example: "<projectID>"
 	ProjectId *string `json:"-" example:"<projectID>"`
 
 	// The roles associated with the user.
 	//
-	// required: false
+	// required: true
 	Roles []RoleDefinition `json:"roles,omitempty"`
 }
 

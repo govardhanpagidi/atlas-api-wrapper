@@ -95,12 +95,12 @@ type Model struct {
 
 	// The public key to use for authentication.
 	//
-	// required: false
+	// required: true
 	PublicKey *string `json:"-"`
 
 	// The private key to use for authentication.
 	//
-	// required: false
+	// required: true
 	PrivateKey *string `json:"-"`
 }
 

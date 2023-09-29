@@ -16,7 +16,7 @@ type Model struct {
 
 	// Indicates whether backups are enabled for the cluster.
 	//
-	// required: false
+	// required: true
 	BackupEnabled *bool `json:"backupEnabled,omitempty"`
 
 	// BI Connector configuration for the cluster.
@@ -56,7 +56,7 @@ type Model struct {
 
 	// The ID of the project the cluster belongs to.
 	//
-	// required: false
+	// required: true
 	ProjectId *string `json:"projectId,omitempty"`
 
 	// The ID of the cluster.
@@ -69,6 +69,9 @@ type Model struct {
 	// required: false
 	Labels []Labels `json:"labels,omitempty"`
 
+	// Tags for the cluster.
+	//
+	// required: false
 	Tags []Tags `json:"tags,omitempty"`
 
 	// The major version of MongoDB used by the cluster.
@@ -393,7 +396,7 @@ type Specs struct {
 type InputModel struct {
 	// The ID of the project.
 	//
-	// required: false
+	// required: true
 	// example: <projectID>
 	ProjectId *string `json:"-" example:"<projectID>"`
 
@@ -404,12 +407,12 @@ type InputModel struct {
 
 	// The private key for the cluster.
 	//
-	// required: false
+	// required: true
 	PrivateKey *string `json:"-"`
 
 	// The public key for the cluster.
 	//
-	// required: false
+	// required: true
 	PublicKey *string `json:"-"`
 
 	// Applications uses this field to determine the cluster size.possible values are "s","m"
@@ -420,7 +423,7 @@ type InputModel struct {
 
 	// The cloud provider for the cluster.
 	//
-	// required: false
+	// required: true
 	// example: AWS
 	CloudProvider *string `json:"cloudProvider,omitempty" example:"AWS"`
 
@@ -432,7 +435,7 @@ type InputModel struct {
 
 	// Indicates whether backups should be retained.
 	//
-	// required: false
+	// required: true
 	RetainBackup *string `json:"-"`
 
 	// Tags to the cluster for tagging.
@@ -451,24 +454,24 @@ type InputModel struct {
 type UpdateInputModel struct {
 	// The ID of the project.
 	//
-	// required: false
+	// required: true
 	// example: <projectID>
 	ProjectId *string `json:"-" example:"<projectID>"`
 
 	// The name of the cluster.
 	//
-	// required: false
+	// required: true
 	ClusterName *string `json:"-" example:""`
 
 	// The private key for the cluster.
 	//
-	// required: false
+	// required: true
 	// example: <privateKey>
 	PrivateKey *string `json:"-" example:"<privateKey>"`
 
 	// The public key for the cluster.
 	//
-	// required: false
+	// required: true
 	// example: <publicKey>
 	PublicKey *string `json:"-" example:"<publicKey>"`
 	// Tags to the cluster for tagging.

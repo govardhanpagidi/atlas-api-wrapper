@@ -10,17 +10,17 @@ import (
 type Model struct {
 	// The ID of the project.
 	//
-	// required: false
+	// required: true
 	ProjectId *string `json:",omitempty"`
 
 	// The name of the cluster.
 	//
-	// required: false
+	// required: true
 	ClusterName *string `json:",omitempty"`
 
 	// The name of the instance.
 	//
-	// required: false
+	// required: true
 	InstanceName *string `json:",omitempty"`
 
 	// The ID of the restore job.
@@ -30,7 +30,7 @@ type Model struct {
 
 	// The delivery type.
 	//
-	// required: false
+	// required: true
 	DeliveryType *string `json:",omitempty"`
 
 	// The delivery URL.
@@ -158,17 +158,17 @@ type InputModel struct {
 
 	// The public key to use for authentication.
 	//
-	// required: false
+	// required: true
 	PublicKey *string `json:"-"`
 
 	// The private key to use for authentication.
 	//
-	// required: false
+	// required: true
 	PrivateKey *string `json:"-"`
 
 	// The ID of the project.
 	//
-	// required: false
+	// required: true
 	ProjectId *string `json:"-"`
 
 	// The ID of the snapshot to restore.

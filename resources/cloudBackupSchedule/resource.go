@@ -113,7 +113,7 @@ func cloudBackupScheduleCreateOrUpdate(ctx context.Context, currentModel *Model,
 
 	if err := validatePolicies(currentModel); err != nil {
 		util.Warnf(ctx, "Validate Policies error: %v", err.Error())
-		message := fmt.Sprintf(configuration.GetConfig()[constants.ValidateExportDetails].Message, *currentModel.ProjectId)
+		message := fmt.Sprintf(configuration.GetConfig()[constants.ValidateExportDetails].Message, *currentModel.ClusterName)
 		return handleError(constants.ValidateExportDetails, message, err)
 	}
 

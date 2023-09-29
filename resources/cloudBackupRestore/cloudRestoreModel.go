@@ -173,7 +173,7 @@ type InputModel struct {
 
 	// The ID of the snapshot to restore.
 	//
-	// required: true
+	// required: false
 	SnapshotId *string `json:"snapshotId"`
 
 	// The timestamp of the oplog to restore.
@@ -203,12 +203,12 @@ type InputModel struct {
 
 	// The ID of the job.
 	//
-	// required: false
+	// required: true
 	JobId *string `json:"jobId,omitempty"`
 
 	// The delivery type.
 	//
-	// required: false
+	// required: true
 	DeliveryType *string `json:"deliveryType,omitempty"`
 }
 
